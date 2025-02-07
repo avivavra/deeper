@@ -5,9 +5,36 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Pencil, Eye, Share2, ChevronDown, Upload, RotateCcw, Plus } from 'lucide-react';
 import { TooltipProps } from 'recharts';
 
+type IndexData = {
+  name: string;
+  hotTierRate: number;
+  coldTierStorageRate: number;
+  coldTierHotRate: number;
+  hotRetentionDays: number;
+  coldRetentionDays: number;
+  hotStorageGB: number;
+  coldStorageGB: number;
+  totalRetentionDays: number;
+};
+
+type ChangeLogEntry = {
+  original: {
+    hotDays: number;
+    coldDays: number;
+    hotStorage: number;
+    coldStorage: number;
+  };
+  current: {
+    hotDays: number;
+    coldDays: number;
+    hotStorage: number;
+    coldStorage: number;
+  };
+};
+
 const ElasticsearchStorageViz = () => {
   // Original data and main states
-  const originalIndices = [
+  const originalIndices: IndexData[] = [
     {
       name: 'logs-production',
       hotTierRate: 4,
@@ -65,17 +92,17 @@ const ElasticsearchStorageViz = () => {
     }
   ];
 
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedIndices, setSelectedIndices] = useState(
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [selectedIndices, setSelectedIndices] = useState<{ [key: string]: boolean }>(
     originalIndices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {})
   );
-  const [indices, setIndices] = useState(originalIndices);
-  const [changeLog, setChangeLog] = useState({});
+  const [indices, setIndices] = useState<IndexData[]>(originalIndices);
+  const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
   const [totalHotStorage] = useState(500); // GB
   const [totalColdStorage] = useState(1000); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [newIndex, setNewIndex] = useState({
+  const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string }>({
     name: '',
     docSize: '',
     frequency: ''
@@ -85,9 +112,9 @@ const ElasticsearchStorageViz = () => {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setShowDropdown(false);
       }
     };
 
@@ -100,7 +127,7 @@ const ElasticsearchStorageViz = () => {
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
 
   // All the handlers remain the same...
-  const calculateRates = (docSize, frequency) => {
+  const calculateRates = (docSize: number, frequency: number) => {
     const dailyData = (docSize * frequency * 86400) / (1024 * 1024 * 1024);
     return {
       hotTierRate: dailyData,
@@ -130,14 +157,14 @@ const ElasticsearchStorageViz = () => {
     setShowAddIndex(false);
   };
 
-  const handleIndexToggle = (indexName) => {
+  const handleIndexToggle = (indexName: string) => {
     setSelectedIndices(prev => ({
       ...prev,
       [indexName]: !prev[indexName]
     }));
   };
 
-  const handleRetentionChange = (indexName, newHotDays, newColdDays) => {
+  const handleRetentionChange = (indexName: string, newHotDays: number, newColdDays: number) => {
     const oldIndex = indices.find(i => i.name === indexName);
     const newIndices = indices.map(index => {
       if (index.name === indexName) {
@@ -192,8 +219,10 @@ const ElasticsearchStorageViz = () => {
     setIsEditMode(!isEditMode);
   };
 
-  const handleRevertChange = (indexName) => {
+  const handleRevertChange = (indexName: string) => {
     const originalIndex = originalIndices.find(i => i.name === indexName);
+    if (!originalIndex) return;
+    
     setIndices(indices.map(index =>
       index.name === indexName ? originalIndex : index
     ));
@@ -247,13 +276,13 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
     setChangeLog({});
   };
 
-  const handleImport = (event) => {
-    const file = event.target.files[0];
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = (e: ProgressEvent<FileReader>) => {
         try {
-          const text = e.target.result;
+          const text = e.target?.result as string;
           const entries = text.split('\n\n');
           entries.forEach(entry => {
             const lines = entry.trim().split('\n');
@@ -276,8 +305,8 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
   };
 
   // Custom Slider component
-  const CustomSlider = ({ value, min, max, onChange }) => {
-    const handleChange = (e) => {
+  const CustomSlider = ({ value, min, max, onChange }: { value: number[]; min: number; max: number; onChange: (value: number[]) => void }) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = parseInt(e.target.value);
       onChange([newValue]);
     };
