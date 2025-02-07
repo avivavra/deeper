@@ -199,6 +199,8 @@ const ElasticsearchStorageViz = () => {
 
   const usedHotStorage = indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0);
   const usedColdStorage = indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0);
+  const hotStoragePercentage = (usedHotStorage / totalHotStorage) * 100;
+  const coldStoragePercentage = (usedColdStorage / totalColdStorage) * 100;
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
 
   // All the handlers remain the same...
@@ -628,31 +630,31 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
               <div className="space-y-6">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium text-gray-800">Hot Tier Storage</span>
+                    <span className="font-medium text-gray-800">Elasticsearch Storage</span>
                     <span className={usedHotStorage > totalHotStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                      {usedHotStorage}/{totalHotStorage} GB
-                      {usedHotStorage > totalHotStorage && ` (${((usedHotStorage / totalHotStorage) * 100 - 100).toFixed(1)}% over limit)`}
+                      {usedHotStorage}/{totalHotStorage} GB ({hotStoragePercentage.toFixed(1)}%)
+                      {usedHotStorage > totalHotStorage && ` (over limit)`}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
                     <div
                       className={`h-2.5 rounded-full ${usedHotStorage > totalHotStorage ? 'bg-red-500' : 'bg-blue-600'}`}
-                      style={{ width: `${Math.min((usedHotStorage / totalHotStorage) * 100, 100)}%` }}
+                      style={{ width: `${Math.min(hotStoragePercentage, 100)}%` }}
                     />
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium text-gray-800">Cold Tier Storage (S3)</span>
+                    <span className="font-medium text-gray-800">S3 Storage</span>
                     <span className={usedColdStorage > totalColdStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                      {usedColdStorage}/{totalColdStorage} GB
+                      {usedColdStorage}/{totalColdStorage} GB ({coldStoragePercentage.toFixed(1)}%)
                       {usedColdStorage > totalColdStorage && ` (${((usedColdStorage / totalColdStorage) * 100 - 100).toFixed(1)}% over limit)`}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
                     <div
                       className={`h-2.5 rounded-full ${usedColdStorage > totalColdStorage ? 'bg-red-500' : 'bg-blue-400'}`}
-                      style={{ width: `${Math.min((usedColdStorage / totalColdStorage) * 100, 100)}%` }}
+                      style={{ width: `${Math.min(coldStoragePercentage, 100)}%` }}
                     />
                   </div>
                 </div>
