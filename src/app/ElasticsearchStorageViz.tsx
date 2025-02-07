@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Pencil, Eye, Share2, ChevronDown, Upload, RotateCcw, Plus } from 'lucide-react';
+import { Pencil, Eye, Share2, ChevronDown, Upload, RotateCcw, Plus, Trash2 } from 'lucide-react';
 import { TooltipProps } from 'recharts';
 
 type IndexData = {
@@ -161,6 +161,7 @@ const ElasticsearchStorageViz = () => {
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [showClusterDropdown, setShowClusterDropdown] = useState(false);
   const [showIndexDropdown, setShowIndexDropdown] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string; avgDocs: string; inputType: 'frequency' | 'avgDocs' }>({
     name: '',
     docSize: '',
@@ -192,6 +193,7 @@ const ElasticsearchStorageViz = () => {
     if (cluster) {
       setIndices(cluster.indices);
       setSelectedIndices(cluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+      setChangeLog({});
     }
   }, [selectedCluster]);
 
@@ -512,167 +514,174 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
       </div>
 
       {/* Main Content */}
-      <div className="p-6 space-y-6">
-        {/* Storage Overview and Chart */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Storage Overview */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Storage Usage Overview</h2>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="font-medium text-gray-800">Hot Tier Storage</span>
-                  <span className={usedHotStorage > totalHotStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                    {usedHotStorage}/{totalHotStorage} GB
-                    {usedHotStorage > totalHotStorage && ` (${((usedHotStorage / totalHotStorage) * 100 - 100).toFixed(1)}% over limit)`}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
-                  <div
-                    className={`h-2.5 rounded-full ${usedHotStorage > totalHotStorage ? 'bg-red-500' : 'bg-blue-600'}`}
-                    style={{ width: `${Math.min((usedHotStorage / totalHotStorage) * 100, 100)}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="font-medium text-gray-800">Cold Tier Storage (S3)</span>
-                  <span className={usedColdStorage > totalColdStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                    {usedColdStorage}/{totalColdStorage} GB
-                    {usedColdStorage > totalColdStorage && ` (${((usedColdStorage / totalColdStorage) * 100 - 100).toFixed(1)}% over limit)`}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
-                  <div
-                    className={`h-2.5 rounded-full ${usedColdStorage > totalColdStorage ? 'bg-red-500' : 'bg-blue-400'}`}
-                    style={{ width: `${Math.min((usedColdStorage / totalColdStorage) * 100, 100)}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Retention Period Chart */}
-          <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Index Retention Periods</h2>
-            </div>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={filteredIndices}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-                  <XAxis dataKey="name" />
-                  <YAxis label={{ value: 'Days', angle: -90, position: 'insideLeft' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                  <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name="Hot Tier" />
-                  <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name="Cold Tier" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        {/* Change Log and Management */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Change Log */}
-          {isEditMode && (
-            <div className="bg-white rounded-lg shadow-sm flex flex-col h-full">
-              <div className="p-6 flex-grow">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-semibold text-gray-800">Change Log</h2>
-                  <div className="flex gap-2">
-                    {Object.keys(changeLog).length > 0 ? (
-                      <>
-                        <button
-                          onClick={handleExport}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                          <Share2 className="h-4 w-4 mr-1 text-gray-800" />
-                          Export
-                        </button>
-                        <button
-                          onClick={handleEmail}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                          <Share2 className="h-4 w-4 mr-1 text-gray-800" />
-                          Email
-                        </button>
-                        <button
-                          onClick={handleResetChanges}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                          <RotateCcw className="h-4 w-4 mr-1 text-gray-800" />
-                          Reset All
-                        </button>
-                      </>
-                    ) : (
-                      <div className="relative">
-                        <input
-                          type="file"
-                          onChange={handleImport}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          accept=".txt"
-                        />
-                        <button
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                          <Upload className="h-4 w-4 mr-1 text-gray-800" />
-                          Import Changes
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="max-h-full overflow-y-auto">
-                  <div className="space-y-4">
-                    {Object.keys(changeLog).length > 0 ? (
-                      Object.entries(changeLog).map(([indexName, change]) => {
-                        const hotStorageChange = change.current.hotStorage - change.original.hotStorage;
-                        const coldStorageChange = change.current.coldStorage - change.original.coldStorage;
-
-                        return (
-                          <div key={indexName} className="text-sm border-l-2 border-blue-500 pl-3">
-                            <div className="flex justify-between items-start">
-                              <div className="font-medium text-gray-800">{indexName}</div>
-                              <button
-                                onClick={() => handleRevertChange(indexName)}
-                                className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
-                              >
-                                Revert
-                              </button>
-                            </div>
-                            <div className="text-gray-600 mt-1">
-                              Hot Tier: {change.original.hotDays} → {change.current.hotDays} days
-                            </div>
-                            <div className="text-gray-600">
-                              Cold Tier: {change.original.coldDays} → {change.current.coldDays} days
-                            </div>
-                            <div className="font-medium text-gray-800 mt-2">Impact:</div>
-                            <div className="text-sm ml-2 text-gray-800">
-                              Hot Tier: {hotStorageChange > 0 ? '+' : ''}{hotStorageChange} GB
-                            </div>
-                            <div className="text-sm ml-2 text-gray-800">
-                              Cold Tier: {coldStorageChange > 0 ? '+' : ''}{coldStorageChange} GB
-                            </div>
+      <div className="flex">
+        {/* Change Log Sidebar */}
+        {isEditMode && (
+          <div className="bg-white shadow-lg w-80 p-6 sticky top-0 h-screen overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">Change Log</h2>
+              <div className="flex gap-2">
+                {Object.keys(changeLog).length > 0 ? (
+                  <>
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowExportDropdown(!showExportDropdown)}
+                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <Share2 className="h-4 w-4 text-gray-800" />
+                      </button>
+                      {showExportDropdown && (
+                        <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                          <div className="py-1">
+                            <button
+                              onClick={handleExport}
+                              className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
+                            >
+                              Export to File
+                            </button>
+                            <button
+                              onClick={handleEmail}
+                              className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
+                            >
+                              Export to Email
+                            </button>
                           </div>
-                        );
-                      })
-                    ) : (
-                      <div className="text-gray-500 text-center py-4">
-                        No changes made yet. Adjust retention periods to see changes here.
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleResetChanges}
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <Trash2 className="h-4 w-4 text-gray-800" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="file"
+                      onChange={handleImport}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      accept=".txt"
+                    />
+                    <button
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <Upload className="h-4 w-4 text-gray-800" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="max-h-full overflow-y-auto">
+              <div className="space-y-4">
+                {Object.keys(changeLog).length > 0 ? (
+                  Object.entries(changeLog).map(([indexName, change]) => {
+                    const hotStorageChange = change.current.hotStorage - change.original.hotStorage;
+                    const coldStorageChange = change.current.coldStorage - change.original.coldStorage;
+
+                    return (
+                      <div key={indexName} className="text-sm border-l-2 border-blue-500 pl-3">
+                        <div className="flex justify-between items-start">
+                          <div className="font-medium text-gray-800">{indexName}</div>
+                          <button
+                            onClick={() => handleRevertChange(indexName)}
+                            className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
+                          >
+                            <Trash2 className="h-4 w-4 text-gray-800" />
+                          </button>
+                        </div>
+                        <div className="text-gray-600 mt-1">
+                          Hot Tier: {change.original.hotDays} → {change.current.hotDays} days
+                        </div>
+                        <div className="text-gray-600">
+                          Cold Tier: {change.original.coldDays} → {change.current.coldDays} days
+                        </div>
+                        <div className="font-medium text-gray-800 mt-2">Impact:</div>
+                        <div className="text-sm ml-2 text-gray-800">
+                          Hot Tier: {hotStorageChange > 0 ? '+' : ''}{hotStorageChange} GB
+                        </div>
+                        <div className="text-sm ml-2 text-gray-800">
+                          Cold Tier: {coldStorageChange > 0 ? '+' : ''}{coldStorageChange} GB
+                        </div>
                       </div>
-                    )}
+                    );
+                  })
+                ) : (
+                  <div className="text-gray-500 text-center py-4">
+                    No changes made yet. Adjust retention periods to see changes here.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex-grow p-6 space-y-6">
+          {/* Storage Overview and Chart */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Storage Overview */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">Storage Usage Overview</h2>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium text-gray-800">Hot Tier Storage</span>
+                    <span className={usedHotStorage > totalHotStorage ? "text-red-500 font-medium" : "text-gray-800"}>
+                      {usedHotStorage}/{totalHotStorage} GB
+                      {usedHotStorage > totalHotStorage && ` (${((usedHotStorage / totalHotStorage) * 100 - 100).toFixed(1)}% over limit)`}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
+                    <div
+                      className={`h-2.5 rounded-full ${usedHotStorage > totalHotStorage ? 'bg-red-500' : 'bg-blue-600'}`}
+                      style={{ width: `${Math.min((usedHotStorage / totalHotStorage) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium text-gray-800">Cold Tier Storage (S3)</span>
+                    <span className={usedColdStorage > totalColdStorage ? "text-red-500 font-medium" : "text-gray-800"}>
+                      {usedColdStorage}/{totalColdStorage} GB
+                      {usedColdStorage > totalColdStorage && ` (${((usedColdStorage / totalColdStorage) * 100 - 100).toFixed(1)}% over limit)`}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
+                    <div
+                      className={`h-2.5 rounded-full ${usedColdStorage > totalColdStorage ? 'bg-red-500' : 'bg-blue-400'}`}
+                      style={{ width: `${Math.min((usedColdStorage / totalColdStorage) * 100, 100)}%` }}
+                    />
                   </div>
                 </div>
               </div>
             </div>
-          )}
+
+            {/* Retention Period Chart */}
+            <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">Index Retention Periods</h2>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={filteredIndices}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
+                    <XAxis dataKey="name" />
+                    <YAxis label={{ value: 'Days', angle: -90, position: 'insideLeft' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name="Hot Tier" />
+                    <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name="Cold Tier" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
 
           {/* Index Management */}
           <div className={`bg-white rounded-lg shadow-sm ${isEditMode ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
