@@ -197,27 +197,28 @@ const translations = {
     storage: 'Storage',
   },
   user: {
-    title: 'לוח מחוונים לאחסון למשתמשים',
+    title: 'דאשבורד אחסון',
     developerMode: 'מצב מפתח',
     userMode: 'מצב משתמש',
-    selectCluster: 'בחר אשכול',
+    selectCluster: 'בחר קלאסטר',
     filterIndices: 'סנן אינדקסים',
     viewMode: 'מצב צפייה',
     editMode: 'מצב עריכה',
     changeLog: 'יומן שינויים',
     exportToFile: 'ייצא לקובץ',
-    exportToEmail: 'ייצא לדוא"ל',
-    storageUsageOverview: 'סקירת שימוש באחסון',
+    exportToEmail: 'יצא למייל',
+    storageUsageOverview: 'שימוש באחסון',
+    storage: 'אחסון',
     elasticsearchStorage: 'אחסון Elasticsearch',
     s3Storage: 'אחסון S3',
-    indexRetentionPeriods: 'תקופות שמירת אינדקס',
-    indexRetentionManagement: 'ניהול שמירת אינדקס',
+    indexRetentionPeriods: 'עומקי אגירה',
+    indexRetentionManagement: 'ניהול עומקי אגירה',
     addIndex: 'הוסף אינדקס',
-    hotTierRetention: 'שמירת שכבת חם (ימים)',
-    coldTierRetention: 'שמירת שכבת קר (ימים)',
-    totalRetentionPeriod: 'תקופת שמירה כוללת',
-    hotTier: 'שכבת חם',
-    coldTier: 'שכבת קר',
+    hotTierRetention: 'עומר אגירה אחסון חם',
+    coldTierRetention: 'עומק אגירה אחסון קר',
+    totalRetentionPeriod: 'עומק אגירה כולל',
+    hotTier: 'אחסון חם',
+    coldTier: 'אחסון קר',
     impact: 'השפעה',
     noChanges: 'לא נעשו שינויים עדיין. התאם את תקופות השמירה כדי לראות שינויים כאן.',
     indexName: 'שם אינדקס',
@@ -228,8 +229,6 @@ const translations = {
     cancel: 'ביטול',
     addIndexButton: 'הוסף אינדקס',
     days: 'ימים',
-    hotTier: 'שכבת חם',
-    coldTier: 'שכבת קר',
     storage: 'אחסון',
   }
 };
@@ -550,7 +549,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
               className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               {t.title}
-              <ChevronDown className="ml-2 h-4 w-4 text-gray-800" />
+              <ChevronDown className="mx-2 h-4 w-4 text-gray-800" />
             </button>
             {showTitleDropdown && (
               <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
@@ -597,7 +596,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 {t.selectCluster}
-                <ChevronDown className="ml-2 h-4 w-4 text-gray-800" />
+                <ChevronDown className="mx-2 h-4 w-4 text-gray-800" />
               </button>
               {showClusterDropdown && (
                 <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
@@ -632,7 +631,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 {t.filterIndices}
-                <ChevronDown className="ml-2 h-4 w-4 text-gray-800" />
+                <ChevronDown className="mx-2 h-4 w-4 text-gray-800" />
               </button>
               {showIndexDropdown && (
                 <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
@@ -667,12 +666,12 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
             >
               {isEditMode ? (
                 <>
-                  <Eye className="h-4 w-4 mr-2 text-gray-800" />
+                  <Eye className="h-4 w-4 mx-2 text-gray-800" />
                   {t.viewMode}
                 </>
               ) : (
                 <>
-                  <Pencil className="h-4 w-4 mr-2 text-gray-800" />
+                  <Pencil className="h-4 w-4 mx-2 text-gray-800" />
                   {t.editMode}
                 </>
               )}
@@ -696,7 +695,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                         onClick={() => setShowExportDropdown(!showExportDropdown)}
                         className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
-                        <Share2 className="h-4 w-4 text-gray-800" />
+                        <Share2 className="h-4 w-4 mx-2 text-gray-800" />
                       </button>
                       {showExportDropdown && (
                         <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
@@ -705,12 +704,14 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                               onClick={handleExport}
                               className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
                             >
+                              <Share2 className="h-4 w-4 mx-2 text-gray-800" />
                               {t.exportToFile}
                             </button>
                             <button
                               onClick={handleEmail}
                               className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
                             >
+                              <Share2 className="h-4 w-4 mx-2 text-gray-800" />
                               {t.exportToEmail}
                             </button>
                           </div>
@@ -721,7 +722,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                       onClick={handleResetChanges}
                       className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
-                      <Trash2 className="h-4 w-4 text-gray-800" />
+                      <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
                     </button>
                   </>
                 ) : (
@@ -735,7 +736,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     <button
                       className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
-                      <Upload className="h-4 w-4 text-gray-800" />
+                      <Upload className="h-4 w-4 mx-2 text-gray-800" />
                     </button>
                   </div>
                 )}
@@ -750,14 +751,14 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     const hebrewIndexName = indices.find(index => index.name === indexName)?.hebrewName || indexName;
 
                     return (
-                      <div key={indexName} className="text-sm border-l-2 border-blue-500 pl-3">
+                      <div key={indexName} className={`text-sm ${audience === 'user' ? 'border-r-2 pr-3' : 'border-l-2 pl-3'} border-blue-500`}>
                         <div className="flex justify-between items-start">
                           <div className="font-medium text-gray-800">{audience === 'developer' ? indexName : hebrewIndexName}</div>
                           <button
                             onClick={() => handleRevertChange(indexName)}
                             className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
                           >
-                            <Trash2 className="h-4 w-4 text-gray-800" />
+                            <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
                           </button>
                         </div>
                         {audience === 'user' ? (
@@ -812,7 +813,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                 {audience === 'user' ? (
                   <div>
                     <div className="flex justify-between mb-2">
-                      <span className="font-medium text-gray-800">{t.elasticsearchStorage}</span>
+                      <span className="font-medium text-gray-800">{t.storage}</span>
                       <span className={usedCombinedStorage > combinedStorage ? "text-red-500 font-medium" : "text-gray-800"}>
                         {usedCombinedStorage}/{combinedStorage} GB ({combinedStoragePercentage.toFixed(1)}%)
                         {usedCombinedStorage > combinedStorage && ` (over limit)`}
@@ -896,7 +897,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     onClick={() => setShowAddIndex(true)}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    <Plus className="h-4 w-4 mr-2 text-gray-800" />
+                    <Plus className="h-4 w-4 mx-2 text-gray-800" />
                     {t.addIndex}
                   </button>
                 )}
