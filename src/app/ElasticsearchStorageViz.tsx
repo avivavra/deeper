@@ -161,10 +161,12 @@ const ElasticsearchStorageViz = () => {
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [showClusterDropdown, setShowClusterDropdown] = useState(false);
   const [showIndexDropdown, setShowIndexDropdown] = useState(false);
-  const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string }>({
+  const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string; avgDocs: string; inputType: 'frequency' | 'avgDocs' }>({
     name: '',
     docSize: '',
-    frequency: ''
+    frequency: '',
+    avgDocs: '',
+    inputType: 'frequency'
   });
 
   const clusterDropdownRef = useRef(null);
@@ -198,8 +200,10 @@ const ElasticsearchStorageViz = () => {
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
 
   // All the handlers remain the same...
-  const calculateRates = (docSize: number, frequency: number) => {
-    const dailyData = (docSize * frequency * 86400) / (1024 * 1024 * 1024);
+  const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: 'frequency' | 'avgDocs') => {
+    const dailyData = inputType === 'frequency'
+      ? (docSize * frequency * 86400) / (1024 * 1024 * 1024)
+      : (docSize * avgDocs) / (1024 * 1024 * 1024);
     return {
       hotTierRate: dailyData,
       coldTierStorageRate: dailyData * 0.75,
@@ -208,7 +212,7 @@ const ElasticsearchStorageViz = () => {
   };
 
   const handleAddIndex = () => {
-    const rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency));
+    const rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency), Number(newIndex.avgDocs), newIndex.inputType);
     const hotRetentionDays = 30;
     const coldRetentionDays = 90;
 
@@ -224,7 +228,7 @@ const ElasticsearchStorageViz = () => {
 
     setIndices([...indices, newIndexData]);
     setSelectedIndices(prev => ({ ...prev, [newIndex.name]: true }));
-    setNewIndex({ name: '', docSize: '', frequency: '' });
+    setNewIndex({ name: '', docSize: '', frequency: '', avgDocs: '', inputType: 'frequency' });
     setShowAddIndex(false);
   };
 
@@ -765,20 +769,54 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                     type="text"
                     value={newIndex.name}
                     onChange={(e) => setNewIndex(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                     placeholder="e.g., 1024"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-800">Document Frequency (per second)</label>
+                  <label className="text-sm font-medium text-gray-800">Average Document Size (KB)</label>
                   <input
                     type="number"
-                    value={newIndex.frequency}
-                    onChange={(e) => setNewIndex(prev => ({ ...prev, frequency: e.target.value }))}
-                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newIndex.docSize}
+                    onChange={(e) => setNewIndex(prev => ({ ...prev, docSize: e.target.value }))}
+                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                     placeholder="e.g., 100"
                   />
                 </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-800">Input Type</label>
+                  <select
+                    value={newIndex.inputType}
+                    onChange={(e) => setNewIndex(prev => ({ ...prev, inputType: e.target.value as 'frequency' | 'avgDocs' }))}
+                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  >
+                    <option value="frequency">Document Frequency (per second)</option>
+                    <option value="avgDocs">Average Documents per Index</option>
+                  </select>
+                </div>
+                {newIndex.inputType === 'frequency' ? (
+                  <div>
+                    <label className="text-sm font-medium text-gray-800">Document Frequency (per second)</label>
+                    <input
+                      type="number"
+                      value={newIndex.frequency}
+                      onChange={(e) => setNewIndex(prev => ({ ...prev, frequency: e.target.value }))}
+                      className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                      placeholder="e.g., 100"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="text-sm font-medium text-gray-800">Average Documents per Index</label>
+                    <input
+                      type="number"
+                      value={newIndex.avgDocs}
+                      onChange={(e) => setNewIndex(prev => ({ ...prev, avgDocs: e.target.value }))}
+                      className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                      placeholder="e.g., 1000"
+                    />
+                  </div>
+                )}
                 <div className="flex justify-end gap-2 mt-6">
                   <button
                     onClick={() => setShowAddIndex(false)}
@@ -788,8 +826,8 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                   </button>
                   <button
                     onClick={handleAddIndex}
-                    disabled={!newIndex.name || !newIndex.docSize || !newIndex.frequency}
-                    className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!newIndex.name || !newIndex.docSize || !newIndex.frequency
+                    disabled={!newIndex.name || !newIndex.docSize || (!newIndex.frequency && !newIndex.avgDocs)}
+                    className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!newIndex.name || !newIndex.docSize || (!newIndex.frequency && !newIndex.avgDocs)
                         ? 'bg-blue-300 cursor-not-allowed'
                         : 'bg-blue-600 hover:bg-blue-700'
                       }`}
