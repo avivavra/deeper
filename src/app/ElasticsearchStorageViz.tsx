@@ -7,6 +7,7 @@ import { TooltipProps } from 'recharts';
 
 type IndexData = {
   name: string;
+  hebrewName: string;
   hotTierRate: number;
   coldTierStorageRate: number;
   coldTierHotRate: number;
@@ -43,6 +44,7 @@ const clusters: ClusterData[] = [
     indices: [
       {
         name: 'logs-production',
+        hebrewName: 'לוגים-ייצור',
         hotTierRate: 4,
         coldTierStorageRate: 3,
         coldTierHotRate: 0.2,
@@ -54,6 +56,7 @@ const clusters: ClusterData[] = [
       },
       {
         name: 'metrics-app1',
+        hebrewName: 'מדדים-אפליקציה1',
         hotTierRate: 2,
         coldTierStorageRate: 1.5,
         coldTierHotRate: 0.1,
@@ -65,6 +68,7 @@ const clusters: ClusterData[] = [
       },
       {
         name: 'metrics-app2',
+        hebrewName: 'מדדים-אפליקציה2',
         hotTierRate: 3,
         coldTierStorageRate: 2,
         coldTierHotRate: 0.15,
@@ -76,6 +80,7 @@ const clusters: ClusterData[] = [
       },
       {
         name: 'audit-logs',
+        hebrewName: 'לוגים-ביקורת',
         hotTierRate: 1,
         coldTierStorageRate: 2.5,
         coldTierHotRate: 0.25,
@@ -87,6 +92,7 @@ const clusters: ClusterData[] = [
       },
       {
         name: 'user-activity',
+        hebrewName: 'פעילות-משתמש',
         hotTierRate: 2.5,
         coldTierStorageRate: 2,
         coldTierHotRate: 0.12,
@@ -103,6 +109,7 @@ const clusters: ClusterData[] = [
     indices: [
       {
         name: 'metrics-app1',
+        hebrewName: 'מדדים-אפליקציה1',
         hotTierRate: 2,
         coldTierStorageRate: 1.5,
         coldTierHotRate: 0.1,
@@ -114,6 +121,7 @@ const clusters: ClusterData[] = [
       },
       {
         name: 'metrics-app2',
+        hebrewName: 'מדדים-אפליקציה2',
         hotTierRate: 3,
         coldTierStorageRate: 2,
         coldTierHotRate: 0.15,
@@ -125,6 +133,7 @@ const clusters: ClusterData[] = [
       },
       {
         name: 'audit-logs',
+        hebrewName: 'לוגים-ביקורת',
         hotTierRate: 1,
         coldTierStorageRate: 2.5,
         coldTierHotRate: 0.25,
@@ -136,6 +145,7 @@ const clusters: ClusterData[] = [
       },
       {
         name: 'user-activity',
+        hebrewName: 'פעילות-משתמש',
         hotTierRate: 2.5,
         coldTierStorageRate: 2,
         coldTierHotRate: 0.12,
@@ -148,6 +158,79 @@ const clusters: ClusterData[] = [
     ]
   }
 ];
+
+const translations = {
+  developer: {
+    title: 'Storage Dashboard for Developers',
+    developerMode: 'Developer Mode',
+    userMode: 'User Mode',
+    selectCluster: 'Select Cluster',
+    filterIndices: 'Filter Indices',
+    viewMode: 'View Mode',
+    editMode: 'Edit Mode',
+    changeLog: 'Change Log',
+    exportToFile: 'Export to File',
+    exportToEmail: 'Export to Email',
+    storageUsageOverview: 'Storage Usage Overview',
+    elasticsearchStorage: 'Elasticsearch Storage',
+    s3Storage: 'S3 Storage',
+    indexRetentionPeriods: 'Index Retention Periods',
+    indexRetentionManagement: 'Index Retention Management',
+    addIndex: 'Add Index',
+    hotTierRetention: 'Hot Tier Retention (days)',
+    coldTierRetention: 'Cold Tier Retention (days)',
+    totalRetentionPeriod: 'Total Retention Period',
+    hotTier: 'Hot Tier',
+    coldTier: 'Cold Tier',
+    impact: 'Impact',
+    noChanges: 'No changes made yet. Adjust retention periods to see changes here.',
+    indexName: 'Index Name',
+    avgDocSize: 'Average Document Size (KB)',
+    inputType: 'Input Type',
+    docFrequency: 'Document Frequency (per second)',
+    avgDocs: 'Average Documents per Index',
+    cancel: 'Cancel',
+    addIndexButton: 'Add Index',
+    days: 'days',
+    hotTier: 'Hot Tier',
+    coldTier: 'Cold Tier',
+  },
+  user: {
+    title: 'לוח מחוונים לאחסון למשתמשים',
+    developerMode: 'מצב מפתח',
+    userMode: 'מצב משתמש',
+    selectCluster: 'בחר אשכול',
+    filterIndices: 'סנן אינדקסים',
+    viewMode: 'מצב צפייה',
+    editMode: 'מצב עריכה',
+    changeLog: 'יומן שינויים',
+    exportToFile: 'ייצא לקובץ',
+    exportToEmail: 'ייצא לדוא"ל',
+    storageUsageOverview: 'סקירת שימוש באחסון',
+    elasticsearchStorage: 'אחסון Elasticsearch',
+    s3Storage: 'אחסון S3',
+    indexRetentionPeriods: 'תקופות שמירת אינדקס',
+    indexRetentionManagement: 'ניהול שמירת אינדקס',
+    addIndex: 'הוסף אינדקס',
+    hotTierRetention: 'שמירת שכבת חם (ימים)',
+    coldTierRetention: 'שמירת שכבת קר (ימים)',
+    totalRetentionPeriod: 'תקופת שמירה כוללת',
+    hotTier: 'שכבת חם',
+    coldTier: 'שכבת קר',
+    impact: 'השפעה',
+    noChanges: 'לא נעשו שינויים עדיין. התאם את תקופות השמירה כדי לראות שינויים כאן.',
+    indexName: 'שם אינדקס',
+    avgDocSize: 'גודל מסמך ממוצע (KB)',
+    inputType: 'סוג קלט',
+    docFrequency: 'תדירות מסמכים (לשנייה)',
+    avgDocs: 'מסמכים ממוצעים לאינדקס',
+    cancel: 'ביטול',
+    addIndexButton: 'הוסף אינדקס',
+    days: 'ימים',
+    hotTier: 'שכבת חם',
+    coldTier: 'שכבת קר',
+  }
+};
 
 const ElasticsearchStorageViz = () => {
   // Original data and main states
@@ -169,6 +252,8 @@ const ElasticsearchStorageViz = () => {
     avgDocs: '',
     inputType: 'frequency'
   });
+  const [audience, setAudience] = useState<'developer' | 'user'>('developer');
+  const [showTitleDropdown, setShowTitleDropdown] = useState(false);
 
   const clusterDropdownRef = useRef(null);
   const indexDropdownRef = useRef(null);
@@ -181,6 +266,9 @@ const ElasticsearchStorageViz = () => {
       }
       if (indexDropdownRef.current && !indexDropdownRef.current.contains(event.target as Node)) {
         setShowIndexDropdown(false);
+      }
+      if (!event.target.closest('.title-dropdown')) {
+        setShowTitleDropdown(false);
       }
     };
 
@@ -197,11 +285,21 @@ const ElasticsearchStorageViz = () => {
     }
   }, [selectedCluster]);
 
+  useEffect(() => {
+    document.documentElement.dir = audience;
+  }, [audience]);
+
+  useEffect(() => {
+    document.documentElement.dir = audience === 'developer' ? 'ltr' : 'rtl';
+  }, [audience]);
+
   const usedHotStorage = indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0);
   const usedColdStorage = indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0);
   const hotStoragePercentage = (usedHotStorage / totalHotStorage) * 100;
   const coldStoragePercentage = (usedColdStorage / totalColdStorage) * 100;
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
+
+  const t = translations[audience];
 
   // All the handlers remain the same...
   const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: 'frequency' | 'avgDocs') => {
@@ -222,6 +320,7 @@ const ElasticsearchStorageViz = () => {
 
     const newIndexData = {
       name: newIndex.name,
+      hebrewName: newIndex.name, // Add appropriate Hebrew name here
       ...rates,
       hotRetentionDays,
       coldRetentionDays,
@@ -422,7 +521,51 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
       {/* Header */}
       <div className="bg-white border-b px-6 py-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-800">Elasticsearch Storage Dashboard</h1>
+          <div className="relative title-dropdown">
+            <button
+              onClick={() => setShowTitleDropdown(!showTitleDropdown)}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              {t.title}
+              <ChevronDown className="ml-2 h-4 w-4 text-gray-800" />
+            </button>
+            {showTitleDropdown && (
+              <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                <div className="py-1">
+                  <div
+                    className="flex items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => {
+                      setAudience('developer');
+                      setShowTitleDropdown(false);
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      checked={audience === 'developer'}
+                      onChange={() => {}}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2">{t.developerMode}</span>
+                  </div>
+                  <div
+                    className="flex items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => {
+                      setAudience('user');
+                      setShowTitleDropdown(false);
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      checked={audience === 'user'}
+                      onChange={() => {}}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2">{t.userMode}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           <div className="flex gap-4">
             {/* Cluster Dropdown */}
             <div className="relative" ref={clusterDropdownRef}>
@@ -430,7 +573,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                 onClick={() => setShowClusterDropdown(!showClusterDropdown)}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Select Cluster
+                {t.selectCluster}
                 <ChevronDown className="ml-2 h-4 w-4 text-gray-800" />
               </button>
               {showClusterDropdown && (
@@ -465,7 +608,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                 onClick={() => setShowIndexDropdown(!showIndexDropdown)}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Filter Indices
+                {t.filterIndices}
                 <ChevronDown className="ml-2 h-4 w-4 text-gray-800" />
               </button>
               {showIndexDropdown && (
@@ -483,7 +626,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                           onChange={() => { }}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
-                        <span className="ml-2">{index.name}</span>
+                        <span className="ml-2">{audience === 'developer' ? index.name : index.hebrewName}</span>
                       </div>
                     ))}
                   </div>
@@ -502,12 +645,12 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
               {isEditMode ? (
                 <>
                   <Eye className="h-4 w-4 mr-2 text-gray-800" />
-                  View Mode
+                  {t.viewMode}
                 </>
               ) : (
                 <>
                   <Pencil className="h-4 w-4 mr-2 text-gray-800" />
-                  Edit Mode
+                  {t.editMode}
                 </>
               )}
             </button>
@@ -521,7 +664,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
         {isEditMode && (
           <div className="bg-white shadow-lg w-80 p-6 sticky top-0 h-screen overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Change Log</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{t.changeLog}</h2>
               <div className="flex gap-2">
                 {Object.keys(changeLog).length > 0 ? (
                   <>
@@ -539,13 +682,13 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                               onClick={handleExport}
                               className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
                             >
-                              Export to File
+                              {t.exportToFile}
                             </button>
                             <button
                               onClick={handleEmail}
                               className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
                             >
-                              Export to Email
+                              {t.exportToEmail}
                             </button>
                           </div>
                         </div>
@@ -594,24 +737,24 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                           </button>
                         </div>
                         <div className="text-gray-600 mt-1">
-                          Hot Tier: {change.original.hotDays} → {change.current.hotDays} days
+                          Hot Tier: {change.original.hotDays} → {change.current.hotDays} {t.days}
                         </div>
                         <div className="text-gray-600">
-                          Cold Tier: {change.original.coldDays} → {change.current.coldDays} days
+                          Cold Tier: {change.original.coldDays} → {change.current.coldDays} {t.days}
                         </div>
-                        <div className="font-medium text-gray-800 mt-2">Impact:</div>
+                        <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
                         <div className="text-sm ml-2 text-gray-800">
-                          Hot Tier: {hotStorageChange > 0 ? '+' : ''}{hotStorageChange} GB
+                          {t.hotTier}: {hotStorageChange > 0 ? '+' : ''}{hotStorageChange} GB
                         </div>
                         <div className="text-sm ml-2 text-gray-800">
-                          Cold Tier: {coldStorageChange > 0 ? '+' : ''}{coldStorageChange} GB
+                          {t.coldTier}: {coldStorageChange > 0 ? '+' : ''}{coldStorageChange} GB
                         </div>
                       </div>
                     );
                   })
                 ) : (
                   <div className="text-gray-500 text-center py-4">
-                    No changes made yet. Adjust retention periods to see changes here.
+                    {t.noChanges}
                   </div>
                 )}
               </div>
@@ -625,12 +768,12 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
             {/* Storage Overview */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">Storage Usage Overview</h2>
+                <h2 className="text-lg font-semibold text-gray-800">{t.storageUsageOverview}</h2>
               </div>
               <div className="space-y-6">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium text-gray-800">Elasticsearch Storage</span>
+                    <span className="font-medium text-gray-800">{t.elasticsearchStorage}</span>
                     <span className={usedHotStorage > totalHotStorage ? "text-red-500 font-medium" : "text-gray-800"}>
                       {usedHotStorage}/{totalHotStorage} GB ({hotStoragePercentage.toFixed(1)}%)
                       {usedHotStorage > totalHotStorage && ` (over limit)`}
@@ -645,7 +788,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium text-gray-800">S3 Storage</span>
+                    <span className="font-medium text-gray-800">{t.s3Storage}</span>
                     <span className={usedColdStorage > totalColdStorage ? "text-red-500 font-medium" : "text-gray-800"}>
                       {usedColdStorage}/{totalColdStorage} GB ({coldStoragePercentage.toFixed(1)}%)
                       {usedColdStorage > totalColdStorage && ` (${((usedColdStorage / totalColdStorage) * 100 - 100).toFixed(1)}% over limit)`}
@@ -664,7 +807,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
             {/* Retention Period Chart */}
             <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
               <div className="mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">Index Retention Periods</h2>
+                <h2 className="text-lg font-semibold text-gray-800">{t.indexRetentionPeriods}</h2>
               </div>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -673,12 +816,12 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-                    <XAxis dataKey="name" />
-                    <YAxis label={{ value: 'Days', angle: -90, position: 'insideLeft' }} />
+                    <XAxis dataKey={audience === 'developer' ? "name" : "hebrewName"} />
+                    <YAxis label={{ value: t.days, angle: -90, position: 'insideLeft' }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name="Hot Tier" />
-                    <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name="Cold Tier" />
+                    <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />
+                    <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name={t.coldTier} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -689,14 +832,14 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
           <div className={`bg-white rounded-lg shadow-sm ${isEditMode ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">Index Retention Management</h2>
+                <h2 className="text-lg font-semibold text-gray-800">{t.indexRetentionManagement}</h2>
                 {isEditMode && (
                   <button
                     onClick={() => setShowAddIndex(true)}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     <Plus className="h-4 w-4 mr-2 text-gray-800" />
-                    Add Index
+                    {t.addIndex}
                   </button>
                 )}
               </div>
@@ -704,7 +847,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                 {filteredIndices.map(index => (
                   <div key={index.name} className="bg-gray-50 p-4 rounded-lg border">
                     <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-medium text-gray-800">{index.name}</h3>
+                      <h3 className="text-lg font-medium text-gray-800">{audience === 'developer' ? index.name : index.hebrewName}</h3>
                       <div className="text-sm space-x-4">
                         <span className="text-gray-800">Hot: {index.hotStorageGB} GB</span>
                         <span className="text-gray-800">Cold: {index.coldStorageGB} GB</span>
@@ -718,7 +861,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                       <>
                         <div className="space-y-2 mt-4">
                           <div className="flex justify-between text-sm text-gray-800">
-                            <span>Hot Tier Retention (days)</span>
+                            <span>{t.hotTierRetention}</span>
                             <span>{index.hotRetentionDays}</span>
                           </div>
                           <CustomSlider
@@ -731,7 +874,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
 
                         <div className="space-y-2 mt-4">
                           <div className="flex justify-between text-sm text-gray-800">
-                            <span>Cold Tier Retention (days)</span>
+                            <span>{t.coldTierRetention}</span>
                             <span>{index.coldRetentionDays}</span>
                           </div>
                           <CustomSlider
@@ -745,19 +888,19 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                     ) : (
                       <div className="grid grid-cols-2 gap-4 mt-2">
                         <div>
-                          <span className="text-sm font-medium text-gray-800">Hot Tier Retention:</span>
-                          <span className="text-sm ml-2 text-gray-800">{index.hotRetentionDays} days</span>
+                          <span className="text-sm font-medium text-gray-800">{t.hotTierRetention}:</span>
+                          <span className="text-sm ml-2 text-gray-800">{index.hotRetentionDays} {t.days}</span>
                         </div>
                         <div>
-                          <span className="text-sm font-medium text-gray-800">Cold Tier Retention:</span>
-                          <span className="text-sm ml-2 text-gray-800">{index.coldRetentionDays} days</span>
+                          <span className="text-sm font-medium text-gray-800">{t.coldTierRetention}:</span>
+                          <span className="text-sm ml-2 text-gray-800">{index.coldRetentionDays} {t.days}</span>
                         </div>
                       </div>
                     )}
 
                     <div className="flex justify-between text-sm font-medium text-gray-800 mt-4">
-                      <span>Total Retention Period</span>
-                      <span>{index.totalRetentionDays} days</span>
+                      <span>{t.totalRetentionPeriod}</span>
+                      <span>{index.totalRetentionDays} {t.days}</span>
                     </div>
                   </div>
                 ))}
@@ -772,10 +915,10 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-lg w-96">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Add New Index</h2>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.addIndex}</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-800">Index Name</label>
+                  <label className="text-sm font-medium text-gray-800">{t.indexName}</label>
                   <input
                     type="text"
                     value={newIndex.name}
@@ -785,7 +928,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-800">Average Document Size (KB)</label>
+                  <label className="text-sm font-medium text-gray-800">{t.avgDocSize}</label>
                   <input
                     type="number"
                     value={newIndex.docSize}
@@ -795,19 +938,19 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-800">Input Type</label>
+                  <label className="text-sm font-medium text-gray-800">{t.inputType}</label>
                   <select
                     value={newIndex.inputType}
                     onChange={(e) => setNewIndex(prev => ({ ...prev, inputType: e.target.value as 'frequency' | 'avgDocs' }))}
                     className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   >
-                    <option value="frequency">Document Frequency (per second)</option>
-                    <option value="avgDocs">Average Documents per Index</option>
+                    <option value="frequency">{t.docFrequency}</option>
+                    <option value="avgDocs">{t.avgDocs}</option>
                   </select>
                 </div>
                 {newIndex.inputType === 'frequency' ? (
                   <div>
-                    <label className="text-sm font-medium text-gray-800">Document Frequency (per second)</label>
+                    <label className="text-sm font-medium text-gray-800">{t.docFrequency}</label>
                     <input
                       type="number"
                       value={newIndex.frequency}
@@ -818,7 +961,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                   </div>
                 ) : (
                   <div>
-                    <label className="text-sm font-medium text-gray-800">Average Documents per Index</label>
+                    <label className="text-sm font-medium text-gray-800">{t.avgDocs}</label>
                     <input
                       type="number"
                       value={newIndex.avgDocs}
@@ -833,7 +976,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                     onClick={() => setShowAddIndex(false)}
                     className="px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    Cancel
+                    {t.cancel}
                   </button>
                   <button
                     onClick={handleAddIndex}
@@ -843,7 +986,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                         : 'bg-blue-600 hover:bg-blue-700'
                       }`}
                   >
-                    Add Index
+                    {t.addIndexButton}
                   </button>
                 </div>
               </div>
