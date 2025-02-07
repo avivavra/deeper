@@ -32,95 +32,166 @@ type ChangeLogEntry = {
   };
 };
 
+type ClusterData = {
+  name: string;
+  indices: IndexData[];
+};
+
+const clusters: ClusterData[] = [
+  {
+    name: 'Cluster A',
+    indices: [
+      {
+        name: 'logs-production',
+        hotTierRate: 4,
+        coldTierStorageRate: 3,
+        coldTierHotRate: 0.2,
+        hotRetentionDays: 30,
+        coldRetentionDays: 90,
+        hotStorageGB: 120,
+        coldStorageGB: 270,
+        totalRetentionDays: 120
+      },
+      {
+        name: 'metrics-app1',
+        hotTierRate: 2,
+        coldTierStorageRate: 1.5,
+        coldTierHotRate: 0.1,
+        hotRetentionDays: 15,
+        coldRetentionDays: 45,
+        hotStorageGB: 30,
+        coldStorageGB: 67.5,
+        totalRetentionDays: 60
+      },
+      {
+        name: 'metrics-app2',
+        hotTierRate: 3,
+        coldTierStorageRate: 2,
+        coldTierHotRate: 0.15,
+        hotRetentionDays: 20,
+        coldRetentionDays: 70,
+        hotStorageGB: 60,
+        coldStorageGB: 140,
+        totalRetentionDays: 90
+      },
+      {
+        name: 'audit-logs',
+        hotTierRate: 1,
+        coldTierStorageRate: 2.5,
+        coldTierHotRate: 0.25,
+        hotRetentionDays: 10,
+        coldRetentionDays: 120,
+        hotStorageGB: 10,
+        coldStorageGB: 300,
+        totalRetentionDays: 130
+      },
+      {
+        name: 'user-activity',
+        hotTierRate: 2.5,
+        coldTierStorageRate: 2,
+        coldTierHotRate: 0.12,
+        hotRetentionDays: 25,
+        coldRetentionDays: 60,
+        hotStorageGB: 62.5,
+        coldStorageGB: 120,
+        totalRetentionDays: 85
+      }
+    ]
+  },
+  {
+    name: 'Cluster B',
+    indices: [
+      {
+        name: 'metrics-app1',
+        hotTierRate: 2,
+        coldTierStorageRate: 1.5,
+        coldTierHotRate: 0.1,
+        hotRetentionDays: 15,
+        coldRetentionDays: 45,
+        hotStorageGB: 30,
+        coldStorageGB: 67.5,
+        totalRetentionDays: 60
+      },
+      {
+        name: 'metrics-app2',
+        hotTierRate: 3,
+        coldTierStorageRate: 2,
+        coldTierHotRate: 0.15,
+        hotRetentionDays: 20,
+        coldRetentionDays: 70,
+        hotStorageGB: 60,
+        coldStorageGB: 140,
+        totalRetentionDays: 90
+      },
+      {
+        name: 'audit-logs',
+        hotTierRate: 1,
+        coldTierStorageRate: 2.5,
+        coldTierHotRate: 0.25,
+        hotRetentionDays: 10,
+        coldRetentionDays: 120,
+        hotStorageGB: 10,
+        coldStorageGB: 300,
+        totalRetentionDays: 130
+      },
+      {
+        name: 'user-activity',
+        hotTierRate: 2.5,
+        coldTierStorageRate: 2,
+        coldTierHotRate: 0.12,
+        hotRetentionDays: 25,
+        coldRetentionDays: 60,
+        hotStorageGB: 62.5,
+        coldStorageGB: 120,
+        totalRetentionDays: 85
+      }
+    ]
+  }
+];
+
 const ElasticsearchStorageViz = () => {
   // Original data and main states
-  const originalIndices: IndexData[] = [
-    {
-      name: 'logs-production',
-      hotTierRate: 4,
-      coldTierStorageRate: 3,
-      coldTierHotRate: 0.2,
-      hotRetentionDays: 30,
-      coldRetentionDays: 90,
-      hotStorageGB: 120,
-      coldStorageGB: 270,
-      totalRetentionDays: 120
-    },
-    {
-      name: 'metrics-app1',
-      hotTierRate: 2,
-      coldTierStorageRate: 1.5,
-      coldTierHotRate: 0.1,
-      hotRetentionDays: 15,
-      coldRetentionDays: 45,
-      hotStorageGB: 30,
-      coldStorageGB: 67.5,
-      totalRetentionDays: 60
-    },
-    {
-      name: 'metrics-app2',
-      hotTierRate: 3,
-      coldTierStorageRate: 2,
-      coldTierHotRate: 0.15,
-      hotRetentionDays: 20,
-      coldRetentionDays: 70,
-      hotStorageGB: 60,
-      coldStorageGB: 140,
-      totalRetentionDays: 90
-    },
-    {
-      name: 'audit-logs',
-      hotTierRate: 1,
-      coldTierStorageRate: 2.5,
-      coldTierHotRate: 0.25,
-      hotRetentionDays: 10,
-      coldRetentionDays: 120,
-      hotStorageGB: 10,
-      coldStorageGB: 300,
-      totalRetentionDays: 130
-    },
-    {
-      name: 'user-activity',
-      hotTierRate: 2.5,
-      coldTierStorageRate: 2,
-      coldTierHotRate: 0.12,
-      hotRetentionDays: 25,
-      coldRetentionDays: 60,
-      hotStorageGB: 62.5,
-      coldStorageGB: 120,
-      totalRetentionDays: 85
-    }
-  ];
-
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
-  const [selectedIndices, setSelectedIndices] = useState<{ [key: string]: boolean }>(
-    originalIndices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {})
-  );
-  const [indices, setIndices] = useState<IndexData[]>(originalIndices);
+  const [selectedCluster, setSelectedCluster] = useState<string>(clusters[0].name);
+  const [selectedIndices, setSelectedIndices] = useState<{ [key: string]: boolean }>({});
+  const [indices, setIndices] = useState<IndexData[]>(clusters[0].indices);
   const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
   const [totalHotStorage] = useState(500); // GB
   const [totalColdStorage] = useState(1000); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showClusterDropdown, setShowClusterDropdown] = useState(false);
+  const [showIndexDropdown, setShowIndexDropdown] = useState(false);
   const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string }>({
     name: '',
     docSize: '',
     frequency: ''
   });
 
-  const dropdownRef = useRef(null);
+  const clusterDropdownRef = useRef(null);
+  const indexDropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-      setShowDropdown(false);
+      if (clusterDropdownRef.current && !clusterDropdownRef.current.contains(event.target as Node)) {
+        setShowClusterDropdown(false);
+      }
+      if (indexDropdownRef.current && !indexDropdownRef.current.contains(event.target as Node)) {
+        setShowIndexDropdown(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const cluster = clusters.find(c => c.name === selectedCluster);
+    if (cluster) {
+      setIndices(cluster.indices);
+      setSelectedIndices(cluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+    }
+  }, [selectedCluster]);
 
   const usedHotStorage = indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0);
   const usedColdStorage = indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0);
@@ -194,10 +265,10 @@ const ElasticsearchStorageViz = () => {
       ...prev,
       [indexName]: {
         original: {
-          hotDays: originalIndices.find(i => i.name === indexName).hotRetentionDays,
-          coldDays: originalIndices.find(i => i.name === indexName).coldRetentionDays,
-          hotStorage: originalIndices.find(i => i.name === indexName).hotStorageGB,
-          coldStorage: originalIndices.find(i => i.name === indexName).coldStorageGB,
+          hotDays: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).hotRetentionDays,
+          coldDays: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).coldRetentionDays,
+          hotStorage: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).hotStorageGB,
+          coldStorage: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).coldStorageGB,
         },
         current: {
           hotDays: newHotDays,
@@ -213,14 +284,14 @@ const ElasticsearchStorageViz = () => {
 
   const handleModeToggle = () => {
     if (isEditMode) {
-      setIndices(originalIndices);
+      setIndices(clusters.find(c => c.name === selectedCluster).indices);
       setChangeLog({});
     }
     setIsEditMode(!isEditMode);
   };
 
   const handleRevertChange = (indexName: string) => {
-    const originalIndex = originalIndices.find(i => i.name === indexName);
+    const originalIndex = clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName);
     if (!originalIndex) return;
     
     setIndices(indices.map(index =>
@@ -272,7 +343,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
   };
 
   const handleResetChanges = () => {
-    setIndices(originalIndices);
+    setIndices(clusters.find(c => c.name === selectedCluster).indices);
     setChangeLog({});
   };
 
@@ -345,16 +416,51 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
         <div className="flex justify-between items-center">
           <h1 className="text-xl font-semibold text-gray-800">Elasticsearch Storage Dashboard</h1>
           <div className="flex gap-4">
-            {/* Filter Dropdown */}
-            <div className="relative" ref={dropdownRef}>
+            {/* Cluster Dropdown */}
+            <div className="relative" ref={clusterDropdownRef}>
               <button
-                onClick={() => setShowDropdown(!showDropdown)}
+                onClick={() => setShowClusterDropdown(!showClusterDropdown)}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Select Cluster
+                <ChevronDown className="ml-2 h-4 w-4 text-gray-800" />
+              </button>
+              {showClusterDropdown && (
+                <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                  <div className="py-1">
+                    {clusters.map(cluster => (
+                      <div
+                        key={cluster.name}
+                        className="flex items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setSelectedCluster(cluster.name);
+                          setShowClusterDropdown(false);
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          checked={selectedCluster === cluster.name}
+                          onChange={() => { }}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <span className="ml-2">{cluster.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Filter Dropdown */}
+            <div className="relative" ref={indexDropdownRef}>
+              <button
+                onClick={() => setShowIndexDropdown(!showIndexDropdown)}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Filter Indices
                 <ChevronDown className="ml-2 h-4 w-4 text-gray-800" />
               </button>
-              {showDropdown && (
+              {showIndexDropdown && (
                 <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
                   <div className="py-1">
                     {indices.map(index => (
