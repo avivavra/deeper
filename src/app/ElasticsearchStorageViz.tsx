@@ -295,6 +295,23 @@ const ElasticsearchStorageViz = () => {
     document.documentElement.dir = audience === 'developer' ? 'ltr' : 'rtl';
   }, [audience]);
 
+  // Add keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'd') {
+        event.preventDefault();
+        setAudience(prev => (prev === 'developer' ? 'user' : 'developer'));
+      }
+      if (event.ctrlKey && event.key === 'e') {
+        event.preventDefault();
+        setIsEditMode(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const usedHotStorage = indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0);
   const usedColdStorage = indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0);
   const hotStoragePercentage = (usedHotStorage / totalHotStorage) * 100;
