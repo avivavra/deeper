@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Pencil, Eye, Share2, ChevronDown, Upload, RotateCcw, Plus } from 'lucide-react';
+import { TooltipProps } from 'recharts';
 
 const ElasticsearchStorageViz = () => {
   // Original data and main states
@@ -293,6 +294,21 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
     );
   };
 
+  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-300 rounded shadow-sm">
+          <p className="font-semibold text-gray-900">{label}</p>
+          {payload.map((entry, index) => (
+            <p key={`item-${index}`} className="text-gray-700">{`${entry.name}: ${entry.value}`}</p>
+          ))}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -310,7 +326,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                 <ChevronDown className="ml-2 h-4 w-4 text-gray-800" />
               </button>
               {showDropdown && (
-                <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
                   <div className="py-1">
                     {indices.map(index => (
                       <div
@@ -413,7 +429,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
                   <XAxis dataKey="name" />
                   <YAxis label={{ value: 'Days', angle: -90, position: 'insideLeft' }} />
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                   <Legend />
                   <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name="Hot Tier" />
                   <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name="Cold Tier" />
@@ -427,8 +443,8 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Change Log */}
           {isEditMode && (
-            <div className="bg-white rounded-lg shadow-sm">
-              <div className="p-6">
+            <div className="bg-white rounded-lg shadow-sm flex flex-col h-full">
+              <div className="p-6 flex-grow">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-semibold text-gray-800">Change Log</h2>
                   <div className="flex gap-2">
@@ -474,7 +490,7 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                     )}
                   </div>
                 </div>
-                <div className="max-h-[calc(100vh-24rem)] overflow-y-auto">
+                <div className="max-h-full overflow-y-auto">
                   <div className="space-y-4">
                     {Object.keys(changeLog).length > 0 ? (
                       Object.entries(changeLog).map(([indexName, change]) => {
@@ -524,13 +540,15 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold text-gray-800">Index Retention Management</h2>
-                <button
-                  onClick={() => setShowAddIndex(true)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <Plus className="h-4 w-4 mr-2 text-gray-800" />
-                  Add Index
-                </button>
+                {isEditMode && (
+                  <button
+                    onClick={() => setShowAddIndex(true)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <Plus className="h-4 w-4 mr-2 text-gray-800" />
+                    Add Index
+                  </button>
+                )}
               </div>
               <div className="space-y-6">
                 {filteredIndices.map(index => (
@@ -597,19 +615,6 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
             </div>
           </div>
         </div>
-
-        {/* Storage Warnings */}
-        {(usedHotStorage > totalHotStorage || usedColdStorage > totalColdStorage) && (
-          <div className="rounded-lg bg-red-50 p-4 border border-red-200">
-            <div className="text-sm text-red-700">
-              Storage limit exceeded! Please reduce retention periods or remove indices.
-              {usedHotStorage > totalHotStorage &&
-                ` Hot tier usage: ${usedHotStorage}/${totalHotStorage} GB`}
-              {usedColdStorage > totalColdStorage &&
-                ` Cold tier usage: ${usedColdStorage}/${totalColdStorage} GB`}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Add Index Modal */}
