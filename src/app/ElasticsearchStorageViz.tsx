@@ -194,6 +194,7 @@ const translations = {
     days: 'days',
     hotTier: 'Hot Tier',
     coldTier: 'Cold Tier',
+    storage: 'Storage',
   },
   user: {
     title: 'לוח מחוונים לאחסון למשתמשים',
@@ -229,6 +230,7 @@ const translations = {
     days: 'ימים',
     hotTier: 'שכבת חם',
     coldTier: 'שכבת קר',
+    storage: 'אחסון',
   }
 };
 
@@ -298,6 +300,10 @@ const ElasticsearchStorageViz = () => {
   const hotStoragePercentage = (usedHotStorage / totalHotStorage) * 100;
   const coldStoragePercentage = (usedColdStorage / totalColdStorage) * 100;
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
+
+  const combinedStorage = totalHotStorage + totalColdStorage;
+  const usedCombinedStorage = usedHotStorage + usedColdStorage;
+  const combinedStoragePercentage = (usedCombinedStorage / combinedStorage) * 100;
 
   const t = translations[audience];
 
@@ -413,12 +419,12 @@ const ElasticsearchStorageViz = () => {
 
   const handleExport = () => {
     const text = Object.entries(changeLog).map(([indexName, change]) => {
-      const hotStorageChange = change.current.hotStorage - change.original.hotStorage;
-      const coldStorageChange = change.current.coldStorage - change.original.coldStorage;
+      const totalDaysChange = (change.current.hotDays + change.current.coldDays) - (change.original.hotDays + change.original.coldDays);
+      const totalStorageChange = (change.current.hotStorage + change.current.coldStorage) - (change.original.hotStorage + change.original.coldStorage);
 
       return `Index: ${indexName}
-Hot Tier: ${change.original.hotDays} → ${change.current.hotDays} days (${hotStorageChange > 0 ? '+' : ''}${hotStorageChange} GB)
-Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${coldStorageChange > 0 ? '+' : ''}${coldStorageChange} GB)
+Retention Period: ${change.original.hotDays + change.original.coldDays} → ${change.current.hotDays + change.current.coldDays} days
+Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
 `;
     }).join('\n');
 
@@ -435,12 +441,12 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
 
   const handleEmail = () => {
     const text = Object.entries(changeLog).map(([indexName, change]) => {
-      const hotStorageChange = change.current.hotStorage - change.original.hotStorage;
-      const coldStorageChange = change.current.coldStorage - change.original.coldStorage;
+      const totalDaysChange = (change.current.hotDays + change.current.coldDays) - (change.original.hotDays + change.original.coldDays);
+      const totalStorageChange = (change.current.hotStorage + change.current.coldStorage) - (change.original.hotStorage + change.original.coldStorage);
 
       return `Index: ${indexName}
-Hot Tier: ${change.original.hotDays} → ${change.current.hotDays} days (${hotStorageChange > 0 ? '+' : ''}${hotStorageChange} GB)
-Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${coldStorageChange > 0 ? '+' : ''}${coldStorageChange} GB)
+Retention Period: ${change.original.hotDays + change.original.coldDays} → ${change.current.hotDays + change.current.coldDays} days
+Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
 `;
     }).join('\n');
 
@@ -722,13 +728,14 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
               <div className="space-y-4">
                 {Object.keys(changeLog).length > 0 ? (
                   Object.entries(changeLog).map(([indexName, change]) => {
-                    const hotStorageChange = change.current.hotStorage - change.original.hotStorage;
-                    const coldStorageChange = change.current.coldStorage - change.original.coldStorage;
+                    const totalDaysChange = (change.current.hotDays + change.current.coldDays) - (change.original.hotDays + change.original.coldDays);
+                    const totalStorageChange = (change.current.hotStorage + change.current.coldStorage) - (change.original.hotStorage + change.original.coldStorage);
+                    const hebrewIndexName = indices.find(index => index.name === indexName)?.hebrewName || indexName;
 
                     return (
                       <div key={indexName} className="text-sm border-l-2 border-blue-500 pl-3">
                         <div className="flex justify-between items-start">
-                          <div className="font-medium text-gray-800">{indexName}</div>
+                          <div className="font-medium text-gray-800">{audience === 'developer' ? indexName : hebrewIndexName}</div>
                           <button
                             onClick={() => handleRevertChange(indexName)}
                             className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
@@ -736,19 +743,33 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                             <Trash2 className="h-4 w-4 text-gray-800" />
                           </button>
                         </div>
-                        <div className="text-gray-600 mt-1">
-                          Hot Tier: {change.original.hotDays} → {change.current.hotDays} {t.days}
-                        </div>
-                        <div className="text-gray-600">
-                          Cold Tier: {change.original.coldDays} → {change.current.coldDays} {t.days}
-                        </div>
-                        <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
-                        <div className="text-sm ml-2 text-gray-800">
-                          {t.hotTier}: {hotStorageChange > 0 ? '+' : ''}{hotStorageChange} GB
-                        </div>
-                        <div className="text-sm ml-2 text-gray-800">
-                          {t.coldTier}: {coldStorageChange > 0 ? '+' : ''}{coldStorageChange} GB
-                        </div>
+                        {audience === 'user' ? (
+                          <>
+                            <div className="text-gray-600 mt-1">
+                              {t.days}: {change.original.hotDays + change.original.coldDays} ← {change.current.hotDays + change.current.coldDays}
+                            </div>
+                            <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                            <div className="text-sm ml-2 text-gray-800">
+                              {t.storage}: {totalStorageChange > 0 ? '+' : ''}{totalStorageChange} GB
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-gray-600 mt-1">
+                              Hot Tier: {change.original.hotDays} → {change.current.hotDays} {t.days}
+                            </div>
+                            <div className="text-gray-600">
+                              Cold Tier: {change.original.coldDays} → {change.current.coldDays} {t.days}
+                            </div>
+                            <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                            <div className="text-sm ml-2 text-gray-800">
+                              {t.hotTier}: {change.current.hotStorage - change.original.hotStorage > 0 ? '+' : ''}{change.current.hotStorage - change.original.hotStorage} GB
+                            </div>
+                            <div className="text-sm ml-2 text-gray-800">
+                              {t.coldTier}: {change.current.coldStorage - change.original.coldStorage > 0 ? '+' : ''}{change.current.coldStorage - change.original.coldStorage} GB
+                            </div>
+                          </>
+                        )}
                       </div>
                     );
                   })
@@ -771,36 +792,56 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                 <h2 className="text-lg font-semibold text-gray-800">{t.storageUsageOverview}</h2>
               </div>
               <div className="space-y-6">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-medium text-gray-800">{t.elasticsearchStorage}</span>
-                    <span className={usedHotStorage > totalHotStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                      {usedHotStorage}/{totalHotStorage} GB ({hotStoragePercentage.toFixed(1)}%)
-                      {usedHotStorage > totalHotStorage && ` (over limit)`}
-                    </span>
+                {audience === 'user' ? (
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="font-medium text-gray-800">{t.elasticsearchStorage}</span>
+                      <span className={usedCombinedStorage > combinedStorage ? "text-red-500 font-medium" : "text-gray-800"}>
+                        {usedCombinedStorage}/{combinedStorage} GB ({combinedStoragePercentage.toFixed(1)}%)
+                        {usedCombinedStorage > combinedStorage && ` (over limit)`}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
+                      <div
+                        className={`h-2.5 rounded-full ${usedCombinedStorage > combinedStorage ? 'bg-red-500' : 'bg-blue-600'}`}
+                        style={{ width: `${Math.min(combinedStoragePercentage, 100)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
-                    <div
-                      className={`h-2.5 rounded-full ${usedHotStorage > totalHotStorage ? 'bg-red-500' : 'bg-blue-600'}`}
-                      style={{ width: `${Math.min(hotStoragePercentage, 100)}%` }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-medium text-gray-800">{t.s3Storage}</span>
-                    <span className={usedColdStorage > totalColdStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                      {usedColdStorage}/{totalColdStorage} GB ({coldStoragePercentage.toFixed(1)}%)
-                      {usedColdStorage > totalColdStorage && ` (${((usedColdStorage / totalColdStorage) * 100 - 100).toFixed(1)}% over limit)`}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
-                    <div
-                      className={`h-2.5 rounded-full ${usedColdStorage > totalColdStorage ? 'bg-red-500' : 'bg-blue-400'}`}
-                      style={{ width: `${Math.min(coldStoragePercentage, 100)}%` }}
-                    />
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <div>
+                      <div className="flex justify-between mb-2">
+                        <span className="font-medium text-gray-800">{t.elasticsearchStorage}</span>
+                        <span className={usedHotStorage > totalHotStorage ? "text-red-500 font-medium" : "text-gray-800"}>
+                          {usedHotStorage}/{totalHotStorage} GB ({hotStoragePercentage.toFixed(1)}%)
+                          {usedHotStorage > totalHotStorage && ` (over limit)`}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
+                        <div
+                          className={`h-2.5 rounded-full ${usedHotStorage > totalHotStorage ? 'bg-red-500' : 'bg-blue-600'}`}
+                          style={{ width: `${Math.min(hotStoragePercentage, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-2">
+                        <span className="font-medium text-gray-800">{t.s3Storage}</span>
+                        <span className={usedColdStorage > totalColdStorage ? "text-red-500 font-medium" : "text-gray-800"}>
+                          {usedColdStorage}/{totalColdStorage} GB ({coldStoragePercentage.toFixed(1)}%)
+                          {usedColdStorage > totalColdStorage && ` (${((usedColdStorage / totalColdStorage) * 100 - 100).toFixed(1)}% over limit)`}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
+                        <div
+                          className={`h-2.5 rounded-full ${usedColdStorage > totalColdStorage ? 'bg-red-500' : 'bg-blue-400'}`}
+                          style={{ width: `${Math.min(coldStoragePercentage, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -852,9 +893,11 @@ Cold Tier: ${change.original.coldDays} → ${change.current.coldDays} days (${co
                         <div className="text-sm space-x-4">
                           <span className="text-gray-800">Hot: {index.hotStorageGB} GB</span>
                           <span className="text-gray-800">Cold: {index.coldStorageGB} GB</span>
-                          <span className="text-gray-500">
-                            ({index.hotTierRate.toFixed(2)}GB/day hot, {index.coldTierStorageRate.toFixed(2)}GB/day cold)
-                          </span>
+                          {audience === 'developer' && (
+                            <span className="text-gray-500">
+                              ({index.hotTierRate.toFixed(2)}GB/day hot, {index.coldTierStorageRate.toFixed(2)}GB/day cold)
+                            </span>
+                          )}
                         </div>
                       </div>
 
