@@ -323,6 +323,12 @@ const ElasticsearchStorageViz = () => {
 
   const t = translations[audience];
 
+  const getStorageBarColor = (percentage: number) => {
+    if (percentage > 80) return 'bg-red-500';
+    if (percentage > 70) return 'bg-orange-500';
+    return 'bg-blue-600';
+  };
+
   // All the handlers remain the same...
   const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: 'frequency' | 'avgDocs') => {
     const dailyData = inputType === 'frequency'
@@ -821,7 +827,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
                       <div
-                        className={`h-2.5 rounded-full ${usedCombinedStorage > combinedStorage ? 'bg-red-500' : 'bg-blue-600'}`}
+                        className={`h-2.5 rounded-full ${getStorageBarColor(combinedStoragePercentage)}`}
                         style={{ width: `${Math.min(combinedStoragePercentage, 100)}%` }}
                       />
                     </div>
@@ -838,7 +844,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
                         <div
-                          className={`h-2.5 rounded-full ${usedHotStorage > totalHotStorage ? 'bg-red-500' : 'bg-blue-600'}`}
+                          className={`h-2.5 rounded-full ${getStorageBarColor(hotStoragePercentage)}`}
                           style={{ width: `${Math.min(hotStoragePercentage, 100)}%` }}
                         />
                       </div>
@@ -853,7 +859,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
                         <div
-                          className={`h-2.5 rounded-full ${usedColdStorage > totalColdStorage ? 'bg-red-500' : 'bg-blue-400'}`}
+                          className={`h-2.5 rounded-full ${getStorageBarColor(coldStoragePercentage)}`}
                           style={{ width: `${Math.min(coldStoragePercentage, 100)}%` }}
                         />
                       </div>
