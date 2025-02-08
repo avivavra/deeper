@@ -481,7 +481,20 @@ const ElasticsearchStorageViz = () => {
   };
 
   const handleExport = () => {
-
+    const text = Object.entries(changeLog).map(([indexName, change]) => {
+      const hotDaysChange = change.current.hotDays - change.original.hotDays;
+      const coldDaysChange = change.current.coldDays - change.original.coldDays;
+      const totalHotStorageChange = change.current.hotStorage - change.original.hotStorage;
+      const totalColdStorageChange = change.current.coldStorage - change.original.coldStorage;
+  
+      return `Index: ${indexName}
+Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
+Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
+Hot Storage: ${change.original.hotStorage} GB → ${change.current.hotStorage} GB (${totalHotStorageChange > 0 ? '+' : ''}${totalHotStorageChange} GB)
+Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage} GB (${totalColdStorageChange > 0 ? '+' : ''}${totalColdStorageChange} GB)
+`;
+    }).join('\n');
+  
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -492,22 +505,27 @@ const ElasticsearchStorageViz = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-
+  
   const handleEmail = () => {
     const text = Object.entries(changeLog).map(([indexName, change]) => {
-      const totalDaysChange = (change.current.hotDays + change.current.coldDays) - (change.original.hotDays + change.original.coldDays);
-      const totalStorageChange = (change.current.hotStorage + change.current.coldStorage) - (change.original.hotStorage + change.original.coldStorage);
-
+      const hotDaysChange = change.current.hotDays - change.original.hotDays;
+      const coldDaysChange = change.current.coldDays - change.original.coldDays;
+      const totalHotStorageChange = change.current.hotStorage - change.original.hotStorage;
+      const totalColdStorageChange = change.current.coldStorage - change.original.coldStorage;
+  
       return `Index: ${indexName}
-Retention Period: ${change.original.hotDays + change.original.coldDays} → ${change.current.hotDays + change.current.coldDays} days
-Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
+Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
+Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
+Hot Storage: ${change.original.hotStorage} GB → ${change.current.hotStorage} GB (${totalHotStorageChange > 0 ? '+' : ''}${totalHotStorageChange} GB)
+Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage} GB (${totalColdStorageChange > 0 ? '+' : ''}${totalColdStorageChange} GB)
 `;
     }).join('\n');
-
+  
     const subject = 'Elasticsearch Index Changes';
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
     window.location.href = mailtoLink;
   };
+  
 
   const handleResetChanges = () => {
     setIndices(selectedCluster.indices);
@@ -525,13 +543,17 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
           const entries = text.split('\n\n');
           entries.forEach(entry => {
             const lines = entry.trim().split('\n');
-            if (lines.length >= 3) {
+            if (lines.length >= 5) {
               const indexName = lines[0].replace('Index: ', '');
-              const hotMatch = lines[1].match(/Hot Tier: (\d+) → (\d+) days/);
-              const coldMatch = lines[2].match(/Cold Tier: (\d+) → (\d+) days/);
+              const hotDaysMatch = lines[1].match(/Hot Retention Days: \d+ → (\d+) days/);
+              const coldDaysMatch = lines[2].match(/Cold Retention Days: \d+ → (\d+) days/);
+              const hotStorageMatch = lines[3].match(/Hot Storage: \d+ GB → (\d+) GB/);
+              const coldStorageMatch = lines[4].match(/Cold Storage: \d+ GB → (\d+) GB/);
 
-              if (hotMatch && coldMatch) {
-                handleRetentionChange(indexName, parseInt(hotMatch[2]), parseInt(coldMatch[2]));
+              if (hotDaysMatch && coldDaysMatch && hotStorageMatch && coldStorageMatch) {
+                const newHotDays = parseInt(hotDaysMatch[1]);
+                const newColdDays = parseInt(coldDaysMatch[1]);
+                handleRetentionChange(indexName, newHotDays, newColdDays);
               }
             }
           });
@@ -542,6 +564,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
       reader.readAsText(file);
     }
   };
+  
 
   const handleRemoveIndex = (indexName: string) => {
     const indexToRemove = indices.find(index => index.name === indexName);
