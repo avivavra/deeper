@@ -193,7 +193,11 @@ const translations = {
     addIndexButton: 'Add Index',
     days: 'days',
     storage: 'Storage',
-    overLimit: 'over limit'
+    overLimit: 'over limit',
+    indexNamePlaceholder: 'e.g., logs-production',
+    avgDocSizePlaceholder: 'e.g., 100',
+    docFrequencyPlaceholder: 'e.g., 100',
+    avgDocsPlaceholder: 'e.g., 1000',
   },
   user: {
     title: 'דאשבורד אחסון',
@@ -228,7 +232,11 @@ const translations = {
     cancel: 'ביטול',
     addIndexButton: 'הוסף אינדקס',
     days: 'ימים',
-    overLimit: 'מעל המגבלה'
+    overLimit: 'מעל המגבלה',
+    indexNamePlaceholder: 'לדוגמה, logs-production',
+    avgDocSizePlaceholder: 'לדוגמה, 100',
+    docFrequencyPlaceholder: 'לדוגמה, 100',
+    avgDocsPlaceholder: 'לדוגמה, 1000',
   }
 };
 
@@ -317,15 +325,15 @@ const ElasticsearchStorageViz = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const usedHotStorage = indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0);
-  const usedColdStorage = indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0);
-  const hotStoragePercentage = (usedHotStorage / totalHotStorage) * 100;
-  const coldStoragePercentage = (usedColdStorage / totalColdStorage) * 100;
-  const filteredIndices = indices.filter(index => selectedIndices[index.name]);
+  const [usedHotStorage, setUsedHotStorage] = useState(indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0));
+  const [usedColdStorage, setUsedColdStorage] = useState(indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0));
+  const [hotStoragePercentage, setHotStoragePercentage] = useState((usedHotStorage / totalHotStorage) * 100);
+  const [coldStoragePercentage, setColdStoragePercentage] = useState((usedColdStorage / totalColdStorage) * 100);
+  const [combinedStorage, setCombinedStorage] = useState(totalHotStorage + totalColdStorage);
+  const [usedCombinedStorage, setUsedCombinedStorage] = useState(usedHotStorage + usedColdStorage);
+  const [combinedStoragePercentage, setCombinedStoragePercentage] = useState((usedCombinedStorage / combinedStorage) * 100);
 
-  const combinedStorage = totalHotStorage + totalColdStorage;
-  const usedCombinedStorage = usedHotStorage + usedColdStorage;
-  const combinedStoragePercentage = (usedCombinedStorage / combinedStorage) * 100;
+  const filteredIndices = indices.filter(index => selectedIndices[index.name]);
 
   const t = translations[audience];
 
@@ -362,11 +370,46 @@ const ElasticsearchStorageViz = () => {
       totalRetentionDays: hotRetentionDays + coldRetentionDays
     };
 
-    setIndices([...indices, newIndexData]);
+    setIndices([newIndexData, ...indices]);
     setSelectedIndices(prev => ({ ...prev, [newIndex.name]: true }));
+    setChangeLog(prev => ({
+      ...prev,
+      [newIndex.name]: {
+        original: {
+          hotDays: 0,
+          coldDays: 0,
+          hotStorage: 0,
+          coldStorage: 0,
+        },
+        current: {
+          hotDays: hotRetentionDays,
+          coldDays: coldRetentionDays,
+          hotStorage: newIndexData.hotStorageGB,
+          coldStorage: newIndexData.coldStorageGB,
+        }
+      }
+    }));
     setNewIndex({ name: '', docSize: '', frequency: '', avgDocs: '', inputType: 'frequency' });
     setShowAddIndex(false);
   };
+
+  useEffect(() => {
+    const usedHotStorage = indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0);
+    const usedColdStorage = indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0);
+    const hotStoragePercentage = (usedHotStorage / totalHotStorage) * 100;
+    const coldStoragePercentage = (usedColdStorage / totalColdStorage) * 100;
+    const combinedStorage = totalHotStorage + totalColdStorage;
+    const usedCombinedStorage = usedHotStorage + usedColdStorage;
+    const combinedStoragePercentage = (usedCombinedStorage / combinedStorage) * 100;
+
+    setUsedHotStorage(usedHotStorage);
+    setUsedColdStorage(usedColdStorage);
+    setHotStoragePercentage(hotStoragePercentage);
+    setColdStoragePercentage(coldStoragePercentage);
+    setCombinedStorage(combinedStorage);
+    setUsedCombinedStorage(usedCombinedStorage);
+    setCombinedStoragePercentage(combinedStoragePercentage);
+  }, [indices]);
 
   const handleIndexToggle = (indexName: string) => {
     setSelectedIndices(prev => ({
@@ -400,15 +443,16 @@ const ElasticsearchStorageViz = () => {
       });
 
       const newIndex = newIndices.find(i => i.name === indexName);
+      const originalIndex = clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName);
 
       setChangeLog(prev => ({
         ...prev,
         [indexName]: {
           original: {
-            hotDays: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).hotRetentionDays,
-            coldDays: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).coldRetentionDays,
-            hotStorage: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).hotStorageGB,
-            coldStorage: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).coldStorageGB,
+            hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
+            coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
+            hotStorage: originalIndex ? originalIndex.hotStorageGB : 0,
+            coldStorage: originalIndex ? originalIndex.coldStorageGB : 0,
           },
           current: {
             hotDays: newHotDays,
@@ -1004,7 +1048,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     value={newIndex.name}
                     onChange={(e) => setNewIndex(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                    placeholder="e.g., 1024"
+                    placeholder={t.indexNamePlaceholder}
                   />
                 </div>
                 <div>
@@ -1014,7 +1058,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     value={newIndex.docSize}
                     onChange={(e) => setNewIndex(prev => ({ ...prev, docSize: e.target.value }))}
                     className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                    placeholder="e.g., 100"
+                    placeholder={t.avgDocSizePlaceholder}
                   />
                 </div>
                 <div>
@@ -1036,7 +1080,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                       value={newIndex.frequency}
                       onChange={(e) => setNewIndex(prev => ({ ...prev, frequency: e.target.value }))}
                       className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                      placeholder="e.g., 100"
+                      placeholder={t.docFrequencyPlaceholder}
                     />
                   </div>
                 ) : (
@@ -1047,7 +1091,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                       value={newIndex.avgDocs}
                       onChange={(e) => setNewIndex(prev => ({ ...prev, avgDocs: e.target.value }))}
                       className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                      placeholder="e.g., 1000"
+                      placeholder={t.avgDocsPlaceholder}
                     />
                   </div>
                 )}
