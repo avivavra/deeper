@@ -712,20 +712,18 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                         <Share2 className="h-4 w-4 mx-2 text-gray-800" />
                       </button>
                       {showExportDropdown && (
-                        <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                        <div className={`absolute ${audience === 'user' ? 'left-0' : 'right-0'} mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50`}>
                           <div className="py-1">
                             <button
                               onClick={handleExport}
                               className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
                             >
-                              <Share2 className="h-4 w-4 mx-2 text-gray-800" />
                               {t.exportToFile}
                             </button>
                             <button
                               onClick={handleEmail}
                               className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
                             >
-                              <Share2 className="h-4 w-4 mx-2 text-gray-800" />
                               {t.exportToEmail}
                             </button>
                           </div>
