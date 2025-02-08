@@ -304,7 +304,12 @@ const ElasticsearchStorageViz = () => {
       }
       if (event.ctrlKey && event.key === 'e') {
         event.preventDefault();
-        setIsEditMode(prev => !prev);
+        setIsEditMode(prev => {
+          if (prev) {
+            handleResetChanges();
+          }
+          return !prev;
+        });
       }
     };
 
@@ -420,8 +425,7 @@ const ElasticsearchStorageViz = () => {
 
   const handleModeToggle = () => {
     if (isEditMode) {
-      setIndices(clusters.find(c => c.name === selectedCluster).indices);
-      setChangeLog({});
+      handleResetChanges();
     }
     setIsEditMode(!isEditMode);
   };
@@ -700,7 +704,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
       <div className="flex">
         {/* Change Log Sidebar */}
         {isEditMode && (
-          <div className="bg-white shadow-lg w-80 p-6 sticky top-0 h-screen overflow-y-auto">
+          <div className="bg-white shadow-lg w-72 p-6 sticky top-0 h-screen overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-800">{t.changeLog}</h2>
               <div className="flex gap-2">
@@ -832,9 +836,9 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                         {usedCombinedStorage > combinedStorage && ` (${t.overLimit})`}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
+                    <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
                       <div
-                        className={`h-2.5 rounded-full ${getStorageBarColor(combinedStoragePercentage)}`}
+                        className={`h-4 rounded-full ${getStorageBarColor(combinedStoragePercentage)}`}
                         style={{ width: `${Math.min(combinedStoragePercentage, 100)}%` }}
                       />
                     </div>
@@ -849,9 +853,9 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                           {usedHotStorage > totalHotStorage && ` (${t.overLimit})`}
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
+                      <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
                         <div
-                          className={`h-2.5 rounded-full ${getStorageBarColor(hotStoragePercentage)}`}
+                          className={`h-4 rounded-full ${getStorageBarColor(hotStoragePercentage)}`}
                           style={{ width: `${Math.min(hotStoragePercentage, 100)}%` }}
                         />
                       </div>
@@ -861,12 +865,12 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                         <span className="font-medium text-gray-800">{t.s3Storage}</span>
                         <span className={usedColdStorage > totalColdStorage ? "text-red-500 font-medium" : "text-gray-800"}>
                           {usedColdStorage}/{totalColdStorage} GB ({coldStoragePercentage.toFixed(1)}%)
-                          {usedColdStorage > totalColdStorage && ` (${((usedColdStorage / totalColdStorage) * 100 - 100).toFixed(1)}% over limit)`}
+                          {usedColdStorage > totalColdStorage && ` (${t.overLimit})`}
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
+                      <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
                         <div
-                          className={`h-2.5 rounded-full ${getStorageBarColor(coldStoragePercentage)}`}
+                          className={`h-4 rounded-full ${getStorageBarColor(coldStoragePercentage)}`}
                           style={{ width: `${Math.min(coldStoragePercentage, 100)}%` }}
                         />
                       </div>
