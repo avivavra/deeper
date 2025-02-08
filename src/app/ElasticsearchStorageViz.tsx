@@ -756,66 +756,64 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                 )}
               </div>
             </div>
-            <div className="max-h-full overflow-y-auto">
-              <div className="space-y-4">
-                {Object.keys(changeLog).length > 0 ? (
-                  Object.entries(changeLog).map(([indexName, change]) => {
-                    const totalDaysChange = (change.current.hotDays + change.current.coldDays) - (change.original.hotDays + change.original.coldDays);
-                    const totalStorageChange = (change.current.hotStorage + change.current.coldStorage) - (change.original.hotStorage + change.original.coldStorage);
-                    const hebrewIndexName = indices.find(index => index.name === indexName)?.hebrewName || indexName;
+            <div className="space-y-4">
+              {Object.keys(changeLog).length > 0 ? (
+                Object.entries(changeLog).map(([indexName, change]) => {
+                  const totalDaysChange = (change.current.hotDays + change.current.coldDays) - (change.original.hotDays + change.original.coldDays);
+                  const totalStorageChange = (change.current.hotStorage + change.current.coldStorage) - (change.original.hotStorage + change.original.coldStorage);
+                  const hebrewIndexName = indices.find(index => index.name === indexName)?.hebrewName || indexName;
 
-                    return (
-                      <div key={indexName} className={`text-sm ${audience === 'user' ? 'border-r-2 pr-3' : 'border-l-2 pl-3'} border-blue-500`}>
-                        <div className="flex justify-between items-start">
-                          <div className="font-medium text-gray-800">{audience === 'developer' ? indexName : hebrewIndexName}</div>
-                          <button
-                            onClick={() => handleRevertChange(indexName)}
-                            className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
-                          >
-                            <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
-                          </button>
-                        </div>
-                        {audience === 'user' ? (
-                          <>
-                            <div className="text-gray-600 mt-1">
-                              {t.days}: {change.original.hotDays + change.original.coldDays} ← {change.current.hotDays + change.current.coldDays}
-                            </div>
-                            <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
-                            <div className="text-sm ml-2 text-gray-800">
-                              {t.storage}: {totalStorageChange > 0 ? '+' : ''}{totalStorageChange} GB
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="text-gray-600 mt-1">
-                              Hot Tier: {change.original.hotDays} → {change.current.hotDays} {t.days}
-                            </div>
-                            <div className="text-gray-600">
-                              Cold Tier: {change.original.coldDays} → {change.current.coldDays} {t.days}
-                            </div>
-                            <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
-                            <div className="text-sm ml-2 text-gray-800">
-                              {t.hotTier}: {change.current.hotStorage - change.original.hotStorage > 0 ? '+' : ''}{change.current.hotStorage - change.original.hotStorage} GB
-                            </div>
-                            <div className="text-sm ml-2 text-gray-800">
-                              {t.coldTier}: {change.current.coldStorage - change.original.coldStorage > 0 ? '+' : ''}{change.current.coldStorage - change.original.coldStorage} GB
-                            </div>
-                          </>
-                        )}
+                  return (
+                    <div key={indexName} className={`text-sm ${audience === 'user' ? 'border-r-2 pr-3' : 'border-l-2 pl-3'} border-blue-500`}>
+                      <div className="flex justify-between items-start">
+                        <div className="font-medium text-gray-800">{audience === 'developer' ? indexName : hebrewIndexName}</div>
+                        <button
+                          onClick={() => handleRevertChange(indexName)}
+                          className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
+                        >
+                          <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
+                        </button>
                       </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-gray-500 text-center py-4">
-                    {t.noChanges}
-                  </div>
-                )}
-              </div>
+                      {audience === 'user' ? (
+                        <>
+                          <div className="text-gray-600 mt-1">
+                            {t.days}: {change.original.hotDays + change.original.coldDays} ← {change.current.hotDays + change.current.coldDays}
+                          </div>
+                          <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                          <div className="text-sm ml-2 text-gray-800">
+                            {t.storage}: {totalStorageChange > 0 ? '+' : ''}{totalStorageChange} GB
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-gray-600 mt-1">
+                            Hot Tier: {change.original.hotDays} → {change.current.hotDays} {t.days}
+                          </div>
+                          <div className="text-gray-600">
+                            Cold Tier: {change.original.coldDays} → {change.current.coldDays} {t.days}
+                          </div>
+                          <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                          <div className="text-sm ml-2 text-gray-800">
+                            {t.hotTier}: {change.current.hotStorage - change.original.hotStorage > 0 ? '+' : ''}{change.current.hotStorage - change.original.hotStorage} GB
+                          </div>
+                          <div className="text-sm ml-2 text-gray-800">
+                            {t.coldTier}: {change.current.coldStorage - change.original.coldStorage > 0 ? '+' : ''}{change.current.coldStorage - change.original.coldStorage} GB
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-gray-500 text-center py-4">
+                  {t.noChanges}
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        <div className="flex-grow p-6 space-y-6">
+        <div className={`flex-grow p-6 space-y-6 ${isEditMode ? 'lg:w-[calc(100%-20rem)]' : ''}`}>
           {/* Storage Overview and Chart */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Storage Overview */}
