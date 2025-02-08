@@ -245,7 +245,7 @@ type Audience = 'developer' | 'user';
 const ElasticsearchStorageViz = () => {
   // Original data and main states
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedCluster, setSelectedCluster] = useState(clusters[0].name);
+  const [selectedCluster, setSelectedCluster] = useState(clusters[0]);
   const [selectedIndices, setSelectedIndices] = useState<{ [key: string]: boolean }>({});
   const [indices, setIndices] = useState<IndexData[]>(clusters[0].indices);
   const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
@@ -287,11 +287,10 @@ const ElasticsearchStorageViz = () => {
   }, []);
 
   useEffect(() => {
-    const cluster = clusters.find(c => c.name === selectedCluster);
-    if (cluster) {
-      setIndices(cluster.indices);
-      setSelectedIndices(cluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
-      setChangeLog({});
+    if (selectedCluster) {
+      setIndices(selectedCluster.indices);
+      setSelectedIndices(selectedCluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+      handleResetChanges();
     }
   }, [selectedCluster]);
 
@@ -325,13 +324,14 @@ const ElasticsearchStorageViz = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const [usedHotStorage, setUsedHotStorage] = useState(indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0));
-  const [usedColdStorage, setUsedColdStorage] = useState(indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0));
-  const [hotStoragePercentage, setHotStoragePercentage] = useState((usedHotStorage / totalHotStorage) * 100);
-  const [coldStoragePercentage, setColdStoragePercentage] = useState((usedColdStorage / totalColdStorage) * 100);
-  const [combinedStorage, setCombinedStorage] = useState(totalHotStorage + totalColdStorage);
-  const [usedCombinedStorage, setUsedCombinedStorage] = useState(usedHotStorage + usedColdStorage);
-  const [combinedStoragePercentage, setCombinedStoragePercentage] = useState((usedCombinedStorage / combinedStorage) * 100);
+  const usedHotStorage = indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0);
+  const usedColdStorage = indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0);
+  const hotStoragePercentage = (usedHotStorage / totalHotStorage) * 100;
+  const coldStoragePercentage = (usedColdStorage / totalColdStorage) * 100;
+  const usedCombinedStorage = usedHotStorage + usedColdStorage;
+
+  const combinedStorage = totalHotStorage + totalColdStorage;
+  const combinedStoragePercentage = (usedCombinedStorage / combinedStorage) * 100;
 
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
 
@@ -393,24 +393,6 @@ const ElasticsearchStorageViz = () => {
     setShowAddIndex(false);
   };
 
-  useEffect(() => {
-    const usedHotStorage = indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0);
-    const usedColdStorage = indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0);
-    const hotStoragePercentage = (usedHotStorage / totalHotStorage) * 100;
-    const coldStoragePercentage = (usedColdStorage / totalColdStorage) * 100;
-    const combinedStorage = totalHotStorage + totalColdStorage;
-    const usedCombinedStorage = usedHotStorage + usedColdStorage;
-    const combinedStoragePercentage = (usedCombinedStorage / combinedStorage) * 100;
-
-    setUsedHotStorage(usedHotStorage);
-    setUsedColdStorage(usedColdStorage);
-    setHotStoragePercentage(hotStoragePercentage);
-    setColdStoragePercentage(coldStoragePercentage);
-    setCombinedStorage(combinedStorage);
-    setUsedCombinedStorage(usedCombinedStorage);
-    setCombinedStoragePercentage(combinedStoragePercentage);
-  }, [indices]);
-
   const handleIndexToggle = (indexName: string) => {
     setSelectedIndices(prev => ({
       ...prev,
@@ -443,7 +425,7 @@ const ElasticsearchStorageViz = () => {
       });
 
       const newIndex = newIndices.find(i => i.name === indexName);
-      const originalIndex = clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName);
+      const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
 
       setChangeLog(prev => ({
         ...prev,
@@ -475,7 +457,7 @@ const ElasticsearchStorageViz = () => {
   };
 
   const handleRevertChange = (indexName: string) => {
-    const originalIndex = clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName);
+    const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
     if (!originalIndex) return;
 
     setIndices(indices.map(index =>
@@ -527,7 +509,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
   };
 
   const handleResetChanges = () => {
-    setIndices(clusters.find(c => c.name === selectedCluster).indices);
+    setIndices(selectedCluster.indices);
     setChangeLog({});
   };
 
@@ -670,13 +652,13 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                         key={cluster.name}
                         className="flex items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer"
                         onClick={() => {
-                          setSelectedCluster(cluster.name);
+                          setSelectedCluster(cluster);
                           setShowClusterDropdown(false);
                         }}
                       >
                         <input
                           type="radio"
-                          checked={selectedCluster === cluster.name}
+                          checked={selectedCluster.name === cluster.name}
                           onChange={() => { }}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
