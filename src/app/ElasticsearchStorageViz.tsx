@@ -991,15 +991,6 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     <div key={index.name} className="bg-gray-50 p-4 rounded-lg border relative">
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-bold text-gray-800">{audience === 'developer' ? index.name : index.hebrewName}</h3>
-                        <div className="text-sm space-x-4">
-                          <span className="text-gray-800">Hot: {index.hotStorageGB} GB</span>
-                          <span className="text-gray-800">Cold: {index.coldStorageGB} GB</span>
-                          {audience === 'developer' && (
-                            <span className="text-gray-500">
-                              ({index.hotTierRate.toFixed(2)}GB/day hot, {index.coldTierStorageRate.toFixed(2)}GB/day cold)
-                            </span>
-                          )}
-                        </div>
                         {isEditMode && (
                           <div className="relative">
                             <button
@@ -1068,6 +1059,16 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                       <div className="flex justify-between text-sm font-bold text-gray-800 mt-4">
                         <span>{t.totalRetentionPeriod}</span>
                         <span>{index.totalRetentionDays} {t.days}</span>
+                      </div>
+
+                      <div className="text-sm space-x-4 mt-4">
+                        <span className="text-gray-800">Hot: {index.hotStorageGB} GB</span>
+                        <span className="text-gray-800">Cold: {index.coldStorageGB} GB</span>
+                        {audience === 'developer' && (
+                          <span className="text-gray-500">
+                            ({index.hotTierRate.toFixed(2)}GB/day hot, {index.coldTierStorageRate.toFixed(2)}GB/day cold)
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}
