@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Pencil, Eye, Share2, ChevronDown, Upload, RotateCcw, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Eye, Share2, ChevronDown, Upload, Plus, Trash2 } from 'lucide-react';
 import { TooltipProps } from 'recharts';
 
 type IndexData = {
@@ -192,8 +192,6 @@ const translations = {
     cancel: 'Cancel',
     addIndexButton: 'Add Index',
     days: 'days',
-    hotTier: 'Hot Tier',
-    coldTier: 'Cold Tier',
     storage: 'Storage',
   },
   user: {
@@ -229,14 +227,15 @@ const translations = {
     cancel: 'ביטול',
     addIndexButton: 'הוסף אינדקס',
     days: 'ימים',
-    storage: 'אחסון',
   }
 };
 
+type Audience = 'developer' | 'user';
+
 const ElasticsearchStorageViz = () => {
   // Original data and main states
-  const [isEditMode, setIsEditMode] = useState<boolean>(false);
-  const [selectedCluster, setSelectedCluster] = useState<string>(clusters[0].name);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedCluster, setSelectedCluster] = useState(clusters[0].name);
   const [selectedIndices, setSelectedIndices] = useState<{ [key: string]: boolean }>({});
   const [indices, setIndices] = useState<IndexData[]>(clusters[0].indices);
   const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
@@ -253,7 +252,7 @@ const ElasticsearchStorageViz = () => {
     avgDocs: '',
     inputType: 'frequency'
   });
-  const [audience, setAudience] = useState<'developer' | 'user'>('developer');
+  const [audience, setAudience] = useState<Audience>('developer');
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
 
   const clusterDropdownRef = useRef(null);
@@ -329,7 +328,6 @@ const ElasticsearchStorageViz = () => {
     return 'bg-blue-600';
   };
 
-  // All the handlers remain the same...
   const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: 'frequency' | 'avgDocs') => {
     const dailyData = inputType === 'frequency'
       ? (docSize * frequency * 86400) / (1024 * 1024 * 1024)
@@ -429,7 +427,7 @@ const ElasticsearchStorageViz = () => {
   const handleRevertChange = (indexName: string) => {
     const originalIndex = clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName);
     if (!originalIndex) return;
-    
+
     setIndices(indices.map(index =>
       index.name === indexName ? originalIndex : index
     ));
@@ -455,7 +453,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'elasticsearch-changes.txt';
+    a.download = 'storage-changes.txt';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -515,16 +513,16 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
   const CustomSlider = ({ value, min, max, onChange }: { value: number[]; min: number; max: number; onChange: (value: number[]) => void }) => {
     const [sliderValue, setSliderValue] = useState(value[0]);
     const sliderRef = useRef<HTMLInputElement>(null);
-  
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = parseInt(e.target.value);
       setSliderValue(newValue);
     };
-  
+
     const handleMouseUp = () => {
       onChange([sliderValue]);
     };
-  
+
     return (
       <input
         ref={sliderRef}
@@ -580,7 +578,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     <input
                       type="radio"
                       checked={audience === 'developer'}
-                      onChange={() => {}}
+                      onChange={() => { }}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="ml-2">{t.developerMode}</span>
@@ -595,7 +593,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     <input
                       type="radio"
                       checked={audience === 'user'}
-                      onChange={() => {}}
+                      onChange={() => { }}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="ml-2">{t.userMode}</span>
@@ -676,8 +674,8 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
             <button
               onClick={handleModeToggle}
               className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEditMode
-                  ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100 focus:ring-red-500'
-                  : 'border-gray-300 text-gray-800 bg-white hover:bg-gray-50 focus:ring-blue-500'
+                ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100 focus:ring-red-500'
+                : 'border-gray-300 text-gray-800 bg-white hover:bg-gray-50 focus:ring-blue-500'
                 }`}
             >
               {isEditMode ? (
@@ -1061,8 +1059,8 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     onClick={handleAddIndex}
                     disabled={!newIndex.name || !newIndex.docSize || (!newIndex.frequency && !newIndex.avgDocs)}
                     className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!newIndex.name || !newIndex.docSize || (!newIndex.frequency && !newIndex.avgDocs)
-                        ? 'bg-blue-300 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700'
+                      ? 'bg-blue-300 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
                       }`}
                   >
                     {t.addIndexButton}
