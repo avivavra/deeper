@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Pencil, Eye, Share2, ChevronDown, Upload, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Eye, Share2, ChevronDown, Upload, Plus, Trash2, MoreVertical } from 'lucide-react';
 import { TooltipProps } from 'recharts';
 
 type IndexData = {
@@ -198,6 +198,7 @@ const translations = {
     avgDocSizePlaceholder: 'e.g., 100',
     docFrequencyPlaceholder: 'e.g., 100',
     avgDocsPlaceholder: 'e.g., 1000',
+    removeIndex: 'Remove Index',
   },
   user: {
     title: 'דאשבורד אחסון',
@@ -237,6 +238,7 @@ const translations = {
     avgDocSizePlaceholder: 'לדוגמה, 100',
     docFrequencyPlaceholder: 'לדוגמה, 100',
     avgDocsPlaceholder: 'לדוגמה, 1000',
+    removeIndex: 'הסר אינדקס',
   }
 };
 
@@ -264,6 +266,7 @@ const ElasticsearchStorageViz = () => {
   });
   const [audience, setAudience] = useState<Audience>('developer');
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
+  const [openDropdownIndex, setOpenDropdownIndex] = useState<string | null>(null);
 
   const clusterDropdownRef = useRef(null);
   const indexDropdownRef = useRef(null);
@@ -458,11 +461,18 @@ const ElasticsearchStorageViz = () => {
 
   const handleRevertChange = (indexName: string) => {
     const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
-    if (!originalIndex) return;
-
-    setIndices(indices.map(index =>
-      index.name === indexName ? originalIndex : index
-    ));
+    if (!originalIndex) {
+      // If the index was newly added, remove it
+      setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
+      setSelectedIndices(prev => {
+        const { [indexName]: _, ...rest } = prev;
+        return rest;
+      });
+    } else {
+      // If the index was modified, revert to the original
+      setIndices(prevIndices => [originalIndex, ...prevIndices.filter(index => index.name !== indexName)]);
+      setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
+    }
 
     setChangeLog(prev => {
       const { [indexName]: _, ...rest } = prev;
@@ -471,15 +481,6 @@ const ElasticsearchStorageViz = () => {
   };
 
   const handleExport = () => {
-    const text = Object.entries(changeLog).map(([indexName, change]) => {
-      const totalDaysChange = (change.current.hotDays + change.current.coldDays) - (change.original.hotDays + change.original.coldDays);
-      const totalStorageChange = (change.current.hotStorage + change.current.coldStorage) - (change.original.hotStorage + change.original.coldStorage);
-
-      return `Index: ${indexName}
-Retention Period: ${change.original.hotDays + change.original.coldDays} → ${change.current.hotDays + change.current.coldDays} days
-Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
-`;
-    }).join('\n');
 
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -511,6 +512,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
   const handleResetChanges = () => {
     setIndices(selectedCluster.indices);
     setChangeLog({});
+    setSelectedIndices(selectedCluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
   };
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -540,6 +542,44 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
       reader.readAsText(file);
     }
   };
+
+  const handleRemoveIndex = (indexName: string) => {
+    const indexToRemove = indices.find(index => index.name === indexName);
+    if (!indexToRemove) return;
+  
+    setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
+    setSelectedIndices(prev => {
+      const { [indexName]: _, ...rest } = prev;
+      return rest;
+    });
+  
+    setChangeLog(prev => {
+      const isNewIndex = !selectedCluster.indices.some(index => index.name === indexName);
+      if (isNewIndex) {
+        const { [indexName]: _, ...rest } = prev;
+        return rest;
+      }
+      return {
+        ...prev,
+        [indexName]: {
+          original: {
+            hotDays: indexToRemove.hotRetentionDays,
+            coldDays: indexToRemove.coldRetentionDays,
+            hotStorage: indexToRemove.hotStorageGB,
+            coldStorage: indexToRemove.coldStorageGB,
+          },
+          current: {
+            hotDays: 0,
+            coldDays: 0,
+            hotStorage: 0,
+            coldStorage: 0,
+          }
+        }
+      };
+    });
+    setOpenDropdownIndex(null);
+  };
+  
 
   // Custom Slider component
   const CustomSlider = ({ value, min, max, onChange }: { value: number[]; min: number; max: number; onChange: (value: number[]) => void }) => {
@@ -948,7 +988,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
               <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {filteredIndices.map(index => (
-                    <div key={index.name} className="bg-gray-50 p-4 rounded-lg border">
+                    <div key={index.name} className="bg-gray-50 p-4 rounded-lg border relative">
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-bold text-gray-800">{audience === 'developer' ? index.name : index.hebrewName}</h3>
                         <div className="text-sm space-x-4">
@@ -960,6 +1000,28 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                             </span>
                           )}
                         </div>
+                        {isEditMode && (
+                          <div className="relative">
+                            <button
+                              onClick={() => setOpenDropdownIndex(openDropdownIndex === index.name ? null : index.name)}
+                              className="inline-flex items-center px-2 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                              <MoreVertical className="h-4 w-4 text-gray-800" />
+                            </button>
+                            {openDropdownIndex === index.name && (
+                              <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                                <div className="py-1">
+                                  <button
+                                    onClick={() => handleRemoveIndex(index.name)}
+                                    className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
+                                  >
+                                    {t.removeIndex}
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {isEditMode ? (
