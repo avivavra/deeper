@@ -193,6 +193,7 @@ const translations = {
     addIndexButton: 'Add Index',
     days: 'days',
     storage: 'Storage',
+    overLimit: 'over limit'
   },
   user: {
     title: 'דאשבורד אחסון',
@@ -227,6 +228,7 @@ const translations = {
     cancel: 'ביטול',
     addIndexButton: 'הוסף אינדקס',
     days: 'ימים',
+    overLimit: 'מעל המגבלה'
   }
 };
 
@@ -581,7 +583,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                       onChange={() => { }}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <span className="ml-2">{t.developerMode}</span>
+                    <span className="mx-2 mr-2">{t.developerMode}</span>
                   </div>
                   <div
                     className="flex items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer"
@@ -596,7 +598,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                       onChange={() => { }}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <span className="ml-2">{t.userMode}</span>
+                    <span className="mx-2 mr-2">{t.userMode}</span>
                   </div>
                 </div>
               </div>
@@ -630,7 +632,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                           onChange={() => { }}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
-                        <span className="ml-2">{cluster.name}</span>
+                        <span className="mx-2">{cluster.name}</span>
                       </div>
                     ))}
                   </div>
@@ -662,7 +664,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                           onChange={() => { }}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
-                        <span className="ml-2">{audience === 'developer' ? index.name : index.hebrewName}</span>
+                        <span className="mx-2">{audience === 'developer' ? index.name : index.hebrewName}</span>
                       </div>
                     ))}
                   </div>
@@ -827,8 +829,9 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                     <div className="flex justify-between mb-2">
                       <span className="font-medium text-gray-800">{t.storage}</span>
                       <span className={usedCombinedStorage > combinedStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                        {usedCombinedStorage}/{combinedStorage} GB ({combinedStoragePercentage.toFixed(1)}%)
-                        {usedCombinedStorage > combinedStorage && ` (over limit)`}
+                        <span dir='ltr'>{usedCombinedStorage}/{combinedStorage} GB</span>
+                        <span> ({combinedStoragePercentage.toFixed(1)}%)</span>
+                        {usedCombinedStorage > combinedStorage && ` (${t.overLimit})`}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
@@ -845,7 +848,7 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
                         <span className="font-medium text-gray-800">{t.elasticsearchStorage}</span>
                         <span className={usedHotStorage > totalHotStorage ? "text-red-500 font-medium" : "text-gray-800"}>
                           {usedHotStorage}/{totalHotStorage} GB ({hotStoragePercentage.toFixed(1)}%)
-                          {usedHotStorage > totalHotStorage && ` (over limit)`}
+                          {usedHotStorage > totalHotStorage && ` (${t.overLimit})`}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
