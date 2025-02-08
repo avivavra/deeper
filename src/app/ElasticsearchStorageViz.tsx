@@ -494,7 +494,7 @@ const ElasticsearchStorageViz = () => {
       const coldDaysChange = change.current.coldDays - change.original.coldDays;
       const totalHotStorageChange = change.current.hotStorage - change.original.hotStorage;
       const totalColdStorageChange = change.current.coldStorage - change.original.coldStorage;
-  
+
       return `Index: ${indexName}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
@@ -502,7 +502,7 @@ Hot Storage: ${change.original.hotStorage} GB → ${change.current.hotStorage} G
 Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage} GB (${totalColdStorageChange > 0 ? '+' : ''}${totalColdStorageChange} GB)
 `;
     }).join('\n');
-  
+
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -513,14 +513,14 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-  
+
   const handleEmail = () => {
     const text = Object.entries(changeLog).map(([indexName, change]) => {
       const hotDaysChange = change.current.hotDays - change.original.hotDays;
       const coldDaysChange = change.current.coldDays - change.original.coldDays;
       const totalHotStorageChange = change.current.hotStorage - change.original.hotStorage;
       const totalColdStorageChange = change.current.coldStorage - change.original.coldStorage;
-  
+
       return `Index: ${indexName}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
@@ -528,12 +528,12 @@ Hot Storage: ${change.original.hotStorage} GB → ${change.current.hotStorage} G
 Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage} GB (${totalColdStorageChange > 0 ? '+' : ''}${totalColdStorageChange} GB)
 `;
     }).join('\n');
-  
+
     const subject = 'Elasticsearch Index Changes';
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
     window.location.href = mailtoLink;
   };
-  
+
 
   const handleResetChanges = () => {
     setIndices(selectedCluster.indices);
@@ -572,18 +572,18 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
       reader.readAsText(file);
     }
   };
-  
+
 
   const handleRemoveIndex = (indexName: string) => {
     const indexToRemove = indices.find(index => index.name === indexName);
     if (!indexToRemove) return;
-  
+
     setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
     setSelectedIndices(prev => {
       const { [indexName]: _, ...rest } = prev;
       return rest;
     });
-  
+
     setChangeLog(prev => {
       const isNewIndex = !selectedCluster.indices.some(index => index.name === indexName);
       if (isNewIndex) {
@@ -610,7 +610,7 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
     });
     setOpenDropdownIndex(null);
   };
-  
+
 
   // Custom Slider component
   const CustomSlider = ({ value, min, max, onChange }: { value: number[]; min: number; max: number; onChange: (value: number[]) => void }) => {
@@ -989,8 +989,14 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-                    <XAxis dataKey={audience === 'developer' ? "name" : "hebrewName"} />
-                    <YAxis label={{ value: t.days, angle: -90, position: 'insideLeft' }} />
+                    <XAxis
+                      dataKey={audience === 'developer' ? "name" : "hebrewName"}
+                      reversed={audience === 'user'}
+                    />
+                    <YAxis
+                      label={{ value: t.days, angle: audience === 'user' ? 90 : -90, position: audience === 'user' ? 'outsideLeft' : 'insideLeft' }}
+                      orientation={audience === 'user' ? 'right' : 'left'}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
                     <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />
