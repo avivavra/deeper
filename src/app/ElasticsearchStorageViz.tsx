@@ -270,6 +270,8 @@ const ElasticsearchStorageViz = () => {
 
   const clusterDropdownRef = useRef(null);
   const indexDropdownRef = useRef(null);
+  const exportDropdownRef = useRef(null);
+  const threeDotsDropdownRef = useRef(null);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -279,6 +281,12 @@ const ElasticsearchStorageViz = () => {
       }
       if (indexDropdownRef.current && !indexDropdownRef.current.contains(event.target as Node)) {
         setShowIndexDropdown(false);
+      }
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setShowExportDropdown(false);
+      }
+      if (threeDotsDropdownRef.current && !threeDotsDropdownRef.current.contains(event.target as Node)) {
+        setOpenDropdownIndex(null);
       }
       if (!event.target.closest('.title-dropdown')) {
         setShowTitleDropdown(false);
@@ -799,7 +807,7 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
               <div className="flex gap-2">
                 {Object.keys(changeLog).length > 0 ? (
                   <>
-                    <div className="relative">
+                    <div className="relative" ref={exportDropdownRef}>
                       <button
                         onClick={() => setShowExportDropdown(!showExportDropdown)}
                         className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -1015,7 +1023,7 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-bold text-gray-800">{audience === 'developer' ? index.name : index.hebrewName}</h3>
                         {isEditMode && (
-                          <div className="relative">
+                          <div className="relative" ref={threeDotsDropdownRef}>
                             <button
                               onClick={() => setOpenDropdownIndex(openDropdownIndex === index.name ? null : index.name)}
                               className="inline-flex items-center px-2 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
