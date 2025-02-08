@@ -371,50 +371,51 @@ const ElasticsearchStorageViz = () => {
   };
 
   const handleRetentionChange = (indexName: string, newHotDays: number, newColdDays: number) => {
-    const oldIndex = indices.find(i => i.name === indexName);
-    const newIndices = indices.map(index => {
-      if (index.name === indexName) {
-        const newHotStorage = Math.round(
-          (index.hotTierRate * newHotDays) +
-          (index.coldTierHotRate * newColdDays)
-        );
-        const newColdStorage = Math.round(
-          index.coldTierStorageRate * newColdDays
-        );
+    setIndices(prevIndices => {
+      const newIndices = prevIndices.map(index => {
+        if (index.name === indexName) {
+          const newHotStorage = Math.round(
+            (index.hotTierRate * newHotDays) +
+            (index.coldTierHotRate * newColdDays)
+          );
+          const newColdStorage = Math.round(
+            index.coldTierStorageRate * newColdDays
+          );
 
-        return {
-          ...index,
-          hotRetentionDays: newHotDays,
-          coldRetentionDays: newColdDays,
-          totalRetentionDays: newHotDays + newColdDays,
-          hotStorageGB: newHotStorage,
-          coldStorageGB: newColdStorage
-        };
-      }
-      return index;
-    });
-
-    const newIndex = newIndices.find(i => i.name === indexName);
-
-    setChangeLog(prev => ({
-      ...prev,
-      [indexName]: {
-        original: {
-          hotDays: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).hotRetentionDays,
-          coldDays: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).coldRetentionDays,
-          hotStorage: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).hotStorageGB,
-          coldStorage: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).coldStorageGB,
-        },
-        current: {
-          hotDays: newHotDays,
-          coldDays: newColdDays,
-          hotStorage: newIndex.hotStorageGB,
-          coldStorage: newIndex.coldStorageGB,
+          return {
+            ...index,
+            hotRetentionDays: newHotDays,
+            coldRetentionDays: newColdDays,
+            totalRetentionDays: newHotDays + newColdDays,
+            hotStorageGB: newHotStorage,
+            coldStorageGB: newColdStorage
+          };
         }
-      }
-    }));
+        return index;
+      });
 
-    setIndices(newIndices);
+      const newIndex = newIndices.find(i => i.name === indexName);
+
+      setChangeLog(prev => ({
+        ...prev,
+        [indexName]: {
+          original: {
+            hotDays: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).hotRetentionDays,
+            coldDays: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).coldRetentionDays,
+            hotStorage: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).hotStorageGB,
+            coldStorage: clusters.find(c => c.name === selectedCluster).indices.find(i => i.name === indexName).coldStorageGB,
+          },
+          current: {
+            hotDays: newHotDays,
+            coldDays: newColdDays,
+            hotStorage: newIndex.hotStorageGB,
+            coldStorage: newIndex.coldStorageGB,
+          }
+        }
+      }));
+
+      return newIndices;
+    });
   };
 
   const handleModeToggle = () => {
@@ -512,18 +513,27 @@ Storage: ${totalStorageChange > 0 ? '+' : ''}${totalStorageChange} GB
 
   // Custom Slider component
   const CustomSlider = ({ value, min, max, onChange }: { value: number[]; min: number; max: number; onChange: (value: number[]) => void }) => {
+    const [sliderValue, setSliderValue] = useState(value[0]);
+    const sliderRef = useRef<HTMLInputElement>(null);
+  
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = parseInt(e.target.value);
-      onChange([newValue]);
+      setSliderValue(newValue);
     };
-
+  
+    const handleMouseUp = () => {
+      onChange([sliderValue]);
+    };
+  
     return (
       <input
+        ref={sliderRef}
         type="range"
         min={min}
         max={max}
-        value={value[0]}
+        value={sliderValue}
         onChange={handleChange}
+        onMouseUp={handleMouseUp}
         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
       />
     );
