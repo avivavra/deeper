@@ -220,7 +220,7 @@ const translations = {
     addIndex: 'הוסף אינדקס',
     hotTierRetention: 'עומר אגירה אחסון חם',
     coldTierRetention: 'עומק אגירה אחסון קר',
-    totalRetentionPeriod: 'עומק אגירה כולל',
+    totalRetentionPeriod: 'עומק אגירה',
     hotTier: 'אחסון חם',
     coldTier: 'אחסון קר',
     impact: 'השפעה',
@@ -1057,8 +1057,15 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />
-                    <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name={t.coldTier} />
+                    {audience === 'developer' && (
+                      <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />
+                    )}
+                    {audience === 'developer' && (
+                      <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name={t.coldTier} />
+                    )}
+                    {audience === 'user' && (
+                      <Bar dataKey="totalRetentionDays" fill="#2563eb" name={t.totalRetentionPeriod} />
+                    )}
                   </BarChart>
                 </ResponsiveContainer>
               </div>
