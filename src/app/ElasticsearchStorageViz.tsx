@@ -460,6 +460,64 @@ const ElasticsearchStorageViz = () => {
     });
   };
 
+  const handleTotalRetentionChange = (indexName: string, newTotalDays: number) => {
+    setIndices(prevIndices => {
+      const newIndices = prevIndices.map(index => {
+        if (index.name === indexName) {
+          const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
+          const isNewIndex = !originalIndex;
+
+          const totalDays = isNewIndex ? index.totalRetentionDays : originalIndex.hotRetentionDays + originalIndex.coldRetentionDays;
+          const hotRatio = isNewIndex ? 0.5 : originalIndex.hotRetentionDays / totalDays;
+          const coldRatio = isNewIndex ? 0.5 : originalIndex.coldRetentionDays / totalDays;
+          const newHotDays = Math.round(newTotalDays * hotRatio);
+          const newColdDays = newTotalDays - newHotDays;
+
+          const newHotStorage = Math.round(
+            (index.hotTierRate * newHotDays) +
+            (index.coldTierHotRate * newColdDays)
+          );
+          const newColdStorage = Math.round(
+            index.coldTierStorageRate * newColdDays
+          );
+
+          return {
+            ...index,
+            hotRetentionDays: newHotDays,
+            coldRetentionDays: newColdDays,
+            totalRetentionDays: newTotalDays,
+            hotStorageGB: newHotStorage,
+            coldStorageGB: newColdStorage
+          };
+        }
+        return index;
+      });
+
+      const newIndex = newIndices.find(i => i.name === indexName);
+      const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
+
+      setChangeLog(prev => ({
+        ...prev,
+        [indexName]: {
+          original: {
+            hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
+            coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
+            hotStorage: originalIndex ? originalIndex.hotStorageGB : 0,
+            coldStorage: originalIndex ? originalIndex.coldStorageGB : 0,
+          },
+          current: {
+            hotDays: newIndex.hotRetentionDays,
+            coldDays: newIndex.coldRetentionDays,
+            hotStorage: newIndex.hotStorageGB,
+            coldStorage: newIndex.coldStorageGB,
+          }
+        }
+      }));
+
+      return newIndices;
+    });
+  };
+
   const handleModeToggle = () => {
     if (isEditMode) {
       handleResetChanges();
@@ -1053,43 +1111,62 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
                       </div>
 
                       {isEditMode ? (
-                        <>
+                        audience === 'user' ? (
                           <div className="space-y-2 mt-4">
                             <div className="flex justify-between text-sm text-gray-800">
-                              <span>{t.hotTierRetention}</span>
-                              <span>{index.hotRetentionDays}</span>
+                              <span>{t.totalRetentionPeriod}</span>
+                              <span>{index.totalRetentionDays}</span>
                             </div>
                             <CustomSlider
-                              value={[index.hotRetentionDays]}
+                              value={[index.totalRetentionDays]}
                               min={1}
-                              max={90}
-                              onChange={(value) => handleRetentionChange(index.name, value[0], index.coldRetentionDays)}
+                              max={270}
+                              onChange={(value) => handleTotalRetentionChange(index.name, value[0])}
                             />
                           </div>
-
-                          <div className="space-y-2 mt-4">
-                            <div className="flex justify-between text-sm text-gray-800">
-                              <span>{t.coldTierRetention}</span>
-                              <span>{index.coldRetentionDays}</span>
+                        ) : (
+                          <>
+                            <div className="space-y-2 mt-4">
+                              <div className="flex justify-between text-sm text-gray-800">
+                                <span>{t.hotTierRetention}</span>
+                                <span>{index.hotRetentionDays}</span>
+                              </div>
+                              <CustomSlider
+                                value={[index.hotRetentionDays]}
+                                min={1}
+                                max={90}
+                                onChange={(value) => handleRetentionChange(index.name, value[0], index.coldRetentionDays)}
+                              />
                             </div>
-                            <CustomSlider
-                              value={[index.coldRetentionDays]}
-                              min={0}
-                              max={180}
-                              onChange={(value) => handleRetentionChange(index.name, index.hotRetentionDays, value[0])}
-                            />
-                          </div>
-                        </>
+
+                            <div className="space-y-2 mt-4">
+                              <div className="flex justify-between text-sm text-gray-800">
+                                <span>{t.coldTierRetention}</span>
+                                <span>{index.coldRetentionDays}</span>
+                              </div>
+                              <CustomSlider
+                                value={[index.coldRetentionDays]}
+                                min={0}
+                                max={180}
+                                onChange={(value) => handleRetentionChange(index.name, index.hotRetentionDays, value[0])}
+                              />
+                            </div>
+                          </>
+                        )
                       ) : (
                         <div className="grid grid-cols-2 gap-4 mt-2">
-                          <div>
-                            <span className="text-sm font-medium text-gray-800">{t.hotTierRetention}:</span>
-                            <span className="text-sm ml-2 text-gray-800">{index.hotRetentionDays} {t.days}</span>
-                          </div>
-                          <div>
-                            <span className="text-sm font-medium text-gray-800">{t.coldTierRetention}:</span>
-                            <span className="text-sm ml-2 text-gray-800">{index.coldRetentionDays} {t.days}</span>
-                          </div>
+                          {audience === 'developer' && (
+                            <>
+                              <div>
+                                <span className="text-sm font-medium text-gray-800">{t.hotTierRetention}:</span>
+                                <span className="text-sm ml-2 text-gray-800">{index.hotRetentionDays} {t.days}</span>
+                              </div>
+                              <div>
+                                <span className="text-sm font-medium text-gray-800">{t.coldTierRetention}:</span>
+                                <span className="text-sm ml-2 text-gray-800">{index.coldRetentionDays} {t.days}</span>
+                              </div>
+                            </>
+                          )}
                         </div>
                       )}
 
@@ -1098,15 +1175,20 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
                         <span>{index.totalRetentionDays} {t.days}</span>
                       </div>
 
-                      <div className="text-sm space-x-4 mt-4">
-                        <span className="text-gray-800">Hot: {index.hotStorageGB} GB</span>
-                        <span className="text-gray-800">Cold: {index.coldStorageGB} GB</span>
-                        {audience === 'developer' && (
+                      {audience === 'user' ? (
+                        <div className="flex justify-between text-sm text-gray-800 mt-4">
+                          <span>{t.storage}</span>
+                          <span dir='ltr'>{index.hotStorageGB + index.coldStorageGB} GB</span>
+                        </div>
+                      ) : (
+                        <div className="text-sm space-x-4 mt-4">
+                          <span className="text-gray-800">Hot: {index.hotStorageGB} GB</span>
+                          <span className="text-gray-800">Cold: {index.coldStorageGB} GB</span>
                           <span className="text-gray-500">
                             ({index.hotTierRate.toFixed(2)}GB/day hot, {index.coldTierStorageRate.toFixed(2)}GB/day cold)
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
