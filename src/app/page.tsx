@@ -1,7 +1,7 @@
-import ElasticsearchStorageViz from "./ElasticsearchStorageViz";
+import StorageDashboardPage from "./pages/StorageDashboardPage";
 
 export default function Home() {
   return (
-    <ElasticsearchStorageViz />
+    <StorageDashboardPage />
   );
 }
