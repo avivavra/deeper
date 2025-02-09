@@ -8,13 +8,13 @@ import { TooltipProps } from 'recharts';
 type IndexData = {
   name: string;
   hebrewName: string;
-  hotTierRate: number;
-  coldTierStorageRate: number;
-  coldTierHotRate: number;
+  elasticStoragePerHotTierDay: number;
+  S3StoragePerColdTierDay: number;
+  elasticStoragePerColdTierDay: number;
   hotRetentionDays: number;
   coldRetentionDays: number;
-  hotStorageGB: number;
-  coldStorageGB: number;
+  elasticStorageGB: number;
+  S3StorageGB: number;
   totalRetentionDays: number;
 };
 
@@ -22,14 +22,14 @@ type ChangeLogEntry = {
   original: {
     hotDays: number;
     coldDays: number;
-    hotStorage: number;
-    coldStorage: number;
+    elasticStorage: number;
+    s3Storage: number;
   };
   current: {
     hotDays: number;
     coldDays: number;
-    hotStorage: number;
-    coldStorage: number;
+    elasticStorage: number;
+    s3Storage: number;
   };
 };
 
@@ -45,61 +45,61 @@ const clusters: ClusterData[] = [
       {
         name: 'logs-production',
         hebrewName: 'לוגים-ייצור',
-        hotTierRate: 4,
-        coldTierStorageRate: 3,
-        coldTierHotRate: 0.2,
+        elasticStoragePerHotTierDay: 4,
+        S3StoragePerColdTierDay: 3,
+        elasticStoragePerColdTierDay: 0.2,
         hotRetentionDays: 30,
         coldRetentionDays: 90,
-        hotStorageGB: 120,
-        coldStorageGB: 270,
+        elasticStorageGB: 120,
+        S3StorageGB: 270,
         totalRetentionDays: 120
       },
       {
         name: 'metrics-app1',
         hebrewName: 'מדדים-אפליקציה1',
-        hotTierRate: 2,
-        coldTierStorageRate: 1.5,
-        coldTierHotRate: 0.1,
+        elasticStoragePerHotTierDay: 2,
+        S3StoragePerColdTierDay: 1.5,
+        elasticStoragePerColdTierDay: 0.1,
         hotRetentionDays: 15,
         coldRetentionDays: 45,
-        hotStorageGB: 30,
-        coldStorageGB: 67.5,
+        elasticStorageGB: 30,
+        S3StorageGB: 67.5,
         totalRetentionDays: 60
       },
       {
         name: 'metrics-app2',
         hebrewName: 'מדדים-אפליקציה2',
-        hotTierRate: 3,
-        coldTierStorageRate: 2,
-        coldTierHotRate: 0.15,
+        elasticStoragePerHotTierDay: 3,
+        S3StoragePerColdTierDay: 2,
+        elasticStoragePerColdTierDay: 0.15,
         hotRetentionDays: 20,
         coldRetentionDays: 70,
-        hotStorageGB: 60,
-        coldStorageGB: 140,
+        elasticStorageGB: 60,
+        S3StorageGB: 140,
         totalRetentionDays: 90
       },
       {
         name: 'audit-logs',
         hebrewName: 'לוגים-ביקורת',
-        hotTierRate: 1,
-        coldTierStorageRate: 2.5,
-        coldTierHotRate: 0.25,
+        elasticStoragePerHotTierDay: 1,
+        S3StoragePerColdTierDay: 2.5,
+        elasticStoragePerColdTierDay: 0.25,
         hotRetentionDays: 10,
         coldRetentionDays: 120,
-        hotStorageGB: 10,
-        coldStorageGB: 300,
+        elasticStorageGB: 10,
+        S3StorageGB: 300,
         totalRetentionDays: 130
       },
       {
         name: 'user-activity',
         hebrewName: 'פעילות-משתמש',
-        hotTierRate: 2.5,
-        coldTierStorageRate: 2,
-        coldTierHotRate: 0.12,
+        elasticStoragePerHotTierDay: 2.5,
+        S3StoragePerColdTierDay: 2,
+        elasticStoragePerColdTierDay: 0.12,
         hotRetentionDays: 25,
         coldRetentionDays: 60,
-        hotStorageGB: 62.5,
-        coldStorageGB: 120,
+        elasticStorageGB: 62.5,
+        S3StorageGB: 120,
         totalRetentionDays: 85
       }
     ]
@@ -110,49 +110,49 @@ const clusters: ClusterData[] = [
       {
         name: 'metrics-app1',
         hebrewName: 'מדדים-אפליקציה1',
-        hotTierRate: 2,
-        coldTierStorageRate: 1.5,
-        coldTierHotRate: 0.1,
+        elasticStoragePerHotTierDay: 2,
+        S3StoragePerColdTierDay: 1.5,
+        elasticStoragePerColdTierDay: 0.1,
         hotRetentionDays: 15,
         coldRetentionDays: 45,
-        hotStorageGB: 30,
-        coldStorageGB: 67.5,
+        elasticStorageGB: 30,
+        S3StorageGB: 67.5,
         totalRetentionDays: 60
       },
       {
         name: 'metrics-app2',
         hebrewName: 'מדדים-אפליקציה2',
-        hotTierRate: 3,
-        coldTierStorageRate: 2,
-        coldTierHotRate: 0.15,
+        elasticStoragePerHotTierDay: 3,
+        S3StoragePerColdTierDay: 2,
+        elasticStoragePerColdTierDay: 0.15,
         hotRetentionDays: 20,
         coldRetentionDays: 70,
-        hotStorageGB: 60,
-        coldStorageGB: 140,
+        elasticStorageGB: 60,
+        S3StorageGB: 140,
         totalRetentionDays: 90
       },
       {
         name: 'audit-logs',
         hebrewName: 'לוגים-ביקורת',
-        hotTierRate: 1,
-        coldTierStorageRate: 2.5,
-        coldTierHotRate: 0.25,
+        elasticStoragePerHotTierDay: 1,
+        S3StoragePerColdTierDay: 2.5,
+        elasticStoragePerColdTierDay: 0.25,
         hotRetentionDays: 10,
         coldRetentionDays: 120,
-        hotStorageGB: 10,
-        coldStorageGB: 300,
+        elasticStorageGB: 10,
+        S3StorageGB: 300,
         totalRetentionDays: 130
       },
       {
         name: 'user-activity',
         hebrewName: 'פעילות-משתמש',
-        hotTierRate: 2.5,
-        coldTierStorageRate: 2,
-        coldTierHotRate: 0.12,
+        elasticStoragePerHotTierDay: 2.5,
+        S3StoragePerColdTierDay: 2,
+        elasticStoragePerColdTierDay: 0.12,
         hotRetentionDays: 25,
         coldRetentionDays: 60,
-        hotStorageGB: 62.5,
-        coldStorageGB: 120,
+        elasticStorageGB: 62.5,
+        S3StorageGB: 120,
         totalRetentionDays: 85
       }
     ]
@@ -251,8 +251,8 @@ const ElasticsearchStorageViz = () => {
   const [selectedIndices, setSelectedIndices] = useState<{ [key: string]: boolean }>({});
   const [indices, setIndices] = useState<IndexData[]>(clusters[0].indices);
   const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
-  const [totalHotStorage] = useState(500); // GB
-  const [totalColdStorage] = useState(1000); // GB
+  const [totalElasticStorage] = useState(500); // GB
+  const [totalS3Storage] = useState(1000); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [showClusterDropdown, setShowClusterDropdown] = useState(false);
   const [showIndexDropdown, setShowIndexDropdown] = useState(false);
@@ -335,13 +335,13 @@ const ElasticsearchStorageViz = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const usedHotStorage = indices.reduce((acc, curr) => acc + curr.hotStorageGB, 0);
-  const usedColdStorage = indices.reduce((acc, curr) => acc + curr.coldStorageGB, 0);
-  const hotStoragePercentage = (usedHotStorage / totalHotStorage) * 100;
-  const coldStoragePercentage = (usedColdStorage / totalColdStorage) * 100;
-  const usedCombinedStorage = usedHotStorage + usedColdStorage;
+  const usedElasticStorage = indices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0);
+  const usedS3Storage = indices.reduce((acc, curr) => acc + curr.S3StorageGB, 0);
+  const elasticStoragePercentage = (usedElasticStorage / totalElasticStorage) * 100;
+  const s3StoragePercentage = (usedS3Storage / totalS3Storage) * 100;
+  const usedCombinedStorage = usedElasticStorage + usedS3Storage;
 
-  const combinedStorage = totalHotStorage + totalColdStorage;
+  const combinedStorage = totalElasticStorage + totalS3Storage;
   const combinedStoragePercentage = (usedCombinedStorage / combinedStorage) * 100;
 
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
@@ -359,9 +359,9 @@ const ElasticsearchStorageViz = () => {
       ? (docSize * frequency * 86400) / (1024 * 1024 * 1024)
       : (docSize * avgDocs) / (1024 * 1024 * 1024);
     return {
-      hotTierRate: dailyData,
-      coldTierStorageRate: dailyData * 0.75,
-      coldTierHotRate: dailyData * 0.05
+      elasticStoragePerHotTierDay: dailyData,
+      S3StoragePerColdTierDay: dailyData * 0.75,
+      elasticStoragePerColdTierDay: dailyData * 0.05
     };
   };
 
@@ -376,8 +376,8 @@ const ElasticsearchStorageViz = () => {
       ...rates,
       hotRetentionDays,
       coldRetentionDays,
-      hotStorageGB: Math.round(rates.hotTierRate * hotRetentionDays),
-      coldStorageGB: Math.round(rates.coldTierStorageRate * coldRetentionDays),
+      elasticStorageGB: Math.round(rates.elasticStoragePerHotTierDay * hotRetentionDays),
+      s3StorageGB: Math.round(rates.S3StoragePerColdTierDay * coldRetentionDays),
       totalRetentionDays: hotRetentionDays + coldRetentionDays
     };
 
@@ -389,14 +389,14 @@ const ElasticsearchStorageViz = () => {
         original: {
           hotDays: 0,
           coldDays: 0,
-          hotStorage: 0,
-          coldStorage: 0,
+          elasticStorage: 0,
+          s3Storage: 0,
         },
         current: {
           hotDays: hotRetentionDays,
           coldDays: coldRetentionDays,
-          hotStorage: newIndexData.hotStorageGB,
-          coldStorage: newIndexData.coldStorageGB,
+          elasticStorage: newIndexData.elasticStorageGB,
+          s3Storage: newIndexData.s3StorageGB,
         }
       }
     }));
@@ -415,12 +415,12 @@ const ElasticsearchStorageViz = () => {
     setIndices(prevIndices => {
       const newIndices = prevIndices.map(index => {
         if (index.name === indexName) {
-          const newHotStorage = Math.round(
-            (index.hotTierRate * newHotDays) +
-            (index.coldTierHotRate * newColdDays)
+          const newElasticStorage = Math.round(
+            (index.elasticStoragePerHotTierDay * newHotDays) +
+            (index.elasticStoragePerColdTierDay * newColdDays)
           );
-          const newColdStorage = Math.round(
-            index.coldTierStorageRate * newColdDays
+          const newS3Storage = Math.round(
+            index.S3StoragePerColdTierDay * newColdDays
           );
 
           return {
@@ -428,8 +428,8 @@ const ElasticsearchStorageViz = () => {
             hotRetentionDays: newHotDays,
             coldRetentionDays: newColdDays,
             totalRetentionDays: newHotDays + newColdDays,
-            hotStorageGB: newHotStorage,
-            coldStorageGB: newColdStorage
+            elasticStorageGB: newElasticStorage,
+            S3StorageGB: newS3Storage
           };
         }
         return index;
@@ -444,14 +444,14 @@ const ElasticsearchStorageViz = () => {
           original: {
             hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
             coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-            hotStorage: originalIndex ? originalIndex.hotStorageGB : 0,
-            coldStorage: originalIndex ? originalIndex.coldStorageGB : 0,
+            elasticStorage: originalIndex ? originalIndex.elasticStorageGB : 0,
+            s3Storage: originalIndex ? originalIndex.S3StorageGB : 0,
           },
           current: {
             hotDays: newHotDays,
             coldDays: newColdDays,
-            hotStorage: newIndex.hotStorageGB,
-            coldStorage: newIndex.coldStorageGB,
+            elasticStorage: newIndex.elasticStorageGB,
+            s3Storage: newIndex.S3StorageGB,
           }
         }
       }));
@@ -473,12 +473,12 @@ const ElasticsearchStorageViz = () => {
           const newHotDays = Math.round(newTotalDays * hotRatio);
           const newColdDays = newTotalDays - newHotDays;
 
-          const newHotStorage = Math.round(
-            (index.hotTierRate * newHotDays) +
-            (index.coldTierHotRate * newColdDays)
+          const newElasticStorage = Math.round(
+            (index.elasticStoragePerHotTierDay * newHotDays) +
+            (index.elasticStoragePerColdTierDay * newColdDays)
           );
-          const newColdStorage = Math.round(
-            index.coldTierStorageRate * newColdDays
+          const newS3Storage = Math.round(
+            index.S3StoragePerColdTierDay * newColdDays
           );
 
           return {
@@ -486,8 +486,8 @@ const ElasticsearchStorageViz = () => {
             hotRetentionDays: newHotDays,
             coldRetentionDays: newColdDays,
             totalRetentionDays: newTotalDays,
-            hotStorageGB: newHotStorage,
-            coldStorageGB: newColdStorage
+            elasticStorageGB: newElasticStorage,
+            S3StorageGB: newS3Storage
           };
         }
         return index;
@@ -502,14 +502,14 @@ const ElasticsearchStorageViz = () => {
           original: {
             hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
             coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-            hotStorage: originalIndex ? originalIndex.hotStorageGB : 0,
-            coldStorage: originalIndex ? originalIndex.coldStorageGB : 0,
+            elasticStorage: originalIndex ? originalIndex.elasticStorageGB : 0,
+            s3Storage: originalIndex ? originalIndex.S3StorageGB : 0,
           },
           current: {
             hotDays: newIndex.hotRetentionDays,
             coldDays: newIndex.coldRetentionDays,
-            hotStorage: newIndex.hotStorageGB,
-            coldStorage: newIndex.coldStorageGB,
+            elasticStorage: newIndex.elasticStorageGB,
+            s3Storage: newIndex.S3StorageGB,
           }
         }
       }));
@@ -550,14 +550,14 @@ const ElasticsearchStorageViz = () => {
     const text = Object.entries(changeLog).map(([indexName, change]) => {
       const hotDaysChange = change.current.hotDays - change.original.hotDays;
       const coldDaysChange = change.current.coldDays - change.original.coldDays;
-      const totalHotStorageChange = change.current.hotStorage - change.original.hotStorage;
-      const totalColdStorageChange = change.current.coldStorage - change.original.coldStorage;
+      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
 
       return `Index: ${indexName}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
-Hot Storage: ${change.original.hotStorage} GB → ${change.current.hotStorage} GB (${totalHotStorageChange > 0 ? '+' : ''}${totalHotStorageChange} GB)
-Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage} GB (${totalColdStorageChange > 0 ? '+' : ''}${totalColdStorageChange} GB)
+Elasticsearch Storage: ${change.original.elasticStorage} GB → ${change.current.elasticStorage} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange} GB)
+S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange} GB)
 `;
     }).join('\n');
 
@@ -576,14 +576,14 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
     const text = Object.entries(changeLog).map(([indexName, change]) => {
       const hotDaysChange = change.current.hotDays - change.original.hotDays;
       const coldDaysChange = change.current.coldDays - change.original.coldDays;
-      const totalHotStorageChange = change.current.hotStorage - change.original.hotStorage;
-      const totalColdStorageChange = change.current.coldStorage - change.original.coldStorage;
+      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
 
       return `Index: ${indexName}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
-Hot Storage: ${change.original.hotStorage} GB → ${change.current.hotStorage} GB (${totalHotStorageChange > 0 ? '+' : ''}${totalHotStorageChange} GB)
-Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage} GB (${totalColdStorageChange > 0 ? '+' : ''}${totalColdStorageChange} GB)
+Elasticsearch Storage: ${change.original.elasticStorage} GB → ${change.current.elasticStorage} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange} GB)
+S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange} GB)
 `;
     }).join('\n');
 
@@ -613,10 +613,10 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
               const indexName = lines[0].replace('Index: ', '');
               const hotDaysMatch = lines[1].match(/Hot Retention Days: \d+ → (\d+) days/);
               const coldDaysMatch = lines[2].match(/Cold Retention Days: \d+ → (\d+) days/);
-              const hotStorageMatch = lines[3].match(/Hot Storage: \d+ GB → (\d+) GB/);
-              const coldStorageMatch = lines[4].match(/Cold Storage: \d+ GB → (\d+) GB/);
+              const elasticStorageMatch = lines[3].match(/Elasticsearch Storage: \d+ GB → (\d+) GB/);
+              const s3StorageMatch = lines[4].match(/S3 Storage: \d+ GB → (\d+) GB/);
 
-              if (hotDaysMatch && coldDaysMatch && hotStorageMatch && coldStorageMatch) {
+              if (hotDaysMatch && coldDaysMatch && elasticStorageMatch && s3StorageMatch) {
                 const newHotDays = parseInt(hotDaysMatch[1]);
                 const newColdDays = parseInt(coldDaysMatch[1]);
                 handleRetentionChange(indexName, newHotDays, newColdDays);
@@ -654,14 +654,14 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
           original: {
             hotDays: indexToRemove.hotRetentionDays,
             coldDays: indexToRemove.coldRetentionDays,
-            hotStorage: indexToRemove.hotStorageGB,
-            coldStorage: indexToRemove.coldStorageGB,
+            elasticStorage: indexToRemove.elasticStorageGB,
+            s3Storage: indexToRemove.S3StorageGB,
           },
           current: {
             hotDays: 0,
             coldDays: 0,
-            hotStorage: 0,
-            coldStorage: 0,
+            elasticStorage: 0,
+            s3Storage: 0,
           }
         }
       };
@@ -919,7 +919,7 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
               {Object.keys(changeLog).length > 0 ? (
                 Object.entries(changeLog).map(([indexName, change]) => {
                   const totalDaysChange = (change.current.hotDays + change.current.coldDays) - (change.original.hotDays + change.original.coldDays);
-                  const totalStorageChange = (change.current.hotStorage + change.current.coldStorage) - (change.original.hotStorage + change.original.coldStorage);
+                  const totalStorageChange = (change.current.elasticStorage + change.current.s3Storage) - (change.original.elasticStorage + change.original.s3Storage);
                   const hebrewIndexName = indices.find(index => index.name === indexName)?.hebrewName || indexName;
 
                   return (
@@ -953,10 +953,10 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
                           </div>
                           <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
                           <div className="text-sm ml-2 text-gray-800">
-                            {t.hotTier}: {change.current.hotStorage - change.original.hotStorage > 0 ? '+' : ''}{change.current.hotStorage - change.original.hotStorage} GB
+                            {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{change.current.elasticStorage - change.original.elasticStorage} GB
                           </div>
                           <div className="text-sm ml-2 text-gray-800">
-                            {t.coldTier}: {change.current.coldStorage - change.original.coldStorage > 0 ? '+' : ''}{change.current.coldStorage - change.original.coldStorage} GB
+                            {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{change.current.s3Storage - change.original.s3Storage} GB
                           </div>
                         </>
                       )}
@@ -1003,30 +1003,30 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
                     <div>
                       <div className="flex justify-between mb-2">
                         <span className="font-medium text-gray-800">{t.elasticsearchStorage}</span>
-                        <span className={usedHotStorage > totalHotStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                          {usedHotStorage}/{totalHotStorage} GB ({hotStoragePercentage.toFixed(1)}%)
-                          {usedHotStorage > totalHotStorage && ` (${t.overLimit})`}
+                        <span className={usedElasticStorage > totalElasticStorage ? "text-red-500 font-medium" : "text-gray-800"}>
+                          {usedElasticStorage}/{totalElasticStorage} GB ({elasticStoragePercentage.toFixed(1)}%)
+                          {usedElasticStorage > totalElasticStorage && ` (${t.overLimit})`}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
                         <div
-                          className={`h-4 rounded-full ${getStorageBarColor(hotStoragePercentage)}`}
-                          style={{ width: `${Math.min(hotStoragePercentage, 100)}%` }}
+                          className={`h-4 rounded-full ${getStorageBarColor(elasticStoragePercentage)}`}
+                          style={{ width: `${Math.min(elasticStoragePercentage, 100)}%` }}
                         />
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between mb-2">
                         <span className="font-medium text-gray-800">{t.s3Storage}</span>
-                        <span className={usedColdStorage > totalColdStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                          {usedColdStorage}/{totalColdStorage} GB ({coldStoragePercentage.toFixed(1)}%)
-                          {usedColdStorage > totalColdStorage && ` (${t.overLimit})`}
+                        <span className={usedS3Storage > totalS3Storage ? "text-red-500 font-medium" : "text-gray-800"}>
+                          {usedS3Storage}/{totalS3Storage} GB ({s3StoragePercentage.toFixed(1)}%)
+                          {usedS3Storage > totalS3Storage && ` (${t.overLimit})`}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
                         <div
-                          className={`h-4 rounded-full ${getStorageBarColor(coldStoragePercentage)}`}
-                          style={{ width: `${Math.min(coldStoragePercentage, 100)}%` }}
+                          className={`h-4 rounded-full ${getStorageBarColor(s3StoragePercentage)}`}
+                          style={{ width: `${Math.min(s3StoragePercentage, 100)}%` }}
                         />
                       </div>
                     </div>
@@ -1185,14 +1185,14 @@ Cold Storage: ${change.original.coldStorage} GB → ${change.current.coldStorage
                       {audience === 'user' ? (
                         <div className="flex justify-between text-sm text-gray-800 mt-4">
                           <span>{t.storage}</span>
-                          <span dir='ltr'>{index.hotStorageGB + index.coldStorageGB} GB</span>
+                          <span dir='ltr'>{index.elasticStorageGB + index.S3StorageGB} GB</span>
                         </div>
                       ) : (
                         <div className="text-sm space-x-4 mt-4">
-                          <span className="text-gray-800">Hot: {index.hotStorageGB} GB</span>
-                          <span className="text-gray-800">Cold: {index.coldStorageGB} GB</span>
+                          <span className="text-gray-800">Elasticsearch: {index.elasticStorageGB} GB</span>
+                          <span className="text-gray-800">S3: {index.S3StorageGB} GB</span>
                           <span className="text-gray-500">
-                            ({index.hotTierRate.toFixed(2)}GB/day hot, {index.coldTierStorageRate.toFixed(2)}GB/day cold)
+                            ({index.elasticStoragePerHotTierDay.toFixed(2)}GB/day hot, {index.S3StoragePerColdTierDay.toFixed(2)}GB/day cold)
                           </span>
                         </div>
                       )}
