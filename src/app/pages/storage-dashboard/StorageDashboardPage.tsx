@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Pencil, Eye, Plus, MoreVertical } from 'lucide-react';
+import { Plus, MoreVertical } from 'lucide-react';
 import { TooltipProps } from 'recharts';
 import { Audience, ChangeLogEntry, IndexData } from './models';
 import { clusters } from './exampleData';
@@ -10,6 +10,7 @@ import { translations } from './translations';
 import ChangeLog from './ChangeLog';
 import GenericDropdown from '../../components/GenericDropdown';
 import StorageHeader from './StorageHeader';
+import StorageUsageOverview from './StorageUsageOverview';
 
 const StorageDashboardPage = () => {
   // Original data and main states
@@ -21,8 +22,6 @@ const StorageDashboardPage = () => {
   const [totalElasticStorage] = useState(500); // GB
   const [totalS3Storage] = useState(1000); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
-  const [showClusterDropdown, setShowClusterDropdown] = useState(false);
-  const [showIndexDropdown, setShowIndexDropdown] = useState(false);
   const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string; avgDocs: string; inputType: 'frequency' | 'avgDocs' }>({
     name: '',
     docSize: '',
@@ -31,34 +30,8 @@ const StorageDashboardPage = () => {
     inputType: 'frequency'
   });
   const [audience, setAudience] = useState<Audience>('developer');
-  const [showTitleDropdown, setShowTitleDropdown] = useState(false);
-  const [openDropdownIndex, setOpenDropdownIndex] = useState<string | null>(null);
 
-  const clusterDropdownRef = useRef(null);
-  const indexDropdownRef = useRef(null);
-  const exportDropdownRef = useRef(null);
   const threeDotsDropdownRef = useRef(null);
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (clusterDropdownRef.current && !clusterDropdownRef.current.contains(event.target as Node)) {
-        setShowClusterDropdown(false);
-      }
-      if (indexDropdownRef.current && !indexDropdownRef.current.contains(event.target as Node)) {
-        setShowIndexDropdown(false);
-      }
-      if (threeDotsDropdownRef.current && !threeDotsDropdownRef.current.contains(event.target as Node)) {
-        setOpenDropdownIndex(null);
-      }
-      if (!event.target.closest('.title-dropdown')) {
-        setShowTitleDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     if (selectedCluster) {
@@ -517,65 +490,20 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
           {/* Storage Overview and Chart */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Storage Overview */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">{t.storageUsageOverview}</h2>
-              </div>
-              <div className="space-y-6">
-                {audience === 'user' ? (
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="font-medium text-gray-800">{t.storage}</span>
-                      <span className={usedCombinedStorage > combinedStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                        <span dir='ltr'>{usedCombinedStorage}/{combinedStorage} GB</span>
-                        <span> ({combinedStoragePercentage.toFixed(1)}%)</span>
-                        {usedCombinedStorage > combinedStorage && ` (${t.overLimit})`}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
-                      <div
-                        className={`h-4 rounded-full ${getStorageBarColor(combinedStoragePercentage)}`}
-                        style={{ width: `${Math.min(combinedStoragePercentage, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div>
-                      <div className="flex justify-between mb-2">
-                        <span className="font-medium text-gray-800">{t.elasticsearchStorage}</span>
-                        <span className={usedElasticStorage > totalElasticStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                          {usedElasticStorage}/{totalElasticStorage} GB ({elasticStoragePercentage.toFixed(1)}%)
-                          {usedElasticStorage > totalElasticStorage && ` (${t.overLimit})`}
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
-                        <div
-                          className={`h-4 rounded-full ${getStorageBarColor(elasticStoragePercentage)}`}
-                          style={{ width: `${Math.min(elasticStoragePercentage, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between mb-2">
-                        <span className="font-medium text-gray-800">{t.s3Storage}</span>
-                        <span className={usedS3Storage > totalS3Storage ? "text-red-500 font-medium" : "text-gray-800"}>
-                          {usedS3Storage}/{totalS3Storage} GB ({s3StoragePercentage.toFixed(1)}%)
-                          {usedS3Storage > totalS3Storage && ` (${t.overLimit})`}
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
-                        <div
-                          className={`h-4 rounded-full ${getStorageBarColor(s3StoragePercentage)}`}
-                          style={{ width: `${Math.min(s3StoragePercentage, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
+            <StorageUsageOverview
+              audience={audience}
+              usedCombinedStorage={usedCombinedStorage}
+              combinedStorage={combinedStorage}
+              combinedStoragePercentage={combinedStoragePercentage}
+              usedElasticStorage={usedElasticStorage}
+              totalElasticStorage={totalElasticStorage}
+              elasticStoragePercentage={elasticStoragePercentage}
+              usedS3Storage={usedS3Storage}
+              totalS3Storage={totalS3Storage}
+              s3StoragePercentage={s3StoragePercentage}
+              t={t}
+              getStorageBarColor={getStorageBarColor}
+            />
             {/* Retention Period Chart */}
             <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
               <div className="mb-4">
