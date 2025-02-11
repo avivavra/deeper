@@ -106,7 +106,7 @@ const StorageDashboardPage = () => {
       hotRetentionDays,
       coldRetentionDays,
       elasticStorageGB: Math.round(rates.elasticStoragePerHotTierDay * hotRetentionDays),
-      s3StorageGB: Math.round(rates.S3StoragePerColdTierDay * coldRetentionDays),
+      S3StorageGB: Math.round(rates.S3StoragePerColdTierDay * coldRetentionDays), // Fix the property name to match the existing code
       totalRetentionDays: hotRetentionDays + coldRetentionDays,
       initialHotRetentionDays: hotRetentionDays, // Store initial hot retention days
       initialColdRetentionDays: coldRetentionDays // Store initial cold retention days
@@ -127,7 +127,7 @@ const StorageDashboardPage = () => {
           hotDays: hotRetentionDays,
           coldDays: coldRetentionDays,
           elasticStorage: newIndexData.elasticStorageGB,
-          s3Storage: newIndexData.s3StorageGB,
+          s3Storage: newIndexData.S3StorageGB, // Fix the property name to match the existing code
         }
       }
     }));
