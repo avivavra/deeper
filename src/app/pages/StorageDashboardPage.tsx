@@ -141,7 +141,9 @@ const StorageDashboardPage = () => {
       coldRetentionDays,
       elasticStorageGB: Math.round(rates.elasticStoragePerHotTierDay * hotRetentionDays),
       s3StorageGB: Math.round(rates.S3StoragePerColdTierDay * coldRetentionDays),
-      totalRetentionDays: hotRetentionDays + coldRetentionDays
+      totalRetentionDays: hotRetentionDays + coldRetentionDays,
+      initialHotRetentionDays: hotRetentionDays, // Store initial hot retention days
+      initialColdRetentionDays: coldRetentionDays // Store initial cold retention days
     };
 
     setIndices([newIndexData, ...indices]);
@@ -230,10 +232,16 @@ const StorageDashboardPage = () => {
           const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
           const isNewIndex = !originalIndex;
 
-          const totalDays = isNewIndex ? index.totalRetentionDays : originalIndex.hotRetentionDays + originalIndex.coldRetentionDays;
-          const hotRatio = isNewIndex ? 0.5 : originalIndex.hotRetentionDays / totalDays;
-          const newHotDays = Math.round(newTotalDays * hotRatio);
-          const newColdDays = newTotalDays - newHotDays;
+          const originalHotDays = originalIndex ? originalIndex.hotRetentionDays : index.initialHotRetentionDays;
+          const originalColdDays = originalIndex ? originalIndex.coldRetentionDays : index.initialColdRetentionDays;
+
+          let newHotDays = newTotalDays > originalHotDays ? originalHotDays : newTotalDays;
+          let newColdDays = newTotalDays > originalHotDays ? newTotalDays - originalHotDays : 0;
+
+          if (originalColdDays === 0) {
+            newHotDays = newTotalDays;
+            newColdDays = 0;
+          }
 
           const newElasticStorage = Math.round(
             (index.elasticStoragePerHotTierDay * newHotDays) +

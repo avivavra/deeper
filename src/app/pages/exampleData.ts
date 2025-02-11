@@ -35,10 +35,10 @@ export const clusters: ClusterData[] = [
         S3StoragePerColdTierDay: 2,
         elasticStoragePerColdTierDay: 0.15,
         hotRetentionDays: 20,
-        coldRetentionDays: 70,
+        coldRetentionDays: 0,
         elasticStorageGB: 60,
-        S3StorageGB: 140,
-        totalRetentionDays: 90
+        S3StorageGB: 0,
+        totalRetentionDays: 20
       },
       {
         name: 'audit-logs',
