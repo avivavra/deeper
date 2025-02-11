@@ -13,7 +13,7 @@ type IndexRetentionManagementProps = {
     handleRemoveIndex: (indexName: string) => void;
     setShowAddIndex: (show: boolean) => void;
     showAddIndex: boolean;
-    newIndex: { name: string; docSize: string; frequency: string; avgDocs: string; inputType: 'frequency' | 'avgDocs' };
+    newIndex: { name: string; docSize: string; frequency: string; avgDocs: string; inputType: NewIndexInputType };
     setNewIndex: (newIndex: any) => void;
     handleAddIndex: () => void;
 };

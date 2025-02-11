@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Audience, ChangeLogEntry, IndexData } from './models';
+import React, { useState, useEffect } from 'react';
+import { Audience, ChangeLogEntry, IndexData, NewIndexInputType } from './models';
 import { clusters } from './exampleData';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
@@ -21,7 +21,7 @@ const StorageDashboardPage = () => {
   const [totalElasticStorage] = useState(500); // GB
   const [totalS3Storage] = useState(1000); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
-  const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string; avgDocs: string; inputType: 'frequency' | 'avgDocs' }>({
+  const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string; avgDocs: string; inputType: NewIndexInputType }>({
     name: '',
     docSize: '',
     frequency: '',
@@ -83,7 +83,7 @@ const StorageDashboardPage = () => {
     return 'bg-blue-600';
   };
 
-  const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: 'frequency' | 'avgDocs') => {
+  const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: NewIndexInputType) => {
     const dailyData = inputType === 'frequency'
       ? (docSize * frequency * 86400) / (1024 * 1024 * 1024)
       : (docSize * avgDocs) / (1024 * 1024 * 1024);
@@ -196,7 +196,6 @@ const StorageDashboardPage = () => {
       const newIndices = prevIndices.map(index => {
         if (index.name === indexName) {
           const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
-          const isNewIndex = !originalIndex;
 
           const originalHotDays = originalIndex ? originalIndex.hotRetentionDays : index.initialHotRetentionDays;
           const originalColdDays = originalIndex ? originalIndex.coldRetentionDays : index.initialColdRetentionDays;
@@ -402,51 +401,6 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
         }
       };
     });
-    setOpenDropdownIndex(null);
-  };
-
-
-  // Custom Slider component
-  const CustomSlider = ({ value, min, max, onChange }: { value: number[]; min: number; max: number; onChange: (value: number[]) => void }) => {
-    const [sliderValue, setSliderValue] = useState(value[0]);
-    const sliderRef = useRef<HTMLInputElement>(null);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = parseInt(e.target.value);
-      setSliderValue(newValue);
-    };
-
-    const handleMouseUp = () => {
-      onChange([sliderValue]);
-    };
-
-    return (
-      <input
-        ref={sliderRef}
-        type="range"
-        min={min}
-        max={max}
-        value={sliderValue}
-        onChange={handleChange}
-        onMouseUp={handleMouseUp}
-        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-      />
-    );
-  };
-
-  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-2 border border-gray-300 rounded shadow-sm">
-          <p className="font-semibold text-gray-900">{label}</p>
-          {payload.map((entry, index) => (
-            <p key={`item-${index}`} className="text-gray-700">{`${entry.name}: ${entry.value}`}</p>
-          ))}
-        </div>
-      );
-    }
-
-    return null;
   };
 
   return (
@@ -465,7 +419,6 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
       />
       {/* Main Content */}
       <div className="flex">
-        {/* Change Log Sidebar */}
         {isEditMode && (
           <ChangeLog
             changeLog={changeLog}
@@ -480,9 +433,7 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
           />
         )}
         <div className={`flex-grow p-6 space-y-6 ${isEditMode ? 'lg:w-[calc(100%-20rem)]' : ''}`}>
-          {/* Storage Overview and Chart */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Storage Overview */}
             <StorageUsageOverview
               audience={audience}
               usedCombinedStorage={usedCombinedStorage}
@@ -497,14 +448,12 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
               t={t}
               getStorageBarColor={getStorageBarColor}
             />
-            {/* Retention Period Chart */}
             <IndexRetentionPeriodsChart
               audience={audience}
               filteredIndices={filteredIndices}
               t={t}
             />
           </div>
-          {/* Index Management */}
           <IndexRetentionManagement
             isEditMode={isEditMode}
             filteredIndices={filteredIndices}
@@ -521,7 +470,6 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
           />
         </div>
       </div>
-      {/* Add Index Modal */}
       {showAddIndex && (
         <AddIndexModal
           t={t}

@@ -77,7 +77,6 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
       <div className="space-y-4">
         {Object.keys(changeLog).length > 0 ? (
           Object.entries(changeLog).map(([indexName, change]) => {
-            const totalDaysChange = (change.current.hotDays + change.current.coldDays) - (change.original.hotDays + change.original.coldDays);
             const totalStorageChange = (change.current.elasticStorage + change.current.s3Storage) - (change.original.elasticStorage + change.original.s3Storage);
             const hebrewIndexName = indices.find(index => index.name === indexName)?.hebrewName || indexName;
 

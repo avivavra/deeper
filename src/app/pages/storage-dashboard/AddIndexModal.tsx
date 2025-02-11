@@ -1,4 +1,5 @@
 import React from 'react';
+import { NewIndexInputType } from './models';
 
 interface AddIndexModalProps {
     t: any;
@@ -7,14 +8,14 @@ interface AddIndexModalProps {
         docSize: string;
         frequency: string;
         avgDocs: string;
-        inputType: 'frequency' | 'avgDocs';
+        inputType: NewIndexInputType;
     };
     setNewIndex: React.Dispatch<React.SetStateAction<{
         name: string;
         docSize: string;
         frequency: string;
         avgDocs: string;
-        inputType: 'frequency' | 'avgDocs';
+        inputType: NewIndexInputType;
     }>>;
     setShowAddIndex: React.Dispatch<React.SetStateAction<boolean>>;
     handleAddIndex: () => void;
@@ -51,7 +52,7 @@ const AddIndexModal: React.FC<AddIndexModalProps> = ({ t, newIndex, setNewIndex,
                             <label className="text-sm font-medium text-gray-800">{t.inputType}</label>
                             <select
                                 value={newIndex.inputType}
-                                onChange={(e) => setNewIndex(prev => ({ ...prev, inputType: e.target.value as 'frequency' | 'avgDocs' }))}
+                                onChange={(e) => setNewIndex(prev => ({ ...prev, inputType: e.target.value as NewIndexInputType }))}
                                 className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                             >
                                 <option value="frequency">{t.docFrequency}</option>

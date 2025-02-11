@@ -32,3 +32,5 @@ export type ClusterData = {
 };
 
 export type Audience = 'developer' | 'user';
+
+export type NewIndexInputType = 'frequency' | 'avgDocs';
