@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
 import { translations } from './translations';
 import { ChangeLogEntry, IndexData } from './models';
+import GenericDropdown from '../components/GenericDropdown';
 
 interface ChangeLogProps {
   changeLog: { [key: string]: ChangeLogEntry };
@@ -26,8 +27,6 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
   handleResetChanges,
   handleImport,
 }) => {
-  const [showExportDropdown, setShowExportDropdown] = useState(false);
-  const exportDropdownRef = useRef(null);
   const t = translations[audience];
 
   return (
@@ -37,32 +36,21 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
         <div className="flex gap-2">
           {Object.keys(changeLog).length > 0 ? (
             <>
-              <div className="relative" ref={exportDropdownRef}>
-                <button
-                  onClick={() => setShowExportDropdown(!showExportDropdown)}
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <Share2 className="h-4 w-4 mx-2 text-gray-800" />
-                </button>
-                {showExportDropdown && (
-                  <div className={`absolute ${audience === 'user' ? 'left-0' : 'right-0'} mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50`}>
-                    <div className="py-1">
-                      <button
-                        onClick={handleExport}
-                        className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
-                      >
-                        {t.exportToFile}
-                      </button>
-                      <button
-                        onClick={handleEmail}
-                        className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
-                      >
-                        {t.exportToEmail}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <GenericDropdown
+                buttonLabel={<Share2 className="h-4 w-4 mx-2 text-gray-800" />}
+                options={[
+                  { label: t.exportToFile, value: 'exportToFile' },
+                  { label: t.exportToEmail, value: 'exportToEmail' }
+                ]}
+                onSelect={(value) => {
+                  if (value === 'exportToFile') handleExport();
+                  if (value === 'exportToEmail') handleEmail();
+                }}
+                width="w-40"
+                type="radio"
+                showChevron={false}
+                hideInputs={true}
+              />
               <button
                 onClick={handleResetChanges}
                 className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

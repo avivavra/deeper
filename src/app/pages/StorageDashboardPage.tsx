@@ -2,12 +2,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Pencil, Eye, ChevronDown, Plus, MoreVertical } from 'lucide-react';
+import { Pencil, Eye, Plus, MoreVertical } from 'lucide-react';
 import { TooltipProps } from 'recharts';
 import { Audience, ChangeLogEntry, IndexData } from './models';
 import { clusters } from './exampleData';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
+import GenericDropdown from '../components/GenericDropdown';
 
 const StorageDashboardPage = () => {
   // Original data and main states
@@ -479,117 +480,43 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
       <div className="bg-white border-b px-6 py-4">
         <div className="flex justify-between items-center">
           <div className="relative title-dropdown">
-            <button
-              onClick={() => setShowTitleDropdown(!showTitleDropdown)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              {t.title}
-              <ChevronDown className="mx-2 h-4 w-4 text-gray-800" />
-            </button>
-            {showTitleDropdown && (
-              <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                <div className="py-1">
-                  <div
-                    className="flex items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => {
-                      setAudience('developer');
-                      setShowTitleDropdown(false);
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      checked={audience === 'developer'}
-                      onChange={() => { }}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <span className="mx-2 mr-2">{t.developerMode}</span>
-                  </div>
-                  <div
-                    className="flex items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => {
-                      setAudience('user');
-                      setShowTitleDropdown(false);
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      checked={audience === 'user'}
-                      onChange={() => { }}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <span className="mx-2 mr-2">{t.userMode}</span>
-                  </div>
-                </div>
-              </div>
-            )}
+            <GenericDropdown
+              buttonLabel={t.title}
+              options={[
+                { label: t.developerMode, value: 'developer', checked: audience === 'developer' },
+                { label: t.userMode, value: 'user', checked: audience === 'user' }
+              ]}
+              onSelect={(value) => setAudience(value as Audience)}
+              width="w-56"
+              type="radio"
+            />
           </div>
           <div className="flex gap-4">
             {/* Cluster Dropdown */}
-            <div className="relative" ref={clusterDropdownRef}>
-              <button
-                onClick={() => setShowClusterDropdown(!showClusterDropdown)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                {t.selectCluster}
-                <ChevronDown className="mx-2 h-4 w-4 text-gray-800" />
-              </button>
-              {showClusterDropdown && (
-                <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                  <div className="py-1">
-                    {clusters.map(cluster => (
-                      <div
-                        key={cluster.name}
-                        className="flex items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          setSelectedCluster(cluster);
-                          setShowClusterDropdown(false);
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          checked={selectedCluster.name === cluster.name}
-                          onChange={() => { }}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <span className="mx-2">{cluster.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <GenericDropdown
+              buttonLabel={t.selectCluster}
+              options={clusters.map(cluster => ({
+                label: cluster.name,
+                value: cluster.name,
+                checked: selectedCluster.name === cluster.name
+              }))}
+              onSelect={(value) => setSelectedCluster(clusters.find(cluster => cluster.name === value)!)}
+              width="w-56"
+              type="radio"
+            />
 
             {/* Filter Dropdown */}
-            <div className="relative" ref={indexDropdownRef}>
-              <button
-                onClick={() => setShowIndexDropdown(!showIndexDropdown)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                {t.filterIndices}
-                <ChevronDown className="mx-2 h-4 w-4 text-gray-800" />
-              </button>
-              {showIndexDropdown && (
-                <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                  <div className="py-1">
-                    {indices.map(index => (
-                      <div
-                        key={index.name}
-                        className="flex items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => handleIndexToggle(index.name)}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedIndices[index.name]}
-                          onChange={() => { }}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <span className="mx-2">{audience === 'developer' ? index.name : index.hebrewName}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <GenericDropdown
+              buttonLabel={t.filterIndices}
+              options={indices.map(index => ({
+                label: audience === 'developer' ? index.name : index.hebrewName,
+                value: index.name,
+                checked: selectedIndices[index.name]
+              }))}
+              onSelect={(value) => handleIndexToggle(value)}
+              width="w-56"
+              type="checkbox"
+            />
 
             {/* Edit/View Mode Toggle */}
             <button
@@ -755,24 +682,16 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
                         <h3 className="text-lg font-bold text-gray-800">{audience === 'developer' ? index.name : index.hebrewName}</h3>
                         {isEditMode && (
                           <div className="relative" ref={threeDotsDropdownRef}>
-                            <button
-                              onClick={() => setOpenDropdownIndex(openDropdownIndex === index.name ? null : index.name)}
-                              className="inline-flex items-center px-2 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                            >
-                              <MoreVertical className="h-4 w-4 text-gray-800" />
-                            </button>
-                            {openDropdownIndex === index.name && (
-                              <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                                <div className="py-1">
-                                  <button
-                                    onClick={() => handleRemoveIndex(index.name)}
-                                    className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full text-left"
-                                  >
-                                    {t.removeIndex}
-                                  </button>
-                                </div>
-                              </div>
-                            )}
+                            <GenericDropdown
+                              buttonLabel={<MoreVertical className="h-4 w-4 text-gray-800" />}
+                              options={[
+                                { label: t.removeIndex, value: 'remove' }
+                              ]}
+                              onSelect={() => handleRemoveIndex(index.name)}
+                              width="w-40"
+                              type="button"
+                              showChevron={false}
+                            />
                           </div>
                         )}
                       </div>
