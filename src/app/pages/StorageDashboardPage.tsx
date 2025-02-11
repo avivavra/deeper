@@ -9,6 +9,7 @@ import { clusters } from './exampleData';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
 import GenericDropdown from '../components/GenericDropdown';
+import StorageHeader from './StorageHeader';
 
 const StorageDashboardPage = () => {
   // Original data and main states
@@ -476,72 +477,18 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b px-6 py-4">
-        <div className="flex justify-between items-center">
-          <div className="relative title-dropdown">
-            <GenericDropdown
-              buttonLabel={t.title}
-              options={[
-                { label: t.developerMode, value: 'developer', checked: audience === 'developer' },
-                { label: t.userMode, value: 'user', checked: audience === 'user' }
-              ]}
-              onSelect={(value) => setAudience(value as Audience)}
-              width="w-56"
-              type="radio"
-            />
-          </div>
-          <div className="flex gap-4">
-            {/* Cluster Dropdown */}
-            <GenericDropdown
-              buttonLabel={t.selectCluster}
-              options={clusters.map(cluster => ({
-                label: cluster.name,
-                value: cluster.name,
-                checked: selectedCluster.name === cluster.name
-              }))}
-              onSelect={(value) => setSelectedCluster(clusters.find(cluster => cluster.name === value)!)}
-              width="w-56"
-              type="radio"
-            />
-
-            {/* Filter Dropdown */}
-            <GenericDropdown
-              buttonLabel={t.filterIndices}
-              options={indices.map(index => ({
-                label: audience === 'developer' ? index.name : index.hebrewName,
-                value: index.name,
-                checked: selectedIndices[index.name]
-              }))}
-              onSelect={(value) => handleIndexToggle(value)}
-              width="w-56"
-              type="checkbox"
-            />
-
-            {/* Edit/View Mode Toggle */}
-            <button
-              onClick={handleModeToggle}
-              className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEditMode
-                ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100 focus:ring-red-500'
-                : 'border-gray-300 text-gray-800 bg-white hover:bg-gray-50 focus:ring-blue-500'
-                }`}
-            >
-              {isEditMode ? (
-                <>
-                  <Eye className="h-4 w-4 mx-2 text-gray-800" />
-                  {t.viewMode}
-                </>
-              ) : (
-                <>
-                  <Pencil className="h-4 w-4 mx-2 text-gray-800" />
-                  {t.editMode}
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
+      <StorageHeader
+        audience={audience}
+        setAudience={setAudience}
+        clusters={clusters}
+        selectedCluster={selectedCluster}
+        setSelectedCluster={setSelectedCluster}
+        indices={indices}
+        selectedIndices={selectedIndices}
+        handleIndexToggle={handleIndexToggle}
+        isEditMode={isEditMode}
+        handleModeToggle={handleModeToggle}
+      />
       {/* Main Content */}
       <div className="flex">
         {/* Change Log Sidebar */}
@@ -558,7 +505,6 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
             handleImport={handleImport}
           />
         )}
-
         <div className={`flex-grow p-6 space-y-6 ${isEditMode ? 'lg:w-[calc(100%-20rem)]' : ''}`}>
           {/* Storage Overview and Chart */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
