@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
 import { translations } from './translations';
 import { ChangeLogEntry, IndexData } from './models';
-import GenericDropdown from '../components/GenericDropdown';
+import GenericDropdown from '../../components/GenericDropdown';
 
 interface ChangeLogProps {
   changeLog: { [key: string]: ChangeLogEntry };

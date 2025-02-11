@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pencil, Eye } from 'lucide-react';
-import GenericDropdown from '../components/GenericDropdown';
+import GenericDropdown from '../../components/GenericDropdown';
 import { translations } from './translations';
 import { Audience, ClusterData } from './models';
 

@@ -8,7 +8,7 @@ import { Audience, ChangeLogEntry, IndexData } from './models';
 import { clusters } from './exampleData';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
-import GenericDropdown from '../components/GenericDropdown';
+import GenericDropdown from '../../components/GenericDropdown';
 import StorageHeader from './StorageHeader';
 
 const StorageDashboardPage = () => {
