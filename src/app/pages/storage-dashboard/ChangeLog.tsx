@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
 import { translations } from './translations';
 import { ChangeLogEntry, IndexData } from './models';
@@ -20,7 +20,6 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
   changeLog,
   audience,
   indices,
-  selectedCluster,
   handleRevertChange,
   handleExport,
   handleEmail,

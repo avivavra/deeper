@@ -42,7 +42,7 @@ const IndexRetentionPeriodsChart = ({ audience, filteredIndices, t }: IndexReten
             />
             <YAxis
               label={{ value: t.days, angle: audience === 'user' ? 90 : -90, position: audience === 'user' ? 'outsideLeft' : 'insideLeft' }}
-              orientation={audience === 'user' ? 'right' : 'left' }
+              orientation={audience === 'user' ? 'right' : 'left'}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />

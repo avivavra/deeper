@@ -30,8 +30,6 @@ const StorageDashboardPage = () => {
   });
   const [audience, setAudience] = useState<Audience>('developer');
 
-  const threeDotsDropdownRef = useRef(null);
-
   useEffect(() => {
     if (selectedCluster) {
       setIndices(selectedCluster.indices);
@@ -39,10 +37,6 @@ const StorageDashboardPage = () => {
       handleResetChanges();
     }
   }, [selectedCluster]);
-
-  useEffect(() => {
-    document.documentElement.dir = audience;
-  }, [audience]);
 
   useEffect(() => {
     document.documentElement.dir = audience === 'developer' ? 'ltr' : 'rtl';
@@ -532,7 +526,7 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-bold text-gray-800">{audience === 'developer' ? index.name : index.hebrewName}</h3>
                         {isEditMode && (
-                          <div className="relative" ref={threeDotsDropdownRef}>
+                          <div className="relative">
                             <GenericDropdown
                               buttonLabel={<MoreVertical className="h-4 w-4 text-gray-800" />}
                               options={[
