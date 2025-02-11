@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Plus, MoreVertical } from 'lucide-react';
-import { TooltipProps } from 'recharts';
 import { Audience, ChangeLogEntry, IndexData } from './models';
 import { clusters } from './exampleData';
 import { translations } from './translations';
@@ -11,6 +9,7 @@ import ChangeLog from './ChangeLog';
 import GenericDropdown from '../../components/GenericDropdown';
 import StorageHeader from './StorageHeader';
 import StorageUsageOverview from './StorageUsageOverview';
+import IndexRetentionPeriodsChart from './IndexRetentionPeriodsChart';
 
 const StorageDashboardPage = () => {
   // Original data and main states
@@ -505,42 +504,12 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
               getStorageBarColor={getStorageBarColor}
             />
             {/* Retention Period Chart */}
-            <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">{t.indexRetentionPeriods}</h2>
-              </div>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={filteredIndices}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-                    <XAxis
-                      dataKey={audience === 'developer' ? "name" : "hebrewName"}
-                      reversed={audience === 'user'}
-                    />
-                    <YAxis
-                      label={{ value: t.days, angle: audience === 'user' ? 90 : -90, position: audience === 'user' ? 'outsideLeft' : 'insideLeft' }}
-                      orientation={audience === 'user' ? 'right' : 'left'}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    {audience === 'developer' && (
-                      <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />
-                    )}
-                    {audience === 'developer' && (
-                      <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name={t.coldTier} />
-                    )}
-                    {audience === 'user' && (
-                      <Bar dataKey="totalRetentionDays" fill="#2563eb" name={t.totalRetentionPeriod} />
-                    )}
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            <IndexRetentionPeriodsChart
+              audience={audience}
+              filteredIndices={filteredIndices}
+              t={t}
+            />
           </div>
-
           {/* Index Management */}
           <div className={`bg-white rounded-lg shadow-sm ${isEditMode ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
             <div className="p-6">
