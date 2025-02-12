@@ -327,7 +327,6 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
     window.location.href = mailtoLink;
   };
 
-
   const handleResetChanges = () => {
     setIndices(selectedCluster.indices);
     setChangeLog({});
@@ -354,6 +353,8 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
               if (hotDaysMatch && coldDaysMatch && elasticStorageMatch && s3StorageMatch) {
                 const newHotDays = parseInt(hotDaysMatch[1]);
                 const newColdDays = parseInt(coldDaysMatch[1]);
+                const newElasticStorage = parseInt(elasticStorageMatch[1]);
+                const newS3Storage = parseInt(s3StorageMatch[1]);
 
                 if (newHotDays === 0 && newColdDays === 0) {
                   // Remove index if both hot and cold days are zero
@@ -383,7 +384,49 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
                     };
                   });
                 } else {
-                  handleRetentionChange(indexName, newHotDays, newColdDays);
+                  const newIndex = indices.find(index => index.name === indexName);
+                  if (newIndex) {
+                    handleRetentionChange(indexName, newHotDays, newColdDays);
+                  } else {
+                    const elasticStoragePerHotTierDay = newHotDays > 0 ? newElasticStorage / newHotDays : 0;
+                    const S3StoragePerColdTierDay = newColdDays > 0 ? newS3Storage / newColdDays : 0;
+
+                    const newIndexData = {
+                      name: indexName,
+                      hebrewName: indexName, // Add appropriate Hebrew name here
+                      hotRetentionDays: newHotDays,
+                      coldRetentionDays: newColdDays,
+                      elasticStorageGB: newElasticStorage,
+                      S3StorageGB: newS3Storage,
+                      totalRetentionDays: newHotDays + newColdDays,
+                      initialHotRetentionDays: newHotDays,
+                      initialColdRetentionDays: newColdDays,
+                      elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
+                      S3StoragePerColdTierDay: S3StoragePerColdTierDay,
+                      elasticStoragePerColdTierDay: 0
+                    };
+                    setIndices(prevIndices => [newIndexData, ...prevIndices]);
+                    setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
+                    setChangeLog(prev => {
+                      return {
+                        ...prev,
+                        [indexName]: {
+                          original: {
+                            hotDays: 0,
+                            coldDays: 0,
+                            elasticStorage: 0,
+                            s3Storage: 0,
+                          },
+                          current: {
+                            hotDays: newHotDays,
+                            coldDays: newColdDays,
+                            elasticStorage: newElasticStorage,
+                            s3Storage: newS3Storage,
+                          }
+                        }
+                      };
+                    });
+                  }
                 }
               }
             }
