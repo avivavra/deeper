@@ -2,6 +2,8 @@ import React from 'react';
 import { Plus, MoreVertical } from 'lucide-react';
 import GenericDropdown from '../../components/GenericDropdown';
 import CustomSlider from './CustomSlider';
+import Tooltip from '../../components/Tooltip'; // Import Tooltip component
+import TooltipIcon from '../../components/TooltipIcon'; // Import TooltipIcon component
 
 type IndexRetentionManagementProps = {
     isEditMode: boolean;
@@ -27,10 +29,6 @@ const IndexRetentionManagement = ({
     handleRetentionChange,
     handleRemoveIndex,
     setShowAddIndex,
-    showAddIndex,
-    newIndex,
-    setNewIndex,
-    handleAddIndex
 }: IndexRetentionManagementProps) => {
     return (
         <div className={`bg-white rounded-lg shadow-sm ${isEditMode ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
@@ -113,40 +111,53 @@ const IndexRetentionManagement = ({
                                         </>
                                     )
                                 ) : (
-                                    <div className="grid grid-cols-2 gap-4 mt-2">
+                                    <div className="grid grid-cols-1 gap-4 mt-2">
                                         {audience === 'developer' && (
                                             <>
-                                                <div>
-                                                    <span className="text-sm font-medium text-gray-800">{t.hotTierRetention}:</span>
-                                                    <span className="text-sm ml-2 text-gray-800">{index.hotRetentionDays} {t.days}</span>
+                                                <div className="flex justify-between text-sm text-gray-800">
+                                                    <span className="text-left">{t.hotTierRetention}</span>
+                                                    <span className="text-right">{index.hotRetentionDays} {t.days}</span>
                                                 </div>
-                                                <div>
-                                                    <span className="text-sm font-medium text-gray-800">{t.coldTierRetention}:</span>
-                                                    <span className="text-sm ml-2 text-gray-800">{index.coldRetentionDays} {t.days}</span>
+                                                <div className="flex justify-between text-sm text-gray-800">
+                                                    <span className="text-left">{t.coldTierRetention}</span>
+                                                    <span className="text-right">{index.coldRetentionDays} {t.days}</span>
+                                                </div>
+                                                <div className="flex justify-between text-sm font-bold text-gray-800">
+                                                    <span>{t.totalRetentionPeriod}</span>
+                                                    <span>{index.totalRetentionDays} {t.days}</span>
+                                                </div>
+                                                <div className="flex justify-between text-sm text-gray-800">
+                                                    <span className="text-left">Elasticsearch</span>
+                                                    <span className="text-right">
+                                                        {index.elasticStorageGB} GB
+                                                        <TooltipIcon content={`Hot: ${index.elasticStoragePerHotTierDay.toFixed(2)}GB/day, Cold: ${index.elasticStoragePerColdTierDay.toFixed(2)}GB/day`} />
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-sm text-gray-800">
+                                                    <span className="text-left">S3</span>
+                                                    <span className="text-right">
+                                                        {index.S3StorageGB} GB
+                                                        <TooltipIcon content={`Cold: ${index.S3StoragePerColdTierDay.toFixed(2)}GB/day`} />
+                                                    </span>
                                                 </div>
                                             </>
                                         )}
                                     </div>
                                 )}
 
-                                <div className="flex justify-between text-sm font-bold text-gray-800 mt-4">
-                                    <span>{t.totalRetentionPeriod}</span>
-                                    <span>{index.totalRetentionDays} {t.days}</span>
-                                </div>
 
-                                {audience === 'user' ? (
-                                    <div className="flex justify-between text-sm text-gray-800 mt-4">
-                                        <span>{t.storage}</span>
-                                        <span dir='ltr'>{index.elasticStorageGB + index.S3StorageGB} GB</span>
-                                    </div>
-                                ) : (
-                                    <div className="text-sm space-x-4 mt-4">
-                                        <span className="text-gray-800">Elasticsearch: {index.elasticStorageGB} GB</span>
-                                        <span className="text-gray-800">S3: {index.S3StorageGB} GB</span>
-                                        <span className="text-gray-500">
-                                            ({index.elasticStoragePerHotTierDay.toFixed(2)}GB/day hot, {index.S3StoragePerColdTierDay.toFixed(2)}GB/day cold)
-                                        </span>
-                                    </div>
+
+                                {audience === 'user' && (
+                                    <>
+                                        <div className="flex justify-between text-sm font-bold text-gray-800 mt-4">
+                                            <span>{t.totalRetentionPeriod}</span>
+                                            <span>{index.totalRetentionDays} {t.days}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-gray-800 mt-4">
+                                            <span>{t.storage}</span>
+                                            <span dir='ltr'>{index.elasticStorageGB + index.S3StorageGB} GB</span>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         ))}
