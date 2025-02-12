@@ -354,7 +354,37 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
               if (hotDaysMatch && coldDaysMatch && elasticStorageMatch && s3StorageMatch) {
                 const newHotDays = parseInt(hotDaysMatch[1]);
                 const newColdDays = parseInt(coldDaysMatch[1]);
-                handleRetentionChange(indexName, newHotDays, newColdDays);
+
+                if (newHotDays === 0 && newColdDays === 0) {
+                  // Remove index if both hot and cold days are zero
+                  setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
+                  setSelectedIndices(prev => {
+                    const { [indexName]: _, ...rest } = prev;
+                    return rest;
+                  });
+                  setChangeLog(prev => {
+                    const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
+                    return {
+                      ...prev,
+                      [indexName]: {
+                        original: {
+                          hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
+                          coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
+                          elasticStorage: originalIndex ? originalIndex.elasticStorageGB : 0,
+                          s3Storage: originalIndex ? originalIndex.S3StorageGB : 0,
+                        },
+                        current: {
+                          hotDays: 0,
+                          coldDays: 0,
+                          elasticStorage: 0,
+                          s3Storage: 0,
+                        }
+                      }
+                    };
+                  });
+                } else {
+                  handleRetentionChange(indexName, newHotDays, newColdDays);
+                }
               }
             }
           });
@@ -365,7 +395,6 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
       reader.readAsText(file);
     }
   };
-
 
   const handleRemoveIndex = (indexName: string) => {
     const indexToRemove = indices.find(index => index.name === indexName);
