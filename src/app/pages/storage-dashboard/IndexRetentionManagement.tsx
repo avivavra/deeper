@@ -75,6 +75,7 @@ const IndexRetentionManagement = ({
                                                 <span>{index.totalRetentionDays}</span>
                                             </div>
                                             <CustomSlider
+                                                resetKey={`total-${index.name}-${index.totalRetentionDays}`} // Update to resetKey
                                                 value={[index.totalRetentionDays]}
                                                 min={1}
                                                 max={270}
@@ -89,6 +90,7 @@ const IndexRetentionManagement = ({
                                                     <span>{index.hotRetentionDays}</span>
                                                 </div>
                                                 <CustomSlider
+                                                    resetKey={`hot-${index.name}-${index.hotRetentionDays}`} // Update to resetKey
                                                     value={[index.hotRetentionDays]}
                                                     min={1}
                                                     max={90}
@@ -102,6 +104,7 @@ const IndexRetentionManagement = ({
                                                     <span>{index.coldRetentionDays}</span>
                                                 </div>
                                                 <CustomSlider
+                                                    resetKey={`cold-${index.name}-${index.coldRetentionDays}`} // Update to resetKey
                                                     value={[index.coldRetentionDays]}
                                                     min={0}
                                                     max={180}

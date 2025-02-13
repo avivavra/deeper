@@ -1,15 +1,20 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 type CustomSliderProps = {
     value: number[];
     min: number;
     max: number;
     onChange: (value: number[]) => void;
+    resetKey: string; // Rename key prop to resetKey
 };
 
-const CustomSlider = ({ value, min, max, onChange }: CustomSliderProps) => {
+const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSliderProps) => {
     const [sliderValue, setSliderValue] = useState(value[0]);
     const sliderRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        setSliderValue(value[0]); // Reset slider value when resetKey changes
+    }, [resetKey, value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = parseInt(e.target.value);
