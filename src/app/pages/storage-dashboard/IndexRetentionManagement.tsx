@@ -1,36 +1,23 @@
 import React from 'react';
 import { Plus, MoreVertical } from 'lucide-react';
 import GenericDropdown from '../../components/GenericDropdown';
-import CustomSlider from './CustomSlider';
+import CustomSlider from '../../components/CustomSlider';
 import TooltipIcon from '../../components/TooltipIcon';
-import { Direction, DisplayMethod, IndexData } from './models';
-
-type Translations = {
-    indexRetentionManagement: string;
-    addIndex: string;
-    removeIndex: string;
-    totalRetentionPeriod: string;
-    hotTierRetention: string;
-    coldTierRetention: string;
-    days: string;
-    elasticsearchStorage: string;
-    s3Storage: string;
-    storage: string;
-};
+import { Direction, DisplayMethod, IndexData, NewIndexInputType, Translation } from './models';
 
 type IndexRetentionManagementProps = {
     isEditMode: boolean;
     filteredIndices: IndexData[];
     direction: Direction;
     displayMethod: DisplayMethod;
-    t: Translations;
+    t: Translation;
     handleTotalRetentionChange: (indexName: string, newTotalDays: number) => void;
     handleRetentionChange: (indexName: string, newHotDays: number, newColdDays: number) => void;
     handleRemoveIndex: (indexName: string) => void;
     setShowAddIndex: (show: boolean) => void;
     showAddIndex: boolean;
     newIndex: { name: string; docSize: string; frequency: string; avgDocs: string; inputType: NewIndexInputType };
-    setNewIndex: (newIndex: any) => void;
+    setNewIndex: (newIndex: IndexData) => void;
     handleAddIndex: () => void;
 };
 

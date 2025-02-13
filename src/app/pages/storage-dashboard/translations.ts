@@ -1,5 +1,10 @@
-export const translations = {
-  developer: {
+import { Translation } from "./models";
+
+export const translations: {
+  english: Translation;
+  hebrew: Translation;
+} = {
+  english: {
     title: 'Storage Dashboard for Developers',
     developerMode: 'Developer Mode',
     userMode: 'User Mode',
@@ -39,7 +44,7 @@ export const translations = {
     avgDocsPlaceholder: 'e.g., 1000',
     removeIndex: 'Remove Index',
   },
-  user: {
+  hebrew: {
     title: 'דאשבורד אחסון',
     developerMode: 'מצב מפתח',
     userMode: 'מצב משתמש',

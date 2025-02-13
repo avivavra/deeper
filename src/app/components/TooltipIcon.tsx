@@ -1,13 +1,14 @@
-import React, { ReactNode, useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 type TooltipIconProps = {
     content: string;
-    alignment?: 'left' | 'right'; // Add alignment prop
+    alignment?: 'left' | 'right';
 };
 
 const TooltipIcon = ({ content, alignment = 'left' }: TooltipIconProps) => {
     const [visible, setVisible] = useState(false);
     const [position, setPosition] = useState<'top' | 'bottom'>('bottom');
+    const [currentAlignment, setAlignment] = useState<'left' | 'right'>(alignment);
     const tooltipRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -44,7 +45,7 @@ const TooltipIcon = ({ content, alignment = 'left' }: TooltipIconProps) => {
                     ref={tooltipRef}
                     className={`absolute z-10 w-48 p-3 text-sm text-white bg-gray-900 rounded-lg shadow-md transition-opacity duration-300 text-${alignment} ${
                         position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
-                    } ${alignment === 'right' ? 'right-0' : 'left-0'}`}
+                    } ${currentAlignment === 'right' ? 'right-0' : 'left-0'}`}
                 >
                     {content}
                 </div>

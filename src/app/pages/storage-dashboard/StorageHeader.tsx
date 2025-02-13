@@ -1,17 +1,7 @@
 import React from 'react';
 import { Pencil, Eye } from 'lucide-react';
 import GenericDropdown from '../../components/GenericDropdown';
-import { Audience, ClusterData, IndexData } from './models';
-
-interface Translations {
-  title: string;
-  developerMode: string;
-  userMode: string;
-  selectCluster: string;
-  filterIndices: string;
-  viewMode: string;
-  editMode: string;
-}
+import { Audience, ClusterData, IndexData, Translation } from './models';
 
 interface StorageHeaderProps {
   audience: Audience;
@@ -25,7 +15,7 @@ interface StorageHeaderProps {
   isEditMode: boolean;
   handleModeToggle: () => void;
   translateIndexNames: boolean;
-  t: Translations;
+  t: Translation;
 }
 
 const StorageHeader: React.FC<StorageHeaderProps> = ({

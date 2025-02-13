@@ -1,5 +1,5 @@
 import React from 'react';
-import { DisplayMethod } from './models';
+import { DisplayMethod, Translation } from './models';
 
 type StorageUsageOverviewProps = {
   displayMethod: DisplayMethod;
@@ -12,13 +12,7 @@ type StorageUsageOverviewProps = {
   usedS3Storage: number;
   totalS3Storage: number;
   s3StoragePercentage: number;
-  t: {
-    storageUsageOverview: string;
-    storage: string;
-    elasticsearchStorage: string;
-    s3Storage: string;
-    overLimit: string;
-  };
+  t: Translation;
   getStorageBarColor: (percentage: number) => string;
 };
 

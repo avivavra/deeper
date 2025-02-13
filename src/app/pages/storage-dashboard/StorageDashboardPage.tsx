@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Audience, ChangeLogEntry, Direction, DisplayMethod, IndexData, NewIndexInputType } from './models';
+import { Audience, ChangeLogEntry, Direction, DisplayMethod, IndexData, NewIndexInputType, Translation } from './models';
 import { clusters } from './exampleData';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
@@ -30,6 +30,9 @@ const StorageDashboardPage = () => {
   });
   const [audience, setAudience] = useState<Audience>('developer');
 
+  const t = translations[audience === 'user' ? 'hebrew' : 'english'];
+  const direction: Direction = audience === 'user' ? 'rtl' : 'ltr';
+
   useEffect(() => {
     if (selectedCluster) {
       setIndices(selectedCluster.indices);
@@ -37,8 +40,6 @@ const StorageDashboardPage = () => {
       handleResetChanges();
     }
   }, [selectedCluster]);
-
-  const direction: Direction = audience === 'user' ? 'rtl' : 'ltr';
 
   useEffect(() => {
     document.documentElement.dir = direction;
@@ -77,8 +78,6 @@ const StorageDashboardPage = () => {
 
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
 
-  const t = translations[audience];
-
   const getStorageBarColor = (percentage: number) => {
     if (percentage > 80) return 'bg-red-500';
     if (percentage > 70) return 'bg-orange-500';
@@ -103,15 +102,15 @@ const StorageDashboardPage = () => {
 
     const newIndexData = {
       name: newIndex.name,
-      hebrewName: newIndex.name, // Add appropriate Hebrew name here
+      hebrewName: newIndex.name,
       ...rates,
       hotRetentionDays,
       coldRetentionDays,
       elasticStorageGB: Math.round(rates.elasticStoragePerHotTierDay * hotRetentionDays),
-      S3StorageGB: Math.round(rates.S3StoragePerColdTierDay * coldRetentionDays), // Fix the property name to match the existing code
+      S3StorageGB: Math.round(rates.S3StoragePerColdTierDay * coldRetentionDays),
       totalRetentionDays: hotRetentionDays + coldRetentionDays,
-      initialHotRetentionDays: hotRetentionDays, // Store initial hot retention days
-      initialColdRetentionDays: coldRetentionDays // Store initial cold retention days
+      initialHotRetentionDays: hotRetentionDays,
+      initialColdRetentionDays: coldRetentionDays
     };
 
     setIndices([newIndexData, ...indices]);
@@ -395,7 +394,7 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
 
                     const newIndexData = {
                       name: indexName,
-                      hebrewName: indexName, // Add appropriate Hebrew name here
+                      hebrewName: indexName,
                       hotRetentionDays: newHotDays,
                       coldRetentionDays: newColdDays,
                       elasticStorageGB: newElasticStorage,
@@ -480,18 +479,19 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
   const displayProps: {
     direction: Direction,
     displayMethod: DisplayMethod,
-    translateIndexNames: boolean
+    translateIndexNames: boolean,
+    t: Translation
   } = {
     direction,
+    t,
     displayMethod: audience === 'user' ? 'combined' : 'separate',
-    translateIndexNames: audience === 'user',
+    translateIndexNames: audience === 'user'
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <StorageHeader
         {...displayProps}
-        t={t}
         audience={audience}
         setAudience={setAudience}
         clusters={clusters}
@@ -509,7 +509,6 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
           <ChangeLog
             {...displayProps}
             changeLog={changeLog}
-            t={t}
             indices={indices}
             selectedCluster={selectedCluster}
             handleRevertChange={handleRevertChange}
@@ -532,13 +531,11 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
               usedS3Storage={usedS3Storage}
               totalS3Storage={totalS3Storage}
               s3StoragePercentage={s3StoragePercentage}
-              t={t}
               getStorageBarColor={getStorageBarColor}
             />
             <IndexRetentionPeriodsChart
               {...displayProps}
               filteredIndices={filteredIndices}
-              t={t}
             />
           </div>
           <IndexRetentionManagement
@@ -559,7 +556,7 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
       </div>
       {showAddIndex && (
         <AddIndexModal
-          t={t}
+          {...displayProps}
           newIndex={newIndex}
           setNewIndex={setNewIndex}
           setShowAddIndex={setShowAddIndex}

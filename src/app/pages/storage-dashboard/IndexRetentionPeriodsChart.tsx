@@ -1,21 +1,13 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
-import { Direction, DisplayMethod, IndexData } from './models';
-
-type Translations = {
-  indexRetentionPeriods: string;
-  days: string;
-  hotTier: string;
-  coldTier: string;
-  totalRetentionPeriod: string;
-};
+import { Direction, DisplayMethod, IndexData, Translation } from './models';
 
 type IndexRetentionPeriodsChartProps = {
   direction: Direction;
   displayMethod: DisplayMethod;
   translateIndexNames: boolean;
   filteredIndices: IndexData[];
-  t: Translations;
+  t: Translation;
 };
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps) => {

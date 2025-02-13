@@ -5,7 +5,7 @@ type CustomSliderProps = {
     min: number;
     max: number;
     onChange: (value: number[]) => void;
-    resetKey: string; // Rename key prop to resetKey
+    resetKey: string;
 };
 
 const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSliderProps) => {

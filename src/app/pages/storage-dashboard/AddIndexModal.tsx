@@ -1,8 +1,8 @@
 import React from 'react';
-import { NewIndexInputType } from './models';
+import { NewIndexInputType, Translation } from './models';
 
 interface AddIndexModalProps {
-    t: any;
+    t: Translation;
     newIndex: {
         name: string;
         docSize: string;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
-import { ChangeLogEntry, Direction, DisplayMethod, IndexData } from './models';
+import { ChangeLogEntry, Direction, DisplayMethod, IndexData, Translation } from './models';
 import GenericDropdown from '../../components/GenericDropdown';
 
 interface ChangeLogProps {
@@ -14,17 +14,7 @@ interface ChangeLogProps {
   handleEmail: () => void;
   handleResetChanges: () => void;
   handleImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  t: {
-    changeLog: string;
-    exportToFile: string;
-    exportToEmail: string;
-    days: string;
-    impact: string;
-    storage: string;
-    hotTier: string;
-    coldTier: string;
-    noChanges: string;
-  };
+  t: Translation;
   translateIndexNames: boolean;
 }
 
