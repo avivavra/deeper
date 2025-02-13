@@ -1,8 +1,17 @@
 import React from 'react';
 import { Pencil, Eye } from 'lucide-react';
 import GenericDropdown from '../../components/GenericDropdown';
-import { translations } from './translations';
-import { Audience, ClusterData } from './models';
+import { Audience, ClusterData, IndexData } from './models';
+
+interface Translations {
+  title: string;
+  developerMode: string;
+  userMode: string;
+  selectCluster: string;
+  filterIndices: string;
+  viewMode: string;
+  editMode: string;
+}
 
 interface StorageHeaderProps {
   audience: Audience;
@@ -10,11 +19,13 @@ interface StorageHeaderProps {
   clusters: ClusterData[];
   selectedCluster: ClusterData;
   setSelectedCluster: (cluster: ClusterData) => void;
-  indices: any[];
+  indices: IndexData[];
   selectedIndices: { [key: string]: boolean };
   handleIndexToggle: (indexName: string) => void;
   isEditMode: boolean;
   handleModeToggle: () => void;
+  translateIndexNames: boolean;
+  t: Translations;
 }
 
 const StorageHeader: React.FC<StorageHeaderProps> = ({
@@ -27,9 +38,10 @@ const StorageHeader: React.FC<StorageHeaderProps> = ({
   selectedIndices,
   handleIndexToggle,
   isEditMode,
-  handleModeToggle
+  handleModeToggle,
+  translateIndexNames,
+  t
 }) => {
-  const t = translations[audience];
 
   return (
     <div className="bg-white border-b px-6 py-4">
@@ -61,7 +73,7 @@ const StorageHeader: React.FC<StorageHeaderProps> = ({
           <GenericDropdown
             buttonLabel={t.filterIndices}
             options={indices.map(index => ({
-              label: audience === 'developer' ? index.name : index.hebrewName,
+              label: translateIndexNames ? index.hebrewName : index.name,
               value: index.name,
               checked: selectedIndices[index.name]
             }))}

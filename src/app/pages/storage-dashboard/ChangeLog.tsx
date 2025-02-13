@@ -25,7 +25,7 @@ interface ChangeLogProps {
     coldTier: string;
     noChanges: string;
   };
-  translateIndexName: boolean;
+  translateIndexNames: boolean;
 }
 
 const ChangeLog: React.FC<ChangeLogProps> = ({
@@ -39,7 +39,7 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
   handleResetChanges,
   handleImport,
   t,
-  translateIndexName,
+  translateIndexNames,
 }) => {
   const arrow = direction === 'ltr' ? '→' : '←';
 
@@ -98,7 +98,7 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
             return (
               <div key={indexName} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-blue-500`}>
                 <div className="flex justify-between items-start">
-                  <div className="font-medium text-gray-800">{translateIndexName ? hebrewIndexName : indexName}</div>
+                  <div className="font-medium text-gray-800">{translateIndexNames ? hebrewIndexName : indexName}</div>
                   <button
                     onClick={() => handleRevertChange(indexName)}
                     className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"

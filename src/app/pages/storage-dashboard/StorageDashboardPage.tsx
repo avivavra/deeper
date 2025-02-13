@@ -477,14 +477,21 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
     });
   };
 
-  const displayProps: { direction: Direction, displayMethod: DisplayMethod } = {
+  const displayProps: {
+    direction: Direction,
+    displayMethod: DisplayMethod,
+    translateIndexNames: boolean
+  } = {
     direction,
-    displayMethod: audience === 'user' ? 'combined' : 'separate'
+    displayMethod: audience === 'user' ? 'combined' : 'separate',
+    translateIndexNames: audience === 'user',
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <StorageHeader
+        {...displayProps}
+        t={t}
         audience={audience}
         setAudience={setAudience}
         clusters={clusters}
@@ -503,7 +510,6 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
             {...displayProps}
             changeLog={changeLog}
             t={t}
-            translateIndexName={audience === 'user'}
             indices={indices}
             selectedCluster={selectedCluster}
             handleRevertChange={handleRevertChange}
@@ -531,7 +537,6 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
             />
             <IndexRetentionPeriodsChart
               {...displayProps}
-              translateIndexName={audience === 'user'}
               filteredIndices={filteredIndices}
               t={t}
             />

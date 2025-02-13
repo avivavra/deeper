@@ -13,7 +13,7 @@ type Translations = {
 type IndexRetentionPeriodsChartProps = {
   direction: Direction;
   displayMethod: DisplayMethod;
-  translateIndexName: boolean;
+  translateIndexNames: boolean;
   filteredIndices: IndexData[];
   t: Translations;
 };
@@ -32,7 +32,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   return null;
 };
 
-const IndexRetentionPeriodsChart = ({ direction, displayMethod, translateIndexName, filteredIndices, t }: IndexRetentionPeriodsChartProps) => {
+const IndexRetentionPeriodsChart = ({ direction, displayMethod, translateIndexNames, filteredIndices, t }: IndexRetentionPeriodsChartProps) => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
       <div className="mb-4">
@@ -46,7 +46,7 @@ const IndexRetentionPeriodsChart = ({ direction, displayMethod, translateIndexNa
           >
             <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
             <XAxis
-              dataKey={translateIndexName ? "hebrewName" : "name"}
+              dataKey={translateIndexNames ? "hebrewName" : "name"}
               reversed={direction === 'rtl'}
             />
             <YAxis
