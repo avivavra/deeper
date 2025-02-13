@@ -130,22 +130,20 @@ const IndexRetentionManagement = ({
                                                     <span className="text-left">Elasticsearch</span>
                                                     <span className="text-right">
                                                         {index.elasticStorageGB} GB
-                                                        <TooltipIcon content={`Hot: ${index.elasticStoragePerHotTierDay.toFixed(2)}GB/day, Cold: ${index.elasticStoragePerColdTierDay.toFixed(2)}GB/day`} />
+                                                        <TooltipIcon content={`Hot: ${index.elasticStoragePerHotTierDay.toFixed(2)}GB/day, Cold: ${index.elasticStoragePerColdTierDay.toFixed(2)}GB/day`} alignment="left" />
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between text-sm text-gray-800">
                                                     <span className="text-left">S3</span>
                                                     <span className="text-right">
                                                         {index.S3StorageGB} GB
-                                                        <TooltipIcon content={`Cold: ${index.S3StoragePerColdTierDay.toFixed(2)}GB/day`} />
+                                                        <TooltipIcon content={`Cold: ${index.S3StoragePerColdTierDay.toFixed(2)}GB/day`} alignment="left" />
                                                     </span>
                                                 </div>
                                             </>
                                         )}
                                     </div>
                                 )}
-
-
 
                                 {audience === 'user' && (
                                     <>
