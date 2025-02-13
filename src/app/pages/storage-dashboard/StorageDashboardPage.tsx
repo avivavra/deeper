@@ -494,7 +494,10 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
         {isEditMode && (
           <ChangeLog
             changeLog={changeLog}
-            audience={audience}
+            direction={audience === 'user' ? 'rtl' : 'ltr'}
+            displayMode={audience === 'user' ? 'combined' : 'separate'}
+            t={t}
+            translateIndexName={audience === 'user'}
             indices={indices}
             selectedCluster={selectedCluster}
             handleRevertChange={handleRevertChange}

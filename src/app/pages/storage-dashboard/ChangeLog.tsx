@@ -1,12 +1,12 @@
 import React from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
-import { translations } from './translations';
 import { ChangeLogEntry, IndexData } from './models';
 import GenericDropdown from '../../components/GenericDropdown';
 
 interface ChangeLogProps {
   changeLog: { [key: string]: ChangeLogEntry };
-  audience: 'developer' | 'user';
+  direction: 'ltr' | 'rtl';
+  displayMode: 'combined' | 'separate';
   indices: IndexData[];
   selectedCluster: { indices: IndexData[] };
   handleRevertChange: (indexName: string) => void;
@@ -14,19 +14,34 @@ interface ChangeLogProps {
   handleEmail: () => void;
   handleResetChanges: () => void;
   handleImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  t: {
+    changeLog: string;
+    exportToFile: string;
+    exportToEmail: string;
+    days: string;
+    impact: string;
+    storage: string;
+    hotTier: string;
+    coldTier: string;
+    noChanges: string;
+  };
+  translateIndexName: boolean;
 }
 
 const ChangeLog: React.FC<ChangeLogProps> = ({
   changeLog,
-  audience,
+  direction,
+  displayMode,
   indices,
   handleRevertChange,
   handleExport,
   handleEmail,
   handleResetChanges,
   handleImport,
+  t,
+  translateIndexName,
 }) => {
-  const t = translations[audience];
+  const arrow = direction === 'ltr' ? '→' : '←';
 
   return (
     <div className="bg-white shadow-lg w-72 p-6 sticky top-0 h-screen overflow-y-auto">
@@ -81,9 +96,9 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
             const hebrewIndexName = indices.find(index => index.name === indexName)?.hebrewName || indexName;
 
             return (
-              <div key={indexName} className={`text-sm ${audience === 'user' ? 'border-r-2 pr-3' : 'border-l-2 pl-3'} border-blue-500`}>
+              <div key={indexName} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-blue-500`}>
                 <div className="flex justify-between items-start">
-                  <div className="font-medium text-gray-800">{audience === 'developer' ? indexName : hebrewIndexName}</div>
+                  <div className="font-medium text-gray-800">{translateIndexName ? hebrewIndexName : indexName}</div>
                   <button
                     onClick={() => handleRevertChange(indexName)}
                     className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
@@ -91,10 +106,10 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
                     <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
                   </button>
                 </div>
-                {audience === 'user' ? (
+                {displayMode === 'combined' ? (
                   <>
                     <div className="text-gray-600 mt-1">
-                      {t.days}: {change.original.hotDays + change.original.coldDays} ← {change.current.hotDays + change.current.coldDays}
+                      {t.days}: {change.original.hotDays + change.original.coldDays} {arrow} {change.current.hotDays + change.current.coldDays}
                     </div>
                     <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
                     <div className="text-sm ml-2 text-gray-800">
@@ -104,10 +119,10 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
                 ) : (
                   <>
                     <div className="text-gray-600 mt-1">
-                      Hot Tier: {change.original.hotDays} → {change.current.hotDays} {t.days}
+                      {t.hotTier}: {change.original.hotDays} {arrow} {change.current.hotDays} {t.days}
                     </div>
                     <div className="text-gray-600">
-                      Cold Tier: {change.original.coldDays} → {change.current.coldDays} {t.days}
+                      {t.coldTier}: {change.original.coldDays} {arrow} {change.current.coldDays} {t.days}
                     </div>
                     <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
                     <div className="text-sm ml-2 text-gray-800">
