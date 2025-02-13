@@ -6,7 +6,7 @@ interface GenericDropdownProps {
   options: { label: string; value: string; checked?: boolean }[];
   onSelect: (value: string) => void;
   width?: string;
-  type?: 'radio' | 'checkbox';
+  type?: 'button' | 'radio' | 'checkbox';
   showChevron?: boolean;
   hideInputs?: boolean;
 }
