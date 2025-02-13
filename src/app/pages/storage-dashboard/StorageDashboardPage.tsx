@@ -530,7 +530,8 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
               getStorageBarColor={getStorageBarColor}
             />
             <IndexRetentionPeriodsChart
-              audience={audience}
+              {...displayProps}
+              translateIndexName={audience === 'user'}
               filteredIndices={filteredIndices}
               t={t}
             />

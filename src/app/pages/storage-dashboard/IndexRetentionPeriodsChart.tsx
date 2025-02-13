@@ -1,12 +1,21 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TooltipProps } from 'recharts';
-import { Audience, IndexData } from './models';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
+import { Direction, DisplayMethod, IndexData } from './models';
+
+type Translations = {
+  indexRetentionPeriods: string;
+  days: string;
+  hotTier: string;
+  coldTier: string;
+  totalRetentionPeriod: string;
+};
 
 type IndexRetentionPeriodsChartProps = {
-  audience: Audience;
+  direction: Direction;
+  displayMethod: DisplayMethod;
+  translateIndexName: boolean;
   filteredIndices: IndexData[];
-  t: any;
+  t: Translations;
 };
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
@@ -23,7 +32,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   return null;
 };
 
-const IndexRetentionPeriodsChart = ({ audience, filteredIndices, t }: IndexRetentionPeriodsChartProps) => {
+const IndexRetentionPeriodsChart = ({ direction, displayMethod, translateIndexName, filteredIndices, t }: IndexRetentionPeriodsChartProps) => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
       <div className="mb-4">
@@ -37,23 +46,23 @@ const IndexRetentionPeriodsChart = ({ audience, filteredIndices, t }: IndexReten
           >
             <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
             <XAxis
-              dataKey={audience === 'developer' ? "name" : "hebrewName"}
-              reversed={audience === 'user'}
+              dataKey={translateIndexName ? "hebrewName" : "name"}
+              reversed={direction === 'rtl'}
             />
             <YAxis
-              label={{ value: t.days, angle: audience === 'user' ? 90 : -90, position: audience === 'user' ? 'outsideLeft' : 'insideLeft', dx: audience === 'user' ? 30 : 0 }} // Add padding to the title for user mode
-              orientation={audience === 'user' ? 'right' : 'left'}
-              tick={{ dx: audience === 'user' ? 27 : 0 }} // Add padding to the right for user mode
+              label={{ value: t.days, angle: direction === 'rtl' ? 90 : -90, position: direction === 'rtl' ? 'outsideLeft' : 'insideLeft', dx: direction === 'rtl' ? 30 : 0 }}
+              orientation={direction === 'rtl' ? 'right' : 'left'}
+              tick={{ dx: direction === 'rtl' ? 27 : 0 }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            {audience === 'developer' && (
+            {displayMethod === 'separate' && (
               <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />
             )}
-            {audience === 'developer' && (
+            {displayMethod === 'separate' && (
               <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name={t.coldTier} />
             )}
-            {audience === 'user' && (
+            {displayMethod === 'combined' && (
               <Bar dataKey="totalRetentionDays" fill="#2563eb" name={t.totalRetentionPeriod} />
             )}
           </BarChart>
