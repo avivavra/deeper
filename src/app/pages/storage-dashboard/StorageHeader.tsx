@@ -62,7 +62,7 @@ const StorageHeader: React.FC<StorageHeaderProps> = ({
           <GenericDropdown
             buttonLabel={t.selectCluster}
             options={clusters.map(cluster => ({
-              label: cluster.name,
+              label: translateIndexNames ? cluster.hebrewName : cluster.name,
               value: cluster.name,
               checked: selectedCluster.name === cluster.name
             }))}

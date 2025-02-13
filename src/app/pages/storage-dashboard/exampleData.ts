@@ -3,6 +3,7 @@ import { ClusterData } from "./models";
 export const clusters: ClusterData[] = [
   {
     name: 'Cluster A',
+    hebrewName: 'אשכול א',
     indices: [
       {
         name: 'logs-production',
@@ -68,6 +69,7 @@ export const clusters: ClusterData[] = [
   },
   {
     name: 'Cluster B',
+    hebrewName: 'אשכול ב',
     indices: [
       {
         name: 'metrics-app1',

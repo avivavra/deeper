@@ -28,6 +28,7 @@ export type ChangeLogEntry = {
 
 export type ClusterData = {
     name: string;
+    hebrewName: string;
     indices: IndexData[];
 };
 
