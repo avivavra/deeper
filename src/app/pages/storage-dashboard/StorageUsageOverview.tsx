@@ -1,7 +1,8 @@
 import React from 'react';
+import { DisplayMethod } from './models';
 
 type StorageUsageOverviewProps = {
-  displayMode: 'combined' | 'separate';
+  displayMethod: DisplayMethod;
   usedCombinedStorage: number;
   combinedStorage: number;
   combinedStoragePercentage: number;
@@ -47,7 +48,7 @@ const StorageBar: React.FC<{
 );
 
 const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
-  displayMode,
+  displayMethod,
   usedCombinedStorage,
   combinedStorage,
   combinedStoragePercentage,
@@ -66,7 +67,7 @@ const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
         <h2 className="text-lg font-semibold text-gray-800">{t.storageUsageOverview}</h2>
       </div>
       <div className="space-y-6">
-        {displayMode === 'combined' ? (
+        {displayMethod === 'combined' ? (
           <StorageBar
             label={t.storage}
             usedStorage={usedCombinedStorage}

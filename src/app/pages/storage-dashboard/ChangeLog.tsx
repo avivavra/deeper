@@ -1,12 +1,12 @@
 import React from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
-import { ChangeLogEntry, IndexData } from './models';
+import { ChangeLogEntry, Direction, DisplayMethod, IndexData } from './models';
 import GenericDropdown from '../../components/GenericDropdown';
 
 interface ChangeLogProps {
   changeLog: { [key: string]: ChangeLogEntry };
-  direction: 'ltr' | 'rtl';
-  displayMode: 'combined' | 'separate';
+  direction: Direction;
+  displayMethod: DisplayMethod;
   indices: IndexData[];
   selectedCluster: { indices: IndexData[] };
   handleRevertChange: (indexName: string) => void;
@@ -31,7 +31,7 @@ interface ChangeLogProps {
 const ChangeLog: React.FC<ChangeLogProps> = ({
   changeLog,
   direction,
-  displayMode,
+  displayMethod,
   indices,
   handleRevertChange,
   handleExport,
@@ -106,7 +106,7 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
                     <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
                   </button>
                 </div>
-                {displayMode === 'combined' ? (
+                {displayMethod === 'combined' ? (
                   <>
                     <div className="text-gray-600 mt-1">
                       {t.days}: {change.original.hotDays + change.original.coldDays} {arrow} {change.current.hotDays + change.current.coldDays}

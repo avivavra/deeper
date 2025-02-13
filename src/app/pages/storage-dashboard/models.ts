@@ -34,3 +34,7 @@ export type ClusterData = {
 export type Audience = 'developer' | 'user';
 
 export type NewIndexInputType = 'frequency' | 'avgDocs';
+
+export type Direction = 'rtl' | 'ltr';
+
+export type DisplayMethod = 'combined' | 'separate';

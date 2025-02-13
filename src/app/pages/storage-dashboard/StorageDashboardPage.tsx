@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Audience, ChangeLogEntry, IndexData, NewIndexInputType } from './models';
+import { Audience, ChangeLogEntry, Direction, DisplayMethod, IndexData, NewIndexInputType } from './models';
 import { clusters } from './exampleData';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
@@ -38,8 +38,10 @@ const StorageDashboardPage = () => {
     }
   }, [selectedCluster]);
 
+  const direction: Direction = audience === 'user' ? 'rtl' : 'ltr';
+
   useEffect(() => {
-    document.documentElement.dir = audience === 'developer' ? 'ltr' : 'rtl';
+    document.documentElement.dir = direction;
   }, [audience]);
 
   // Add keyboard shortcuts
@@ -475,6 +477,11 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
     });
   };
 
+  const displayProps: { direction: Direction, displayMethod: DisplayMethod } = {
+    direction,
+    displayMethod: audience === 'user' ? 'combined' : 'separate'
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <StorageHeader
@@ -493,9 +500,8 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
       <div className="flex">
         {isEditMode && (
           <ChangeLog
+            {...displayProps}
             changeLog={changeLog}
-            direction={audience === 'user' ? 'rtl' : 'ltr'}
-            displayMode={audience === 'user' ? 'combined' : 'separate'}
             t={t}
             translateIndexName={audience === 'user'}
             indices={indices}
@@ -510,7 +516,7 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
         <div className={`flex-grow p-6 space-y-6 ${isEditMode ? 'lg:w-[calc(100%-20rem)]' : ''}`}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <StorageUsageOverview
-              displayMode={audience === 'user' ? 'combined' : 'separate'}
+              {...displayProps}
               usedCombinedStorage={usedCombinedStorage}
               combinedStorage={combinedStorage}
               combinedStoragePercentage={combinedStoragePercentage}
@@ -530,9 +536,9 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
             />
           </div>
           <IndexRetentionManagement
+            {...displayProps}
             isEditMode={isEditMode}
             filteredIndices={filteredIndices}
-            audience={audience}
             t={t}
             handleTotalRetentionChange={handleTotalRetentionChange}
             handleRetentionChange={handleRetentionChange}

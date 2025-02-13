@@ -2,14 +2,28 @@ import React from 'react';
 import { Plus, MoreVertical } from 'lucide-react';
 import GenericDropdown from '../../components/GenericDropdown';
 import CustomSlider from './CustomSlider';
-import Tooltip from '../../components/Tooltip'; // Import Tooltip component
-import TooltipIcon from '../../components/TooltipIcon'; // Import TooltipIcon component
+import TooltipIcon from '../../components/TooltipIcon';
+import { Direction, DisplayMethod, IndexData } from './models';
+
+type Translations = {
+    indexRetentionManagement: string;
+    addIndex: string;
+    removeIndex: string;
+    totalRetentionPeriod: string;
+    hotTierRetention: string;
+    coldTierRetention: string;
+    days: string;
+    elasticsearchStorage: string;
+    s3Storage: string;
+    storage: string;
+};
 
 type IndexRetentionManagementProps = {
     isEditMode: boolean;
-    filteredIndices: any[];
-    audience: 'developer' | 'user';
-    t: any;
+    filteredIndices: IndexData[];
+    direction: Direction;
+    displayMethod: DisplayMethod;
+    t: Translations;
     handleTotalRetentionChange: (indexName: string, newTotalDays: number) => void;
     handleRetentionChange: (indexName: string, newHotDays: number, newColdDays: number) => void;
     handleRemoveIndex: (indexName: string) => void;
@@ -23,7 +37,8 @@ type IndexRetentionManagementProps = {
 const IndexRetentionManagement = ({
     isEditMode,
     filteredIndices,
-    audience,
+    direction,
+    displayMethod,
     t,
     handleTotalRetentionChange,
     handleRetentionChange,
@@ -50,7 +65,7 @@ const IndexRetentionManagement = ({
                         {filteredIndices.map(index => (
                             <div key={index.name} className="bg-gray-50 p-4 rounded-lg border relative">
                                 <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-bold text-gray-800">{audience === 'developer' ? index.name : index.hebrewName}</h3>
+                                    <h3 className="text-lg font-bold text-gray-800">{direction === 'ltr' ? index.name : index.hebrewName}</h3>
                                     {isEditMode && (
                                         <div className="relative">
                                             <GenericDropdown
@@ -68,14 +83,14 @@ const IndexRetentionManagement = ({
                                 </div>
 
                                 {isEditMode ? (
-                                    audience === 'user' ? (
+                                    displayMethod === 'combined' ? (
                                         <div className="space-y-2 mt-4">
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span>{t.totalRetentionPeriod}</span>
                                                 <span>{index.totalRetentionDays}</span>
                                             </div>
                                             <CustomSlider
-                                                resetKey={`total-${index.name}-${index.totalRetentionDays}`} // Update to resetKey
+                                                resetKey={`total-${index.name}-${index.totalRetentionDays}`}
                                                 value={[index.totalRetentionDays]}
                                                 min={1}
                                                 max={270}
@@ -90,7 +105,7 @@ const IndexRetentionManagement = ({
                                                     <span>{index.hotRetentionDays}</span>
                                                 </div>
                                                 <CustomSlider
-                                                    resetKey={`hot-${index.name}-${index.hotRetentionDays}`} // Update to resetKey
+                                                    resetKey={`hot-${index.name}-${index.hotRetentionDays}`}
                                                     value={[index.hotRetentionDays]}
                                                     min={1}
                                                     max={90}
@@ -104,7 +119,7 @@ const IndexRetentionManagement = ({
                                                     <span>{index.coldRetentionDays}</span>
                                                 </div>
                                                 <CustomSlider
-                                                    resetKey={`cold-${index.name}-${index.coldRetentionDays}`} // Update to resetKey
+                                                    resetKey={`cold-${index.name}-${index.coldRetentionDays}`}
                                                     value={[index.coldRetentionDays]}
                                                     min={0}
                                                     max={180}
@@ -115,7 +130,7 @@ const IndexRetentionManagement = ({
                                     )
                                 ) : (
                                     <div className="grid grid-cols-1 gap-4 mt-2 mb-4">
-                                        {audience === 'developer' && (
+                                        {displayMethod === 'separate' && (
                                             <>
                                                 <div className="flex justify-between text-sm text-gray-800">
                                                     <span className="text-left">{t.hotTierRetention}</span>
@@ -130,7 +145,7 @@ const IndexRetentionManagement = ({
                                     </div>
                                 )}
 
-                                {audience === 'developer' && (
+                                {displayMethod === 'separate' && (
                                     <>
                                         <div className="grid grid-cols-1 gap-4 mt-2">
                                             <div className="flex justify-between text-sm font-bold text-gray-800">
@@ -138,16 +153,16 @@ const IndexRetentionManagement = ({
                                                 <span>{index.totalRetentionDays} {t.days}</span>
                                             </div>
                                             <div className="flex justify-between text-sm text-gray-800">
-                                                <span className="text-left">Elasticsearch</span>
+                                                <span className="text-left">{t.elasticsearchStorage}</span>
                                                 <span className="text-right">
-                                                    {index.elasticStorageGB} GB
+                                                    <span dir='ltr'>{index.elasticStorageGB} GB</span>
                                                     <TooltipIcon content={`Hot: ${index.elasticStoragePerHotTierDay.toFixed(2)}GB/day, Cold: ${index.elasticStoragePerColdTierDay.toFixed(2)}GB/day`} alignment="left" />
                                                 </span>
                                             </div>
                                             <div className="flex justify-between text-sm text-gray-800">
-                                                <span className="text-left">S3</span>
+                                                <span className="text-left">{t.s3Storage}</span>
                                                 <span className="text-right">
-                                                    {index.S3StorageGB} GB
+                                                    <span dir='ltr'>{index.S3StorageGB} GB</span>
                                                     <TooltipIcon content={`Cold: ${index.S3StoragePerColdTierDay.toFixed(2)}GB/day`} alignment="left" />
                                                 </span>
                                             </div>
@@ -155,7 +170,7 @@ const IndexRetentionManagement = ({
                                     </>
                                 )}
 
-                                {audience === 'user' && (
+                                {displayMethod === 'combined' && (
                                     <>
                                         <div className="flex justify-between text-sm font-bold text-gray-800 mt-4">
                                             <span>{t.totalRetentionPeriod}</span>
@@ -163,7 +178,7 @@ const IndexRetentionManagement = ({
                                         </div>
                                         <div className="flex justify-between text-sm text-gray-800 mt-4">
                                             <span>{t.storage}</span>
-                                            <span dir='ltr'>{index.elasticStorageGB + index.S3StorageGB} GB</span>
+                                            <span dir={direction}>{index.elasticStorageGB + index.S3StorageGB} GB</span>
                                         </div>
                                     </>
                                 )}
