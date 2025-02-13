@@ -507,7 +507,7 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
         <div className={`flex-grow p-6 space-y-6 ${isEditMode ? 'lg:w-[calc(100%-20rem)]' : ''}`}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <StorageUsageOverview
-              audience={audience}
+              displayMode={audience === 'user' ? 'combined' : 'separate'}
               usedCombinedStorage={usedCombinedStorage}
               combinedStorage={combinedStorage}
               combinedStoragePercentage={combinedStoragePercentage}

@@ -1,7 +1,7 @@
 import React from 'react';
 
 type StorageUsageOverviewProps = {
-  audience: string;
+  displayMode: 'combined' | 'separate';
   usedCombinedStorage: number;
   combinedStorage: number;
   combinedStoragePercentage: number;
@@ -21,8 +21,33 @@ type StorageUsageOverviewProps = {
   getStorageBarColor: (percentage: number) => string;
 };
 
+const StorageBar: React.FC<{
+  label: string;
+  usedStorage: number;
+  totalStorage: number;
+  storagePercentage: number;
+  overLimit: string;
+  getStorageBarColor: (percentage: number) => string;
+}> = ({ label, usedStorage, totalStorage, storagePercentage, overLimit, getStorageBarColor }) => (
+  <div>
+    <div className="flex justify-between mb-2">
+      <span className="font-medium text-gray-800">{label}</span>
+      <span className={usedStorage > totalStorage ? "text-red-500 font-medium" : "text-gray-800"}>
+        <span dir='ltr'>{usedStorage}/{totalStorage} GB ({storagePercentage.toFixed(1)}%)</span>
+        {usedStorage > totalStorage && ` (${overLimit})`}
+      </span>
+    </div>
+    <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
+      <div
+        className={`h-4 rounded-full ${getStorageBarColor(storagePercentage)}`}
+        style={{ width: `${Math.min(storagePercentage, 100)}%` }}
+      />
+    </div>
+  </div>
+);
+
 const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
-  audience,
+  displayMode,
   usedCombinedStorage,
   combinedStorage,
   combinedStoragePercentage,
@@ -41,55 +66,33 @@ const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
         <h2 className="text-lg font-semibold text-gray-800">{t.storageUsageOverview}</h2>
       </div>
       <div className="space-y-6">
-        {audience === 'user' ? (
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="font-medium text-gray-800">{t.storage}</span>
-              <span className={usedCombinedStorage > combinedStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                <span dir='ltr'>{usedCombinedStorage}/{combinedStorage} GB</span>
-                <span> ({combinedStoragePercentage.toFixed(1)}%)</span>
-                {usedCombinedStorage > combinedStorage && ` (${t.overLimit})`}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
-              <div
-                className={`h-4 rounded-full ${getStorageBarColor(combinedStoragePercentage)}`}
-                style={{ width: `${Math.min(combinedStoragePercentage, 100)}%` }}
-              />
-            </div>
-          </div>
+        {displayMode === 'combined' ? (
+          <StorageBar
+            label={t.storage}
+            usedStorage={usedCombinedStorage}
+            totalStorage={combinedStorage}
+            storagePercentage={combinedStoragePercentage}
+            overLimit={t.overLimit}
+            getStorageBarColor={getStorageBarColor}
+          />
         ) : (
           <>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="font-medium text-gray-800">{t.elasticsearchStorage}</span>
-                <span className={usedElasticStorage > totalElasticStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-                  {usedElasticStorage}/{totalElasticStorage} GB ({elasticStoragePercentage.toFixed(1)}%)
-                  {usedElasticStorage > totalElasticStorage && ` (${t.overLimit})`}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
-                <div
-                  className={`h-4 rounded-full ${getStorageBarColor(elasticStoragePercentage)}`}
-                  style={{ width: `${Math.min(elasticStoragePercentage, 100)}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="font-medium text-gray-800">{t.s3Storage}</span>
-                <span className={usedS3Storage > totalS3Storage ? "text-red-500 font-medium" : "text-gray-800"}>
-                  {usedS3Storage}/{totalS3Storage} GB ({s3StoragePercentage.toFixed(1)}%)
-                  {usedS3Storage > totalS3Storage && ` (${t.overLimit})`}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
-                <div
-                  className={`h-4 rounded-full ${getStorageBarColor(s3StoragePercentage)}`}
-                  style={{ width: `${Math.min(s3StoragePercentage, 100)}%` }}
-                />
-              </div>
-            </div>
+            <StorageBar
+              label={t.elasticsearchStorage}
+              usedStorage={usedElasticStorage}
+              totalStorage={totalElasticStorage}
+              storagePercentage={elasticStoragePercentage}
+              overLimit={t.overLimit}
+              getStorageBarColor={getStorageBarColor}
+            />
+            <StorageBar
+              label={t.s3Storage}
+              usedStorage={usedS3Storage}
+              totalStorage={totalS3Storage}
+              storagePercentage={s3StoragePercentage}
+              overLimit={t.overLimit}
+              getStorageBarColor={getStorageBarColor}
+            />
           </>
         )}
       </div>
