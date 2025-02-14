@@ -82,4 +82,5 @@ export type Translation = {
     removeIndex: string;
     totalRetentionPeriodPlaceholder: string;
     coldTierRetentionPlaceholder: string;
+    perSecond: string;
 };
