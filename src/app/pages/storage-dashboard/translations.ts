@@ -49,6 +49,7 @@ export const translations: {
     removeIndex: 'Remove Index',
     importFromIndex: 'Import from Index',
     importFromIndexPlaceholder: 'Select an index',
+    copyToClipboard: 'Copy',
   },
   hebrew: {
     title: 'דאשבורד אחסון',
@@ -95,5 +96,6 @@ export const translations: {
     removeIndex: 'הסר אינדקס',
     importFromIndex: 'ייבא מאינדקס',
     importFromIndexPlaceholder: 'בחר אינדקס',
+    copyToClipboard: 'העתקה',
   }
 };

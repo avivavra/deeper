@@ -85,4 +85,5 @@ export type Translation = {
     perSecond: string;
     importFromIndex: string;
     importFromIndexPlaceholder: string;
+    copyToClipboard: string;
 };

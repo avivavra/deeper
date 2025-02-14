@@ -14,6 +14,7 @@ interface ChangeLogProps {
   handleEmail: () => void;
   handleResetChanges: () => void;
   handleImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleCopyToClipboard: () => void;
   t: Translation;
   translateIndexNames: boolean;
 }
@@ -28,6 +29,7 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
   handleEmail,
   handleResetChanges,
   handleImport,
+  handleCopyToClipboard,
   t,
   translateIndexNames,
 }) => {
@@ -44,11 +46,13 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
                 buttonLabel={<Share2 className="h-4 w-4 mx-2 text-gray-800" />}
                 options={[
                   { label: t.exportToFile, value: 'exportToFile' },
-                  { label: t.exportToEmail, value: 'exportToEmail' }
+                  { label: t.exportToEmail, value: 'exportToEmail' },
+                  { label: t.copyToClipboard, value: 'copyToClipboard' }
                 ]}
                 onSelect={(value) => {
                   if (value === 'exportToFile') handleExport();
                   if (value === 'exportToEmail') handleEmail();
+                  if (value === 'copyToClipboard') handleCopyToClipboard();
                 }}
                 width="w-40"
                 type="radio"

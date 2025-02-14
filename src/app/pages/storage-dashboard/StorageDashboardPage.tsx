@@ -351,6 +351,28 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
     window.location.href = mailtoLink;
   };
 
+  const handleCopyToClipboard = () => {
+    const text = Object.entries(changeLog).map(([indexName, change]) => {
+      const hotDaysChange = change.current.hotDays - change.original.hotDays;
+      const coldDaysChange = change.current.coldDays - change.original.coldDays;
+      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
+
+      return `Index: ${indexName}
+Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
+Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
+Elasticsearch Storage: ${change.original.elasticStorage} GB → ${change.current.elasticStorage} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange} GB)
+S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange} GB)
+`;
+    }).join('\n');
+
+    navigator.clipboard.writeText(text).then(() => {
+      console.log('Change log copied to clipboard');
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+    });
+  };
+
   const handleResetChanges = () => {
     setIndices(selectedCluster.indices);
     setChangeLog({});
@@ -541,6 +563,7 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
             handleEmail={handleEmail}
             handleResetChanges={handleResetChanges}
             handleImport={handleImport}
+            handleCopyToClipboard={handleCopyToClipboard}
           />
         )}
         <div className={`flex-grow p-6 space-y-6 ${isEditMode ? 'lg:w-[calc(100%-20rem)]' : ''}`}>
