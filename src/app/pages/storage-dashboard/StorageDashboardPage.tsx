@@ -305,184 +305,10 @@ const StorageDashboardPage = () => {
     });
   };
 
-  const handleExport = () => {
-    const text = Object.entries(changeLog).map(([indexName, change]) => {
-      const hotDaysChange = change.current.hotDays - change.original.hotDays;
-      const coldDaysChange = change.current.coldDays - change.original.coldDays;
-      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
-      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
-
-      return `Index: ${indexName}
-Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
-Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
-Elasticsearch Storage: ${change.original.elasticStorage} GB → ${change.current.elasticStorage} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange} GB)
-S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange} GB)
-`;
-    }).join('\n');
-
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'storage-changes.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleEmail = () => {
-    const text = Object.entries(changeLog).map(([indexName, change]) => {
-      const hotDaysChange = change.current.hotDays - change.original.hotDays;
-      const coldDaysChange = change.current.coldDays - change.original.coldDays;
-      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
-      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
-
-      return `Index: ${indexName}
-Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
-Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
-Elasticsearch Storage: ${change.original.elasticStorage} GB → ${change.current.elasticStorage} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange} GB)
-S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange} GB)
-`;
-    }).join('\n');
-
-    const subject = 'Elasticsearch Index Changes';
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-    window.location.href = mailtoLink;
-  };
-
-  const handleCopyToClipboard = () => {
-    const text = Object.entries(changeLog).map(([indexName, change]) => {
-      const hotDaysChange = change.current.hotDays - change.original.hotDays;
-      const coldDaysChange = change.current.coldDays - change.original.coldDays;
-      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
-      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
-
-      return `Index: ${indexName}
-Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
-Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
-Elasticsearch Storage: ${change.original.elasticStorage} GB → ${change.current.elasticStorage} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange} GB)
-S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange} GB)
-`;
-    }).join('\n');
-
-    navigator.clipboard.writeText(text).then(() => {
-      console.log('Change log copied to clipboard');
-    }).catch(err => {
-      console.error('Failed to copy text: ', err);
-    });
-  };
-
   const handleResetChanges = () => {
     setIndices(selectedCluster.indices);
     setChangeLog({});
     setSelectedIndices(selectedCluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
-  };
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        try {
-          const text = e.target?.result as string;
-          const entries = text.split('\n\n');
-          entries.forEach(entry => {
-            const lines = entry.trim().split('\n');
-            if (lines.length >= 5) {
-              const indexName = lines[0].replace('Index: ', '');
-              const hotDaysMatch = lines[1].match(/Hot Retention Days: \d+ → (\d+) days/);
-              const coldDaysMatch = lines[2].match(/Cold Retention Days: \d+ → (\d+) days/);
-              const elasticStorageMatch = lines[3].match(/Elasticsearch Storage: \d+ GB → (\d+) GB/);
-              const s3StorageMatch = lines[4].match(/S3 Storage: \d+ GB → (\d+) GB/);
-
-              if (hotDaysMatch && coldDaysMatch && elasticStorageMatch && s3StorageMatch) {
-                const newHotDays = parseInt(hotDaysMatch[1]);
-                const newColdDays = parseInt(coldDaysMatch[1]);
-                const newElasticStorage = parseInt(elasticStorageMatch[1]);
-                const newS3Storage = parseInt(s3StorageMatch[1]);
-
-                if (newHotDays === 0 && newColdDays === 0) {
-                  // Remove index if both hot and cold days are zero
-                  setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
-                  setSelectedIndices(prev => {
-                    const { [indexName]: _, ...rest } = prev;
-                    return rest;
-                  });
-                  setChangeLog(prev => {
-                    const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
-                    return {
-                      ...prev,
-                      [indexName]: {
-                        original: {
-                          hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
-                          coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-                          elasticStorage: originalIndex ? originalIndex.elasticStorageGB : 0,
-                          s3Storage: originalIndex ? originalIndex.S3StorageGB : 0,
-                        },
-                        current: {
-                          hotDays: 0,
-                          coldDays: 0,
-                          elasticStorage: 0,
-                          s3Storage: 0,
-                        }
-                      }
-                    };
-                  });
-                } else {
-                  const newIndex = indices.find(index => index.name === indexName);
-                  if (newIndex) {
-                    handleRetentionChange(indexName, newHotDays, newColdDays);
-                  } else {
-                    const elasticStoragePerHotTierDay = newHotDays > 0 ? newElasticStorage / newHotDays : 0;
-                    const S3StoragePerColdTierDay = newColdDays > 0 ? newS3Storage / newColdDays : 0;
-
-                    const newIndexData = {
-                      name: indexName,
-                      hebrewName: indexName,
-                      hotRetentionDays: newHotDays,
-                      coldRetentionDays: newColdDays,
-                      elasticStorageGB: newElasticStorage,
-                      S3StorageGB: newS3Storage,
-                      totalRetentionDays: newHotDays + newColdDays,
-                      initialHotRetentionDays: newHotDays,
-                      initialColdRetentionDays: newColdDays,
-                      elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
-                      S3StoragePerColdTierDay: S3StoragePerColdTierDay,
-                      elasticStoragePerColdTierDay: 0
-                    };
-                    setIndices(prevIndices => [newIndexData, ...prevIndices]);
-                    setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
-                    setChangeLog(prev => {
-                      return {
-                        ...prev,
-                        [indexName]: {
-                          original: {
-                            hotDays: 0,
-                            coldDays: 0,
-                            elasticStorage: 0,
-                            s3Storage: 0,
-                          },
-                          current: {
-                            hotDays: newHotDays,
-                            coldDays: newColdDays,
-                            elasticStorage: newElasticStorage,
-                            s3Storage: newS3Storage,
-                          }
-                        }
-                      };
-                    });
-                  }
-                }
-              }
-            }
-          });
-        } catch (error) {
-          console.error('Error importing changes:', error);
-        }
-      };
-      reader.readAsText(file);
-    }
   };
 
   const handleRemoveIndex = (indexName: string) => {
@@ -559,11 +385,11 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
             indices={indices}
             selectedCluster={selectedCluster}
             handleRevertChange={handleRevertChange}
-            handleExport={handleExport}
-            handleEmail={handleEmail}
             handleResetChanges={handleResetChanges}
-            handleImport={handleImport}
-            handleCopyToClipboard={handleCopyToClipboard}
+            setIndices={setIndices}
+            handleRetentionChange={handleRetentionChange}
+            setSelectedIndices={setSelectedIndices}
+            setChangeLog={setChangeLog}
           />
         )}
         <div className={`flex-grow p-6 space-y-6 ${isEditMode ? 'lg:w-[calc(100%-20rem)]' : ''}`}>

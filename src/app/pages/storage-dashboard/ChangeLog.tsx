@@ -10,30 +10,195 @@ interface ChangeLogProps {
   indices: IndexData[];
   selectedCluster: { indices: IndexData[] };
   handleRevertChange: (indexName: string) => void;
-  handleExport: () => void;
-  handleEmail: () => void;
   handleResetChanges: () => void;
-  handleImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  handleCopyToClipboard: () => void;
+  setIndices: React.Dispatch<React.SetStateAction<IndexData[]>>;
+  handleRetentionChange: (indexName: string, newHotDays: number, newColdDays: number) => void;
+  setSelectedIndices: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  setChangeLog: React.Dispatch<React.SetStateAction<{ [key: string]: ChangeLogEntry }>>;
   t: Translation;
   translateIndexNames: boolean;
 }
+
+const formatChangeLog = (changeLog: { [key: string]: ChangeLogEntry }) => {
+  return Object.entries(changeLog).map(([indexName, change]) => {
+    const hotDaysChange = change.current.hotDays - change.original.hotDays;
+    const coldDaysChange = change.current.coldDays - change.original.coldDays;
+    const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+    const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
+
+    return `Index: ${indexName}
+Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
+Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
+Elasticsearch Storage: ${change.original.elasticStorage} GB → ${change.current.elasticStorage} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange} GB)
+S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange} GB)
+`;
+  }).join('\n');
+};
+
+const parseChangeLog = (text: string) => {
+  const parsedEntries: { indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number }[] = [];
+  const entries = text.split('\n\n');
+  entries.forEach(entry => {
+    const lines = entry.trim().split('\n');
+    if (lines.length >= 5) {
+      const indexName = lines[0].replace('Index: ', '');
+      const hotDaysMatch = lines[1].match(/Hot Retention Days: \d+ → (\d+) days/);
+      const coldDaysMatch = lines[2].match(/Cold Retention Days: \d+ → (\d+) days/);
+      const elasticStorageMatch = lines[3].match(/Elasticsearch Storage: \d+ GB → (\d+) GB/);
+      const s3StorageMatch = lines[4].match(/S3 Storage: \d+ GB → (\d+) GB/);
+
+      if (hotDaysMatch && coldDaysMatch && elasticStorageMatch && s3StorageMatch) {
+        parsedEntries.push({
+          indexName,
+          newHotDays: parseInt(hotDaysMatch[1]),
+          newColdDays: parseInt(coldDaysMatch[1]),
+          newElasticStorage: parseInt(elasticStorageMatch[1]),
+          newS3Storage: parseInt(s3StorageMatch[1]),
+        });
+      }
+    }
+  });
+  return parsedEntries;
+};
 
 const ChangeLog: React.FC<ChangeLogProps> = ({
   changeLog,
   direction,
   displayMethod,
   indices,
+  selectedCluster,
   handleRevertChange,
-  handleExport,
-  handleEmail,
   handleResetChanges,
-  handleImport,
-  handleCopyToClipboard,
+  setIndices,
+  handleRetentionChange,
+  setSelectedIndices,
+  setChangeLog,
   t,
   translateIndexNames,
 }) => {
   const arrow = direction === 'ltr' ? '→' : '←';
+
+  const handleExportToFile = () => {
+    const text = formatChangeLog(changeLog);
+
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'storage-changes.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportToEmail = () => {
+    const text = formatChangeLog(changeLog);
+
+    const subject = 'Elasticsearch Index Changes';
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    window.location.href = mailtoLink;
+  };
+
+  const handleCopyToClipboard = () => {
+    const text = formatChangeLog(changeLog);
+
+    navigator.clipboard.writeText(text).then(() => {
+      console.log('Change log copied to clipboard');
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+    });
+  };
+
+  const handleImportFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        try {
+          const text = e.target?.result as string;
+          const parsedEntries = parseChangeLog(text);
+          parsedEntries.forEach(({ indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage }) => {
+            if (newHotDays === 0 && newColdDays === 0) {
+              // Remove index if both hot and cold days are zero
+              setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
+              setSelectedIndices(prev => {
+                const { [indexName]: _, ...rest } = prev;
+                return rest;
+              });
+              setChangeLog(prev => {
+                const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
+                return {
+                  ...prev,
+                  [indexName]: {
+                    original: {
+                      hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
+                      coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
+                      elasticStorage: originalIndex ? originalIndex.elasticStorageGB : 0,
+                      s3Storage: originalIndex ? originalIndex.S3StorageGB : 0,
+                    },
+                    current: {
+                      hotDays: 0,
+                      coldDays: 0,
+                      elasticStorage: 0,
+                      s3Storage: 0,
+                    }
+                  }
+                };
+              });
+            } else {
+              const newIndex = indices.find(index => index.name === indexName);
+              if (newIndex) {
+                handleRetentionChange(indexName, newHotDays, newColdDays);
+              } else {
+                const elasticStoragePerHotTierDay = newHotDays > 0 ? newElasticStorage / newHotDays : 0;
+                const S3StoragePerColdTierDay = newColdDays > 0 ? newS3Storage / newColdDays : 0;
+
+                const newIndexData = {
+                  name: indexName,
+                  hebrewName: indexName,
+                  hotRetentionDays: newHotDays,
+                  coldRetentionDays: newColdDays,
+                  elasticStorageGB: newElasticStorage,
+                  S3StorageGB: newS3Storage,
+                  totalRetentionDays: newHotDays + newColdDays,
+                  initialHotRetentionDays: newHotDays,
+                  initialColdRetentionDays: newColdDays,
+                  elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
+                  S3StoragePerColdTierDay: S3StoragePerColdTierDay,
+                  elasticStoragePerColdTierDay: 0
+                };
+                setIndices(prevIndices => [newIndexData, ...prevIndices]);
+                setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
+                setChangeLog(prev => {
+                  return {
+                    ...prev,
+                    [indexName]: {
+                      original: {
+                        hotDays: 0,
+                        coldDays: 0,
+                        elasticStorage: 0,
+                        s3Storage: 0,
+                      },
+                      current: {
+                        hotDays: newHotDays,
+                        coldDays: newColdDays,
+                        elasticStorage: newElasticStorage,
+                        s3Storage: newS3Storage,
+                      }
+                    }
+                  };
+                });
+              }
+            }
+          });
+        } catch (error) {
+          console.error('Error importing changes:', error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
 
   return (
     <div className="bg-white shadow-lg w-72 p-6 sticky top-0 h-screen overflow-y-auto">
@@ -50,8 +215,8 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
                   { label: t.copyToClipboard, value: 'copyToClipboard' }
                 ]}
                 onSelect={(value) => {
-                  if (value === 'exportToFile') handleExport();
-                  if (value === 'exportToEmail') handleEmail();
+                  if (value === 'exportToFile') handleExportToFile();
+                  if (value === 'exportToEmail') handleExportToEmail();
                   if (value === 'copyToClipboard') handleCopyToClipboard();
                 }}
                 width="w-40"
@@ -70,7 +235,7 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
             <div className="relative">
               <input
                 type="file"
-                onChange={handleImport}
+                onChange={handleImportFromFile}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 accept=".txt"
               />
