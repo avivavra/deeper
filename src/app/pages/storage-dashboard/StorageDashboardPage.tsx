@@ -10,6 +10,7 @@ import StorageUsageOverview from './StorageUsageOverview';
 import IndexRetentionPeriodsChart from './IndexRetentionPeriodsChart';
 import IndexRetentionManagement from './IndexRetentionManagement';
 import AddIndexModal from './AddIndexModal';
+import GenericModal from '../../components/GenericModal';
 
 const StorageDashboardPage = () => {
   // Original data and main states
@@ -579,14 +580,19 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
         </div>
       </div>
       {showAddIndex && (
-        <AddIndexModal
-          {...displayProps}
-          newIndex={newIndex}
-          setNewIndex={setNewIndex}
-          setShowAddIndex={setShowAddIndex}
-          handleAddIndex={handleAddIndex}
-          indices={indices}
-        />
+        <GenericModal
+          showModal={showAddIndex}
+          setShowModal={setShowAddIndex}
+        >
+          <AddIndexModal
+            {...displayProps}
+            newIndex={newIndex}
+            setNewIndex={setNewIndex}
+            setShowAddIndex={setShowAddIndex}
+            handleAddIndex={handleAddIndex}
+            indices={indices}
+          />
+        </GenericModal>
       )}
     </div>
   );
