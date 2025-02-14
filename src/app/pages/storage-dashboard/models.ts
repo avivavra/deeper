@@ -34,7 +34,7 @@ export type ClusterData = {
 
 export type Audience = 'developer' | 'user';
 
-export type NewIndexInputType = 'frequency' | 'avgDocs';
+export type NewIndexInputType = 'frequency' | 'avgDocs' | 'import';
 
 export type Direction = 'rtl' | 'ltr';
 
@@ -83,4 +83,6 @@ export type Translation = {
     totalRetentionPeriodPlaceholder: string;
     coldTierRetentionPlaceholder: string;
     perSecond: string;
+    importFromIndex: string;
+    importFromIndexPlaceholder: string;
 };

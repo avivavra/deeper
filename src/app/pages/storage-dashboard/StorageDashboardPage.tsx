@@ -98,45 +98,65 @@ const StorageDashboardPage = () => {
   };
 
   const handleAddIndex = () => {
-    const rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency), Number(newIndex.avgDocs), newIndex.inputType);
+    let rates;
+    if (newIndex.inputType === 'import') {
+        const selectedIndex = indices.find(index => index.name === newIndex.importFromIndex);
+        if (selectedIndex) {
+            rates = {
+                elasticStoragePerHotTierDay: selectedIndex.elasticStoragePerHotTierDay,
+                S3StoragePerColdTierDay: selectedIndex.S3StoragePerColdTierDay,
+                elasticStoragePerColdTierDay: selectedIndex.elasticStoragePerColdTierDay
+            };
+        } else {
+            // If selectedIndex is not found, set default rates to avoid undefined error
+            rates = {
+                elasticStoragePerHotTierDay: 0,
+                S3StoragePerColdTierDay: 0,
+                elasticStoragePerColdTierDay: 0
+            };
+        }
+    } else {
+        rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency), Number(newIndex.avgDocs), newIndex.inputType);
+    }
+
     const hotRetentionDays = Number(newIndex.totalRetention) - Number(newIndex.coldRetention);
     const coldRetentionDays = Number(newIndex.coldRetention);
 
     const newIndexData = {
-      name: newIndex.name,
-      hebrewName: newIndex.name,
-      ...rates,
-      hotRetentionDays,
-      coldRetentionDays,
-      elasticStorageGB: Math.round(rates.elasticStoragePerHotTierDay * hotRetentionDays),
-      S3StorageGB: Math.round(rates.S3StoragePerColdTierDay * coldRetentionDays),
-      totalRetentionDays: hotRetentionDays + coldRetentionDays,
-      initialHotRetentionDays: hotRetentionDays,
-      initialColdRetentionDays: coldRetentionDays
+        name: newIndex.name,
+        hebrewName: newIndex.name,
+        ...rates,
+        hotRetentionDays,
+        coldRetentionDays,
+        elasticStorageGB: rates.elasticStoragePerHotTierDay * hotRetentionDays,
+        S3StorageGB: rates.S3StoragePerColdTierDay * coldRetentionDays,
+        totalRetentionDays: hotRetentionDays + coldRetentionDays,
+        initialHotRetentionDays: hotRetentionDays,
+        initialColdRetentionDays: coldRetentionDays
     };
 
     setIndices([newIndexData, ...indices]);
     setSelectedIndices(prev => ({ ...prev, [newIndex.name]: true }));
     setChangeLog(prev => ({
-      ...prev,
-      [newIndex.name]: {
-        original: {
-          hotDays: 0,
-          coldDays: 0,
-          elasticStorage: 0,
-          s3Storage: 0,
-        },
-        current: {
-          hotDays: hotRetentionDays,
-          coldDays: coldRetentionDays,
-          elasticStorage: newIndexData.elasticStorageGB,
-          s3Storage: newIndexData.S3StorageGB,
+        ...prev,
+        [newIndex.name]: {
+            original: {
+                hotDays: 0,
+                coldDays: 0,
+                elasticStorage: 0,
+                s3Storage: 0,
+            },
+            current: {
+                hotDays: hotRetentionDays,
+                coldDays: coldRetentionDays,
+                elasticStorage: newIndexData.elasticStorageGB,
+                s3Storage: newIndexData.S3StorageGB,
+            }
         }
-      }
     }));
     setNewIndex({ name: '', docSize: '', frequency: '', avgDocs: '', inputType: 'frequency', totalRetention: '', coldRetention: '' });
     setShowAddIndex(false);
-  };
+};
 
   const handleIndexToggle = (indexName: string) => {
     setSelectedIndices(prev => ({
@@ -565,6 +585,7 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
           setNewIndex={setNewIndex}
           setShowAddIndex={setShowAddIndex}
           handleAddIndex={handleAddIndex}
+          indices={indices}
         />
       )}
     </div>

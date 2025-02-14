@@ -47,6 +47,8 @@ export const translations: {
     docFrequencyPlaceholder: 'e.g., 100',
     avgDocsPlaceholder: 'e.g., 1000',
     removeIndex: 'Remove Index',
+    importFromIndex: 'Import from Index',
+    importFromIndexPlaceholder: 'Select an index',
   },
   hebrew: {
     title: 'דאשבורד אחסון',
@@ -91,5 +93,7 @@ export const translations: {
     docFrequencyPlaceholder: 'לדוגמה, 100',
     avgDocsPlaceholder: 'לדוגמה, 1000',
     removeIndex: 'הסר אינדקס',
+    importFromIndex: 'ייבא מאינדקס',
+    importFromIndexPlaceholder: 'בחר אינדקס',
   }
 };
