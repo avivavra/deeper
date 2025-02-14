@@ -80,4 +80,6 @@ export type Translation = {
     docFrequencyPlaceholder: string;
     avgDocsPlaceholder: string;
     removeIndex: string;
+    totalRetentionPeriodPlaceholder: string;
+    coldTierRetentionPlaceholder: string;
 };

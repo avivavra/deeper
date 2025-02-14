@@ -21,12 +21,14 @@ const StorageDashboardPage = () => {
   const [totalElasticStorage] = useState(500); // GB
   const [totalS3Storage] = useState(1000); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
-  const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string; avgDocs: string; inputType: NewIndexInputType }>({
+  const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string; avgDocs: string; inputType: NewIndexInputType; totalRetention: string; coldRetention: string }>({
     name: '',
     docSize: '',
     frequency: '',
     avgDocs: '',
-    inputType: 'frequency'
+    inputType: 'frequency',
+    totalRetention: '',
+    coldRetention: ''
   });
   const [audience, setAudience] = useState<Audience>('developer');
 
@@ -97,8 +99,8 @@ const StorageDashboardPage = () => {
 
   const handleAddIndex = () => {
     const rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency), Number(newIndex.avgDocs), newIndex.inputType);
-    const hotRetentionDays = 30;
-    const coldRetentionDays = 90;
+    const hotRetentionDays = Number(newIndex.totalRetention) - Number(newIndex.coldRetention);
+    const coldRetentionDays = Number(newIndex.coldRetention);
 
     const newIndexData = {
       name: newIndex.name,
@@ -128,11 +130,11 @@ const StorageDashboardPage = () => {
           hotDays: hotRetentionDays,
           coldDays: coldRetentionDays,
           elasticStorage: newIndexData.elasticStorageGB,
-          s3Storage: newIndexData.S3StorageGB, // Fix the property name to match the existing code
+          s3Storage: newIndexData.S3StorageGB,
         }
       }
     }));
-    setNewIndex({ name: '', docSize: '', frequency: '', avgDocs: '', inputType: 'frequency' });
+    setNewIndex({ name: '', docSize: '', frequency: '', avgDocs: '', inputType: 'frequency', totalRetention: '', coldRetention: '' });
     setShowAddIndex(false);
   };
 
