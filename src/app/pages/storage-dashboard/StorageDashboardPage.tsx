@@ -480,12 +480,14 @@ S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (
     direction: Direction,
     displayMethod: DisplayMethod,
     translateIndexNames: boolean,
+    displayRates: boolean,
     t: Translation
   } = {
     direction,
     t,
     displayMethod: audience === 'user' ? 'combined' : 'separate',
-    translateIndexNames: audience === 'user'
+    translateIndexNames: audience === 'user',
+    displayRates: audience === 'developer'
   }
 
   return (

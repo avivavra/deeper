@@ -71,6 +71,7 @@ export type Translation = {
     avgDocs: string;
     cancel: string;
     addIndexButton: string;
+    day: string;
     days: string;
     storage: string;
     overLimit: string;

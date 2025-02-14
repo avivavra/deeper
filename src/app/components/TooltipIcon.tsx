@@ -23,9 +23,11 @@ const TooltipIcon = ({ content, alignment = 'left' }: TooltipIconProps) => {
                 setAlignment('right');
             } else if (left < 0) {
                 setAlignment('left');
+            } else {
+                setAlignment(alignment);
             }
         }
-    }, [visible]);
+    }, [visible, alignment]);
 
     return (
         <div className="relative inline-block">

@@ -11,6 +11,7 @@ type IndexRetentionManagementProps = {
     direction: Direction;
     displayMethod: DisplayMethod;
     t: Translation;
+    displayRates: boolean;
     handleTotalRetentionChange: (indexName: string, newTotalDays: number) => void;
     handleRetentionChange: (indexName: string, newHotDays: number, newColdDays: number) => void;
     handleRemoveIndex: (indexName: string) => void;
@@ -27,6 +28,7 @@ const IndexRetentionManagement = ({
     direction,
     displayMethod,
     t,
+    displayRates,
     handleTotalRetentionChange,
     handleRetentionChange,
     handleRemoveIndex,
@@ -121,11 +123,11 @@ const IndexRetentionManagement = ({
                                             <>
                                                 <div className="flex justify-between text-sm text-gray-800">
                                                     <span className="text-left">{t.hotTierRetention}</span>
-                                                    <span className="text-right">{index.hotRetentionDays} {t.days}</span>
+                                                    <span className="text-right">{index.hotRetentionDays} {t.day}</span>
                                                 </div>
                                                 <div className="flex justify-between text-sm text-gray-800">
                                                     <span className="text-left">{t.coldTierRetention}</span>
-                                                    <span className="text-right">{index.coldRetentionDays} {t.days}</span>
+                                                    <span className="text-right">{index.coldRetentionDays} {t.day}</span>
                                                 </div>
                                             </>
                                         )}
@@ -137,20 +139,30 @@ const IndexRetentionManagement = ({
                                         <div className="grid grid-cols-1 gap-4 mt-2">
                                             <div className="flex justify-between text-sm font-bold text-gray-800">
                                                 <span>{t.totalRetentionPeriod}</span>
-                                                <span>{index.totalRetentionDays} {t.days}</span>
+                                                <span>{index.totalRetentionDays} {t.day}</span>
                                             </div>
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.elasticsearchStorage}</span>
                                                 <span className="text-right">
                                                     <span dir='ltr'>{index.elasticStorageGB} GB</span>
-                                                    <TooltipIcon content={`Hot: ${index.elasticStoragePerHotTierDay.toFixed(2)}GB/day, Cold: ${index.elasticStoragePerColdTierDay.toFixed(2)}GB/day`} alignment="left" />
+                                                    {displayRates && (
+                                                        <TooltipIcon
+                                                            content={`${t.hotTier}: ${index.elasticStoragePerHotTierDay.toFixed(2)}GB/${t.day}, ${t.coldTier}: ${index.elasticStoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
+                                                            alignment={direction === 'rtl' ? 'right' : 'left'}
+                                                        />
+                                                    )}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.s3Storage}</span>
                                                 <span className="text-right">
                                                     <span dir='ltr'>{index.S3StorageGB} GB</span>
-                                                    <TooltipIcon content={`Cold: ${index.S3StoragePerColdTierDay.toFixed(2)}GB/day`} alignment="left" />
+                                                    {displayRates && (
+                                                        <TooltipIcon
+                                                            content={`${t.coldTier}: ${index.S3StoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
+                                                            alignment={direction === 'rtl' ? 'right' : 'left'}
+                                                        />
+                                                    )}
                                                 </span>
                                             </div>
                                         </div>
@@ -161,7 +173,7 @@ const IndexRetentionManagement = ({
                                     <>
                                         <div className="flex justify-between text-sm font-bold text-gray-800 mt-4">
                                             <span>{t.totalRetentionPeriod}</span>
-                                            <span>{index.totalRetentionDays} {t.days}</span>
+                                            <span>{index.totalRetentionDays} {t.day}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-gray-800 mt-4">
                                             <span>{t.storage}</span>
