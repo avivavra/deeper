@@ -1,7 +1,7 @@
 import React from 'react';
 import { NewIndexInputType, Translation, IndexData } from './models';
 
-interface AddIndexModalProps {
+interface AddIndexForm {
     t: Translation;
     newIndex: {
         name: string;
@@ -28,7 +28,7 @@ interface AddIndexModalProps {
     indices: IndexData[];
 }
 
-const AddIndexModal: React.FC<AddIndexModalProps> = ({ t, newIndex, setNewIndex, setShowAddIndex, handleAddIndex, indices }) => {
+const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setShowAddIndex, handleAddIndex, indices }) => {
     const handleColdRetentionChange = (value: string) => {
         if (parseInt(value) > parseInt(newIndex.totalRetention)) {
             setNewIndex(prev => ({ ...prev, coldRetention: newIndex.totalRetention }));
@@ -198,4 +198,4 @@ const AddIndexModal: React.FC<AddIndexModalProps> = ({ t, newIndex, setNewIndex,
     );
 };
 
-export default AddIndexModal;
+export default AddIndexForm;

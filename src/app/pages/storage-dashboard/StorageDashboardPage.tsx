@@ -9,7 +9,7 @@ import StorageHeader from './StorageHeader';
 import StorageUsageOverview from './StorageUsageOverview';
 import IndexRetentionPeriodsChart from './IndexRetentionPeriodsChart';
 import IndexRetentionManagement from './IndexRetentionManagement';
-import AddIndexModal from './AddIndexModal';
+import AddIndexForm from './AddIndexModal';
 import GenericModal from '../../components/GenericModal';
 
 const StorageDashboardPage = () => {
@@ -70,14 +70,14 @@ const StorageDashboardPage = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const usedElasticStorage = indices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0);
-  const usedS3Storage = indices.reduce((acc, curr) => acc + curr.S3StorageGB, 0);
-  const elasticStoragePercentage = (usedElasticStorage / totalElasticStorage) * 100;
-  const s3StoragePercentage = (usedS3Storage / totalS3Storage) * 100;
-  const usedCombinedStorage = usedElasticStorage + usedS3Storage;
+  const usedElasticStorage = parseFloat(indices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0).toFixed(2));
+  const usedS3Storage = parseFloat(indices.reduce((acc, curr) => acc + curr.S3StorageGB, 0).toFixed(2));
+  const elasticStoragePercentage = parseFloat(((usedElasticStorage / totalElasticStorage) * 100).toFixed(2));
+  const s3StoragePercentage = parseFloat(((usedS3Storage / totalS3Storage) * 100).toFixed(2));
+  const usedCombinedStorage = parseFloat((usedElasticStorage + usedS3Storage).toFixed(2));
 
   const combinedStorage = totalElasticStorage + totalS3Storage;
-  const combinedStoragePercentage = (usedCombinedStorage / combinedStorage) * 100;
+  const combinedStoragePercentage = parseFloat(((usedCombinedStorage / combinedStorage) * 100).toFixed(2));
 
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
 
@@ -126,11 +126,13 @@ const StorageDashboardPage = () => {
     const newIndexData = {
         name: newIndex.name,
         hebrewName: newIndex.name,
-        ...rates,
+        elasticStoragePerHotTierDay: parseFloat(rates.elasticStoragePerHotTierDay.toFixed(2)),
+        S3StoragePerColdTierDay: parseFloat(rates.S3StoragePerColdTierDay.toFixed(2)),
+        elasticStoragePerColdTierDay: parseFloat(rates.elasticStoragePerColdTierDay.toFixed(2)),
         hotRetentionDays,
         coldRetentionDays,
-        elasticStorageGB: rates.elasticStoragePerHotTierDay * hotRetentionDays,
-        S3StorageGB: rates.S3StoragePerColdTierDay * coldRetentionDays,
+        elasticStorageGB: parseFloat((rates.elasticStoragePerHotTierDay * hotRetentionDays).toFixed(2)),
+        S3StorageGB: parseFloat((rates.S3StoragePerColdTierDay * coldRetentionDays).toFixed(2)),
         totalRetentionDays: hotRetentionDays + coldRetentionDays,
         initialHotRetentionDays: hotRetentionDays,
         initialColdRetentionDays: coldRetentionDays
@@ -433,7 +435,7 @@ const StorageDashboardPage = () => {
           showModal={showAddIndex}
           setShowModal={setShowAddIndex}
         >
-          <AddIndexModal
+          <AddIndexForm
             {...displayProps}
             newIndex={newIndex}
             setNewIndex={setNewIndex}
