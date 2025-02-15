@@ -32,7 +32,6 @@ const StorageHeader: React.FC<StorageHeaderProps> = ({
   translateIndexNames,
   t
 }) => {
-
   return (
     <div className="bg-white border-b px-6 py-4">
       <div className="flex justify-between items-center">

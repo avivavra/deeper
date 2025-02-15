@@ -1,28 +1,10 @@
 import React from 'react';
-import { NewIndexInputType, Translation, IndexData } from './models';
+import { Translation, IndexData, NewIndex } from './models';
 
 interface AddIndexForm {
     t: Translation;
-    newIndex: {
-        name: string;
-        docSize: string;
-        frequency: string;
-        avgDocs: string;
-        inputType: NewIndexInputType;
-        totalRetention: string;
-        coldRetention: string;
-        importFromIndex: string;
-    };
-    setNewIndex: React.Dispatch<React.SetStateAction<{
-        name: string;
-        docSize: string;
-        frequency: string;
-        avgDocs: string;
-        inputType: NewIndexInputType;
-        totalRetention: string;
-        coldRetention: string;
-        importFromIndex: string;
-    }>>;
+    newIndex: NewIndex;
+    setNewIndex: React.Dispatch<React.SetStateAction<NewIndex>>;
     setShowAddIndex: React.Dispatch<React.SetStateAction<boolean>>;
     handleAddIndex: () => void;
     indices: IndexData[];
@@ -73,8 +55,8 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                         <button
                             onClick={() => setNewIndex(prev => ({ ...prev, inputType: 'frequency' }))}
                             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
-                                ${newIndex.inputType === 'frequency' 
-                                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-700/20' 
+                                ${newIndex.inputType === 'frequency'
+                                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-700/20'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                         >
                             {t.docFrequency}
@@ -82,8 +64,8 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                         <button
                             onClick={() => setNewIndex(prev => ({ ...prev, inputType: 'avgDocs' }))}
                             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
-                                ${newIndex.inputType === 'avgDocs' 
-                                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-700/20' 
+                                ${newIndex.inputType === 'avgDocs'
+                                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-700/20'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                         >
                             {t.avgDocs}
@@ -91,8 +73,8 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                         <button
                             onClick={() => setNewIndex(prev => ({ ...prev, inputType: 'import' }))}
                             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
-                                ${newIndex.inputType === 'import' 
-                                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-700/20' 
+                                ${newIndex.inputType === 'import'
+                                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-700/20'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                         >
                             {t.importFromIndex}
@@ -104,7 +86,7 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                             <select
                                 onChange={(e) => handleImportFromIndex(e.target.value)}
                                 className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                                placeholder={t.importFromIndexPlaceholder}
+                                aria-placeholder={t.importFromIndexPlaceholder}
                             >
                                 <option value="">{t.importFromIndexPlaceholder}</option>
                                 {indices.map(index => (
@@ -122,7 +104,7 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                                     value={newIndex.docSize || ''}
                                     onChange={(e) => setNewIndex(prev => ({ ...prev, docSize: e.target.value }))}
                                     className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                                    placeholder={t.avgDocSizePlaceholder}
+                                    placeholder="100"
                                 />
                             </div>
                             {newIndex.inputType === 'frequency' ? (
@@ -133,7 +115,7 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                                         value={newIndex.frequency || ''}
                                         onChange={(e) => setNewIndex(prev => ({ ...prev, frequency: e.target.value }))}
                                         className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                                        placeholder={t.docFrequencyPlaceholder}
+                                        placeholder="100"
                                     />
                                 </div>
                             ) : (
@@ -144,7 +126,7 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                                         value={newIndex.avgDocs || ''}
                                         onChange={(e) => setNewIndex(prev => ({ ...prev, avgDocs: e.target.value }))}
                                         className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                                        placeholder={t.avgDocsPlaceholder}
+                                        placeholder="1000000"
                                     />
                                 </div>
                             )}
@@ -161,7 +143,7 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                             value={newIndex.totalRetention || ''}
                             onChange={(e) => setNewIndex(prev => ({ ...prev, totalRetention: e.target.value }))}
                             className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                            placeholder={t.totalRetentionPeriodPlaceholder}
+                            placeholder="60"
                         />
                     </div>
                     <div>
@@ -171,7 +153,7 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                             value={newIndex.coldRetention || ''}
                             onChange={(e) => handleColdRetentionChange(e.target.value)}
                             className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                            placeholder={t.coldTierRetentionPlaceholder}
+                            placeholder="15"
                         />
                     </div>
                 </div>

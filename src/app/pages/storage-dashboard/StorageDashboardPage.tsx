@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Audience, ChangeLogEntry, Direction, DisplayMethod, IndexData, NewIndexInputType, Translation } from './models';
+import { Audience, ChangeLogEntry, Direction, DisplayMethod, IndexData, NewIndex, NewIndexInputType, Translation } from './models';
 import { clusters } from './exampleData';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
@@ -9,8 +9,23 @@ import StorageHeader from './StorageHeader';
 import StorageUsageOverview from './StorageUsageOverview';
 import IndexRetentionPeriodsChart from './IndexRetentionPeriodsChart';
 import IndexRetentionManagement from './IndexRetentionManagement';
-import AddIndexForm from './AddIndexModal';
+import AddIndexForm from './AddIndexForm';
 import GenericModal from '../../components/GenericModal';
+import { config } from '../../../config';
+
+const DAILY_SECONDS = 86400;
+const GB_TO_BYTES = 1024 * 1024 * 1024;
+
+const emptyNewIndex = (): NewIndex => ({
+  name: '',
+  docSize: '',
+  frequency: '',
+  avgDocs: '',
+  inputType: 'frequency',
+  totalRetention: '',
+  coldRetention: '',
+  importFromIndex: ''
+});
 
 const StorageDashboardPage = () => {
   // Original data and main states
@@ -22,19 +37,17 @@ const StorageDashboardPage = () => {
   const [totalElasticStorage] = useState(500); // GB
   const [totalS3Storage] = useState(1000); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
-  const [newIndex, setNewIndex] = useState<{ name: string; docSize: string; frequency: string; avgDocs: string; inputType: NewIndexInputType; totalRetention: string; coldRetention: string }>({
-    name: '',
-    docSize: '',
-    frequency: '',
-    avgDocs: '',
-    inputType: 'frequency',
-    totalRetention: '',
-    coldRetention: ''
-  });
-  const [audience, setAudience] = useState<Audience>('developer');
+  const [newIndex, setNewIndex] = useState<NewIndex>(emptyNewIndex());
+  const [audience, setAudience] = useState<Audience>(config.defaultMode as Audience);
 
   const t = translations[audience === 'user' ? 'hebrew' : 'english'];
   const direction: Direction = audience === 'user' ? 'rtl' : 'ltr';
+
+  const handleResetChanges = () => {
+    setIndices(selectedCluster.indices);
+    setChangeLog({});
+    setSelectedIndices(selectedCluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+  };
 
   useEffect(() => {
     if (selectedCluster) {
@@ -48,6 +61,13 @@ const StorageDashboardPage = () => {
     document.documentElement.dir = direction;
   }, [audience]);
 
+  const handleEditModeToggle = () => {
+    if (isEditMode) {
+      handleResetChanges();
+    }
+    setIsEditMode(!isEditMode);
+  };
+
   // Add keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -57,12 +77,7 @@ const StorageDashboardPage = () => {
       }
       if (event.ctrlKey && event.key === 'e') {
         event.preventDefault();
-        setIsEditMode(prev => {
-          if (prev) {
-            handleResetChanges();
-          }
-          return !prev;
-        });
+        handleEditModeToggle();
       }
     };
 
@@ -70,96 +85,86 @@ const StorageDashboardPage = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const usedElasticStorage = parseFloat(indices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0).toFixed(2));
-  const usedS3Storage = parseFloat(indices.reduce((acc, curr) => acc + curr.S3StorageGB, 0).toFixed(2));
-  const elasticStoragePercentage = parseFloat(((usedElasticStorage / totalElasticStorage) * 100).toFixed(2));
-  const s3StoragePercentage = parseFloat(((usedS3Storage / totalS3Storage) * 100).toFixed(2));
-  const usedCombinedStorage = parseFloat((usedElasticStorage + usedS3Storage).toFixed(2));
+  const digits = 2;
+  const usedElasticStorage = parseFloat(indices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0).toFixed(digits));
+  const usedS3Storage = parseFloat(indices.reduce((acc, curr) => acc + curr.S3StorageGB, 0).toFixed(digits));
+  const elasticStoragePercentage = parseFloat(((usedElasticStorage / totalElasticStorage) * 100).toFixed(digits));
+  const s3StoragePercentage = parseFloat(((usedS3Storage / totalS3Storage) * 100).toFixed(digits));
+  const usedCombinedStorage = parseFloat((usedElasticStorage + usedS3Storage).toFixed(digits));
 
   const combinedStorage = totalElasticStorage + totalS3Storage;
-  const combinedStoragePercentage = parseFloat(((usedCombinedStorage / combinedStorage) * 100).toFixed(2));
+  const combinedStoragePercentage = parseFloat(((usedCombinedStorage / combinedStorage) * 100).toFixed(digits));
 
   const filteredIndices = indices.filter(index => selectedIndices[index.name]);
 
-  const getStorageBarColor = (percentage: number) => {
-    if (percentage > 80) return 'bg-red-500';
-    if (percentage > 70) return 'bg-orange-500';
-    return 'bg-blue-600';
-  };
-
   const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: NewIndexInputType) => {
     const dailyData = inputType === 'frequency'
-      ? (docSize * frequency * 86400) / (1024 * 1024 * 1024)
-      : (docSize * avgDocs) / (1024 * 1024 * 1024);
+      ? (docSize * frequency * DAILY_SECONDS) / GB_TO_BYTES
+      : (docSize * avgDocs) / GB_TO_BYTES;
     return {
       elasticStoragePerHotTierDay: dailyData,
-      S3StoragePerColdTierDay: dailyData * 0.75,
-      elasticStoragePerColdTierDay: dailyData * 0.05
+      S3StoragePerColdTierDay: dailyData * config.hotTierMultiplier,
+      elasticStoragePerColdTierDay: dailyData * config.coldTierMultiplier
     };
   };
 
   const handleAddIndex = () => {
     let rates;
     if (newIndex.inputType === 'import') {
-        const selectedIndex = indices.find(index => index.name === newIndex.importFromIndex);
-        if (selectedIndex) {
-            rates = {
-                elasticStoragePerHotTierDay: selectedIndex.elasticStoragePerHotTierDay,
-                S3StoragePerColdTierDay: selectedIndex.S3StoragePerColdTierDay,
-                elasticStoragePerColdTierDay: selectedIndex.elasticStoragePerColdTierDay
-            };
-        } else {
-            // If selectedIndex is not found, set default rates to avoid undefined error
-            rates = {
-                elasticStoragePerHotTierDay: 0,
-                S3StoragePerColdTierDay: 0,
-                elasticStoragePerColdTierDay: 0
-            };
-        }
+      const selectedIndex = indices.find(index => index.name === newIndex.importFromIndex);
+      if (selectedIndex) {
+        rates = {
+          elasticStoragePerHotTierDay: selectedIndex.elasticStoragePerHotTierDay,
+          S3StoragePerColdTierDay: selectedIndex.S3StoragePerColdTierDay,
+          elasticStoragePerColdTierDay: selectedIndex.elasticStoragePerColdTierDay
+        };
+      } else {
+        throw new Error(`selected index to import from ${newIndex.importFromIndex} not found`);
+      }
     } else {
-        rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency), Number(newIndex.avgDocs), newIndex.inputType);
+      rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency), Number(newIndex.avgDocs), newIndex.inputType);
     }
 
     const hotRetentionDays = Number(newIndex.totalRetention) - Number(newIndex.coldRetention);
     const coldRetentionDays = Number(newIndex.coldRetention);
 
     const newIndexData = {
-        name: newIndex.name,
-        hebrewName: newIndex.name,
-        elasticStoragePerHotTierDay: parseFloat(rates.elasticStoragePerHotTierDay.toFixed(2)),
-        S3StoragePerColdTierDay: parseFloat(rates.S3StoragePerColdTierDay.toFixed(2)),
-        elasticStoragePerColdTierDay: parseFloat(rates.elasticStoragePerColdTierDay.toFixed(2)),
-        hotRetentionDays,
-        coldRetentionDays,
-        elasticStorageGB: parseFloat((rates.elasticStoragePerHotTierDay * hotRetentionDays).toFixed(2)),
-        S3StorageGB: parseFloat((rates.S3StoragePerColdTierDay * coldRetentionDays).toFixed(2)),
-        totalRetentionDays: hotRetentionDays + coldRetentionDays,
-        initialHotRetentionDays: hotRetentionDays,
-        initialColdRetentionDays: coldRetentionDays
+      name: newIndex.name,
+      hebrewName: newIndex.name,
+      elasticStoragePerHotTierDay: parseFloat(rates.elasticStoragePerHotTierDay.toFixed(2)),
+      S3StoragePerColdTierDay: parseFloat(rates.S3StoragePerColdTierDay.toFixed(2)),
+      elasticStoragePerColdTierDay: parseFloat(rates.elasticStoragePerColdTierDay.toFixed(2)),
+      hotRetentionDays,
+      coldRetentionDays,
+      elasticStorageGB: parseFloat((rates.elasticStoragePerHotTierDay * hotRetentionDays).toFixed(2)),
+      S3StorageGB: parseFloat((rates.S3StoragePerColdTierDay * coldRetentionDays).toFixed(2)),
+      totalRetentionDays: hotRetentionDays + coldRetentionDays,
+      initialHotRetentionDays: hotRetentionDays,
+      initialColdRetentionDays: coldRetentionDays
     };
 
     setIndices([newIndexData, ...indices]);
     setSelectedIndices(prev => ({ ...prev, [newIndex.name]: true }));
     setChangeLog(prev => ({
-        ...prev,
-        [newIndex.name]: {
-            original: {
-                hotDays: 0,
-                coldDays: 0,
-                elasticStorage: 0,
-                s3Storage: 0,
-            },
-            current: {
-                hotDays: hotRetentionDays,
-                coldDays: coldRetentionDays,
-                elasticStorage: newIndexData.elasticStorageGB,
-                s3Storage: newIndexData.S3StorageGB,
-            }
+      ...prev,
+      [newIndex.name]: {
+        original: {
+          hotDays: 0,
+          coldDays: 0,
+          elasticStorage: 0,
+          s3Storage: 0,
+        },
+        current: {
+          hotDays: hotRetentionDays,
+          coldDays: coldRetentionDays,
+          elasticStorage: newIndexData.elasticStorageGB,
+          s3Storage: newIndexData.S3StorageGB,
         }
+      }
     }));
-    setNewIndex({ name: '', docSize: '', frequency: '', avgDocs: '', inputType: 'frequency', totalRetention: '', coldRetention: '' });
+    setNewIndex(emptyNewIndex());
     setShowAddIndex(false);
-};
+  };
 
   const handleIndexToggle = (indexName: string) => {
     setSelectedIndices(prev => ({
@@ -168,9 +173,9 @@ const StorageDashboardPage = () => {
     }));
   };
 
-  const handleRetentionChange = (indexName: string, newHotDays: number, newColdDays: number) => {
+  const handleIndexRetentionChange = (indexName: string, newHotDays: number, newColdDays: number) => {
     setIndices(prevIndices => {
-      const newIndices = prevIndices.map(index => {
+      const updatedIndices = prevIndices.map(index => {
         if (index.name === indexName) {
           const newElasticStorage = Math.round(
             (index.elasticStoragePerHotTierDay * newHotDays) +
@@ -192,7 +197,7 @@ const StorageDashboardPage = () => {
         return index;
       });
 
-      const newIndex = newIndices.find(i => i.name === indexName);
+      const updatedIndex = updatedIndices.find(i => i.name === indexName) as IndexData;
       const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
 
       setChangeLog(prev => ({
@@ -207,13 +212,13 @@ const StorageDashboardPage = () => {
           current: {
             hotDays: newHotDays,
             coldDays: newColdDays,
-            elasticStorage: newIndex.elasticStorageGB,
-            s3Storage: newIndex.S3StorageGB,
+            elasticStorage: updatedIndex.elasticStorageGB,
+            s3Storage: updatedIndex.S3StorageGB,
           }
         }
       }));
 
-      return newIndices;
+      return updatedIndices;
     });
   };
 
@@ -279,13 +284,6 @@ const StorageDashboardPage = () => {
     });
   };
 
-  const handleModeToggle = () => {
-    if (isEditMode) {
-      handleResetChanges();
-    }
-    setIsEditMode(!isEditMode);
-  };
-
   const handleRevertChange = (indexName: string) => {
     const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
     if (!originalIndex) {
@@ -305,12 +303,6 @@ const StorageDashboardPage = () => {
       const { [indexName]: _, ...rest } = prev;
       return rest;
     });
-  };
-
-  const handleResetChanges = () => {
-    setIndices(selectedCluster.indices);
-    setChangeLog({});
-    setSelectedIndices(selectedCluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
   };
 
   const handleRemoveIndex = (indexName: string) => {
@@ -376,7 +368,7 @@ const StorageDashboardPage = () => {
         selectedIndices={selectedIndices}
         handleIndexToggle={handleIndexToggle}
         isEditMode={isEditMode}
-        handleModeToggle={handleModeToggle}
+        handleModeToggle={handleEditModeToggle}
       />
       {/* Main Content */}
       <div className="flex">
@@ -389,7 +381,7 @@ const StorageDashboardPage = () => {
             handleRevertChange={handleRevertChange}
             handleResetChanges={handleResetChanges}
             setIndices={setIndices}
-            handleRetentionChange={handleRetentionChange}
+            handleIndexRetentionChange={handleIndexRetentionChange}
             setSelectedIndices={setSelectedIndices}
             setChangeLog={setChangeLog}
           />
@@ -407,7 +399,6 @@ const StorageDashboardPage = () => {
               usedS3Storage={usedS3Storage}
               totalS3Storage={totalS3Storage}
               s3StoragePercentage={s3StoragePercentage}
-              getStorageBarColor={getStorageBarColor}
             />
             <IndexRetentionPeriodsChart
               {...displayProps}
@@ -420,7 +411,7 @@ const StorageDashboardPage = () => {
             filteredIndices={filteredIndices}
             t={t}
             handleTotalRetentionChange={handleTotalRetentionChange}
-            handleRetentionChange={handleRetentionChange}
+            handleIndexRetentionChange={handleIndexRetentionChange}
             handleRemoveIndex={handleRemoveIndex}
             setShowAddIndex={setShowAddIndex}
             showAddIndex={showAddIndex}
