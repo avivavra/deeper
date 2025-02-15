@@ -34,8 +34,8 @@ const StorageDashboardPage = () => {
   const [selectedIndices, setSelectedIndices] = useState<{ [key: string]: boolean }>({});
   const [indices, setIndices] = useState<IndexData[]>(clusters[0].indices);
   const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
-  const [totalElasticStorage] = useState(500); // GB
-  const [totalS3Storage] = useState(1000); // GB
+  const [totalElasticStorage, setTotalElasticStorage] = useState(clusters[0].totalElasticStorage); // GB
+  const [totalS3Storage, setTotalS3Storage] = useState(clusters[0].totalS3Storage); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [newIndex, setNewIndex] = useState<NewIndex>(emptyNewIndex());
   const [audience, setAudience] = useState<Audience>(config.defaultMode as Audience);
@@ -53,6 +53,8 @@ const StorageDashboardPage = () => {
     if (selectedCluster) {
       setIndices(selectedCluster.indices);
       setSelectedIndices(selectedCluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+      setTotalElasticStorage(selectedCluster.totalElasticStorage);
+      setTotalS3Storage(selectedCluster.totalS3Storage);
       handleResetChanges();
     }
   }, [selectedCluster]);

@@ -65,7 +65,9 @@ export const clusters: ClusterData[] = [
         S3StorageGB: 2 * 60,
         totalRetentionDays: 25 + 60
       }
-    ]
+    ],
+    totalElasticStorage: 500, // GB
+    totalS3Storage: 1000 // GB
   },
   {
     name: 'Cluster B',
@@ -119,6 +121,8 @@ export const clusters: ClusterData[] = [
         S3StorageGB: 2 * 60,
         totalRetentionDays: 25 + 60
       }
-    ]
+    ],
+    totalElasticStorage: 300, // GB
+    totalS3Storage: 900 // GB
   }
 ];
