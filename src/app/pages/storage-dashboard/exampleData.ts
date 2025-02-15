@@ -13,9 +13,9 @@ export const clusters: ClusterData[] = [
         elasticStoragePerColdTierDay: 0.2,
         hotRetentionDays: 30,
         coldRetentionDays: 90,
-        elasticStorageGB: 120,
-        S3StorageGB: 270,
-        totalRetentionDays: 120
+        elasticStorageGB: 4 * 30 + 0.2 * 90,
+        S3StorageGB: 3 * 90,
+        totalRetentionDays: 30 + 90
       },
       {
         name: 'metrics-app1',
@@ -25,9 +25,9 @@ export const clusters: ClusterData[] = [
         elasticStoragePerColdTierDay: 0.1,
         hotRetentionDays: 15,
         coldRetentionDays: 45,
-        elasticStorageGB: 30,
-        S3StorageGB: 67.5,
-        totalRetentionDays: 60
+        elasticStorageGB: 2 * 15 + 0.1 * 45,
+        S3StorageGB: 1.5 * 45,
+        totalRetentionDays: 15 + 45
       },
       {
         name: 'metrics-app2',
@@ -37,9 +37,9 @@ export const clusters: ClusterData[] = [
         elasticStoragePerColdTierDay: 0.15,
         hotRetentionDays: 20,
         coldRetentionDays: 0,
-        elasticStorageGB: 60,
+        elasticStorageGB: 3 * 20 + 0.15 * 0,
         S3StorageGB: 0,
-        totalRetentionDays: 20
+        totalRetentionDays: 20 + 0
       },
       {
         name: 'audit-logs',
@@ -49,9 +49,9 @@ export const clusters: ClusterData[] = [
         elasticStoragePerColdTierDay: 0.25,
         hotRetentionDays: 10,
         coldRetentionDays: 120,
-        elasticStorageGB: 10,
-        S3StorageGB: 300,
-        totalRetentionDays: 130
+        elasticStorageGB: 1 * 10 + 0.25 * 120,
+        S3StorageGB: 2.5 * 120,
+        totalRetentionDays: 10 + 120
       },
       {
         name: 'user-activity',
@@ -61,9 +61,9 @@ export const clusters: ClusterData[] = [
         elasticStoragePerColdTierDay: 0.12,
         hotRetentionDays: 25,
         coldRetentionDays: 60,
-        elasticStorageGB: 62.5,
-        S3StorageGB: 120,
-        totalRetentionDays: 85
+        elasticStorageGB: 2.5 * 25 + 0.12 * 60,
+        S3StorageGB: 2 * 60,
+        totalRetentionDays: 25 + 60
       }
     ]
   },
@@ -79,9 +79,9 @@ export const clusters: ClusterData[] = [
         elasticStoragePerColdTierDay: 0.1,
         hotRetentionDays: 15,
         coldRetentionDays: 45,
-        elasticStorageGB: 30,
-        S3StorageGB: 67.5,
-        totalRetentionDays: 60
+        elasticStorageGB: 2 * 15 + 0.1 * 45,
+        S3StorageGB: 1.5 * 45,
+        totalRetentionDays: 15 + 45
       },
       {
         name: 'metrics-app2',
@@ -91,9 +91,9 @@ export const clusters: ClusterData[] = [
         elasticStoragePerColdTierDay: 0.15,
         hotRetentionDays: 20,
         coldRetentionDays: 70,
-        elasticStorageGB: 60,
-        S3StorageGB: 140,
-        totalRetentionDays: 90
+        elasticStorageGB: 3 * 20 + 0.15 * 70,
+        S3StorageGB: 2 * 70,
+        totalRetentionDays: 20 + 70
       },
       {
         name: 'audit-logs',
@@ -103,9 +103,9 @@ export const clusters: ClusterData[] = [
         elasticStoragePerColdTierDay: 0.25,
         hotRetentionDays: 10,
         coldRetentionDays: 120,
-        elasticStorageGB: 10,
-        S3StorageGB: 300,
-        totalRetentionDays: 130
+        elasticStorageGB: 1 * 10 + 0.25 * 120,
+        S3StorageGB: 2.5 * 120,
+        totalRetentionDays: 10 + 120
       },
       {
         name: 'user-activity',
@@ -115,9 +115,9 @@ export const clusters: ClusterData[] = [
         elasticStoragePerColdTierDay: 0.12,
         hotRetentionDays: 25,
         coldRetentionDays: 60,
-        elasticStorageGB: 62.5,
-        S3StorageGB: 120,
-        totalRetentionDays: 85
+        elasticStorageGB: 2.5 * 25 + 0.12 * 60,
+        S3StorageGB: 2 * 60,
+        totalRetentionDays: 25 + 60
       }
     ]
   }
