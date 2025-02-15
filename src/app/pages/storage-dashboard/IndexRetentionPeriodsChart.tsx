@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
 
 const IndexRetentionPeriodsChart = ({ direction, displayMethod, translateIndexNames, filteredIndices, t }: IndexRetentionPeriodsChartProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+    <div>
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-gray-800">{t.indexRetentionPeriods}</h2>
       </div>

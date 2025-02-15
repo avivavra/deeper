@@ -35,7 +35,7 @@ const IndexRetentionManagement = ({
     setShowAddIndex,
 }: IndexRetentionManagementProps) => {
     return (
-        <div className={`bg-white rounded-lg shadow-sm ${isEditMode ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
+        <div>
             <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-semibold text-gray-800">{t.indexRetentionManagement}</h2>

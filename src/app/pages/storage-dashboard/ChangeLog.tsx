@@ -218,7 +218,7 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
   };
 
   return (
-    <div className="bg-white shadow-lg w-72 p-6 sticky top-0 h-screen overflow-y-auto z-40">
+    <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-800">{t.changeLog}</h2>
         <div className="flex gap-2">

@@ -12,6 +12,7 @@ import AddIndexForm from './AddIndexForm';
 import GenericModal from '../../components/GenericModal';
 import { config } from '../../../config';
 import { ClustersApi } from '@/api/clusters/clustersApi';
+import StorageDashboardLayout from './StorageDashboardLayout';
 
 const DAILY_SECONDS = 86400;
 const GB_TO_BYTES = 1024 * 1024 * 1024;
@@ -376,60 +377,48 @@ const StorageDashboardPage = ({ clustersApi }: { clustersApi: ClustersApi }) => 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <StorageHeader
-        {...displayProps}
-        audience={audience}
-        setAudience={setAudience}
-        clusters={clusters}
-        selectedCluster={selectedCluster}
-        setSelectedCluster={handleSetSelectedCluster}
-        indices={indices}
-        selectedIndices={selectedIndices}
-        handleIndexToggle={handleIndexToggle}
-        isEditMode={isEditMode}
-        handleModeToggle={handleEditModeToggle}
-      />
-      {/* Main Content */}
-      <div className="flex">
-        {isEditMode && (
-          <ChangeLog
+    <>
+      <StorageDashboardLayout
+        header={
+          <StorageHeader
             {...displayProps}
-            changeLog={changeLog}
-            indices={indices}
+            audience={audience}
+            setAudience={setAudience}
+            clusters={clusters}
             selectedCluster={selectedCluster}
-            handleRevertChange={handleRevertChange}
-            handleResetChanges={handleResetChanges}
-            setIndices={setIndices}
-            handleIndexRetentionChange={handleIndexRetentionChange}
-            setSelectedIndices={setSelectedIndices}
-            setChangeLog={setChangeLog}
+            setSelectedCluster={handleSetSelectedCluster}
+            indices={indices}
+            selectedIndices={selectedIndices}
+            handleIndexToggle={handleIndexToggle}
+            isEditMode={isEditMode}
+            handleModeToggle={handleEditModeToggle}
           />
-        )}
-        <div className={`flex-grow p-6 space-y-6 ${isEditMode ? 'lg:w-[calc(100%-20rem)]' : ''}`}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <StorageUsageOverview
-              {...displayProps}
-              usedCombinedStorage={usedCombinedStorage}
-              combinedStorage={combinedStorage}
-              combinedStoragePercentage={combinedStoragePercentage}
-              usedElasticStorage={usedElasticStorage}
-              totalElasticStorage={totalElasticStorage}
-              elasticStoragePercentage={elasticStoragePercentage}
-              usedS3Storage={usedS3Storage}
-              totalS3Storage={totalS3Storage}
-              s3StoragePercentage={s3StoragePercentage}
-            />
-            <IndexRetentionPeriodsChart
-              {...displayProps}
-              filteredIndices={filteredIndices}
-            />
-          </div>
+        }
+        storageUsage={
+          <StorageUsageOverview
+            {...displayProps}
+            usedCombinedStorage={usedCombinedStorage}
+            combinedStorage={combinedStorage}
+            combinedStoragePercentage={combinedStoragePercentage}
+            usedElasticStorage={usedElasticStorage}
+            totalElasticStorage={totalElasticStorage}
+            elasticStoragePercentage={elasticStoragePercentage}
+            usedS3Storage={usedS3Storage}
+            totalS3Storage={totalS3Storage}
+            s3StoragePercentage={s3StoragePercentage}
+          />
+        }
+        chart={
+          <IndexRetentionPeriodsChart
+            {...displayProps}
+            filteredIndices={filteredIndices}
+          />
+        }
+        retentionManagement={
           <IndexRetentionManagement
             {...displayProps}
             isEditMode={isEditMode}
             filteredIndices={filteredIndices}
-            t={t}
             handleTotalRetentionChange={handleTotalRetentionChange}
             handleIndexRetentionChange={handleIndexRetentionChange}
             handleRemoveIndex={handleRemoveIndex}
@@ -439,24 +428,38 @@ const StorageDashboardPage = ({ clustersApi }: { clustersApi: ClustersApi }) => 
             setNewIndex={setNewIndex}
             handleAddIndex={handleAddIndex}
           />
-        </div>
-      </div>
+        }
+        changeLog={
+          isEditMode && (
+            <ChangeLog
+              {...displayProps}
+              changeLog={changeLog}
+              indices={indices}
+              selectedCluster={selectedCluster}
+              handleRevertChange={handleRevertChange}
+              handleResetChanges={handleResetChanges}
+              setIndices={setIndices}
+              handleIndexRetentionChange={handleIndexRetentionChange}
+              setSelectedIndices={setSelectedIndices}
+              setChangeLog={setChangeLog}
+            />
+          )
+        }
+        isEditMode={isEditMode}
+      />
       {showAddIndex && (
-        <GenericModal
-          showModal={showAddIndex}
-          setShowModal={setShowAddIndex}
-        >
+        <GenericModal showModal={showAddIndex} setShowModal={setShowAddIndex}>
           <AddIndexForm
             {...displayProps}
             newIndex={newIndex}
             setNewIndex={setNewIndex}
-            setShowAddIndex={setShowAddIndex}
             handleAddIndex={handleAddIndex}
             indices={indices}
+            setShowAddIndex={setShowAddIndex}
           />
         </GenericModal>
       )}
-    </div>
+    </>
   );
 };
 

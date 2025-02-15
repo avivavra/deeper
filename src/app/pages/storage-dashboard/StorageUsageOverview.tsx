@@ -62,7 +62,7 @@ const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
   t,
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div>
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-gray-800">{t.storageUsageOverview}</h2>
       </div>

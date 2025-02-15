@@ -33,7 +33,7 @@ const StorageHeader: React.FC<StorageHeaderProps> = ({
   t
 }) => {
   return (
-    <div className="bg-white border-b px-6 py-4">
+    <div>
       <div className="flex justify-between items-center">
         <div className="relative title-dropdown">
           <GenericDropdown
