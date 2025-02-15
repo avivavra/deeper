@@ -50,6 +50,9 @@ export const translations: {
     importFromIndex: 'Import from Index',
     importFromIndexPlaceholder: 'Select an index',
     copyToClipboard: 'Copy',
+    importFromText: 'Import from Text',
+    importFromFile: 'Import from File',
+    import: 'Import',
   },
   hebrew: {
     title: 'דאשבורד אחסון',
@@ -97,5 +100,8 @@ export const translations: {
     importFromIndex: 'ייבא מאינדקס',
     importFromIndexPlaceholder: 'בחר אינדקס',
     copyToClipboard: 'העתקה',
+    importFromText: 'ייבא מטקסט',
+    importFromFile: 'ייבא מקובץ',
+    import: 'ייבא',
   }
 };

@@ -86,4 +86,7 @@ export type Translation = {
     importFromIndex: string;
     importFromIndexPlaceholder: string;
     copyToClipboard: string;
+    importFromFile: string;
+    importFromText: string;
+    import: string;
 };

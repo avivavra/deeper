@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
 import { ChangeLogEntry, Direction, DisplayMethod, IndexData, Translation } from './models';
 import GenericDropdown from '../../components/GenericDropdown';
+import GenericModal from '../../components/GenericModal';
 
 interface ChangeLogProps {
   changeLog: { [key: string]: ChangeLogEntry };
@@ -44,16 +45,16 @@ const parseChangeLog = (text: string) => {
       const indexName = lines[0].replace('Index: ', '');
       const hotDaysMatch = lines[1].match(/Hot Retention Days: \d+ → (\d+) days/);
       const coldDaysMatch = lines[2].match(/Cold Retention Days: \d+ → (\d+) days/);
-      const elasticStorageMatch = lines[3].match(/Elasticsearch Storage: \d+ GB → (\d+) GB/);
-      const s3StorageMatch = lines[4].match(/S3 Storage: \d+ GB → (\d+) GB/);
+      const elasticStorageMatch = lines[3].match(/Elasticsearch Storage: \d+ GB → (\d+(\.\d+)?) GB/);
+      const s3StorageMatch = lines[4].match(/S3 Storage: \d+ GB → (\d+(\.\d+)?) GB/);
 
       if (hotDaysMatch && coldDaysMatch && elasticStorageMatch && s3StorageMatch) {
         parsedEntries.push({
           indexName,
           newHotDays: parseInt(hotDaysMatch[1]),
           newColdDays: parseInt(coldDaysMatch[1]),
-          newElasticStorage: parseInt(elasticStorageMatch[1]),
-          newS3Storage: parseInt(s3StorageMatch[1]),
+          newElasticStorage: parseFloat(elasticStorageMatch[1]),
+          newS3Storage: parseFloat(s3StorageMatch[1]),
         });
       }
     }
@@ -77,6 +78,8 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
   translateIndexNames,
 }) => {
   const arrow = direction === 'ltr' ? '→' : '←';
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importText, setImportText] = useState('');
 
   const handleExportToFile = () => {
     const text = formatChangeLog(changeLog);
@@ -200,8 +203,91 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
     }
   };
 
+  const handleImportFromText = () => {
+    try {
+      const parsedEntries = parseChangeLog(importText);
+      parsedEntries.forEach(({ indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage }) => {
+        if (newHotDays === 0 && newColdDays === 0) {
+          // Remove index if both hot and cold days are zero
+          setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
+          setSelectedIndices(prev => {
+            const { [indexName]: _, ...rest } = prev;
+            return rest;
+          });
+          setChangeLog(prev => {
+            const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
+            return {
+              ...prev,
+              [indexName]: {
+                original: {
+                  hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
+                  coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
+                  elasticStorage: originalIndex ? originalIndex.elasticStorageGB : 0,
+                  s3Storage: originalIndex ? originalIndex.S3StorageGB : 0,
+                },
+                current: {
+                  hotDays: 0,
+                  coldDays: 0,
+                  elasticStorage: 0,
+                  s3Storage: 0,
+                }
+              }
+            };
+          });
+        } else {
+          const newIndex = indices.find(index => index.name === indexName);
+          if (newIndex) {
+            handleRetentionChange(indexName, newHotDays, newColdDays);
+          } else {
+            const elasticStoragePerHotTierDay = newHotDays > 0 ? newElasticStorage / newHotDays : 0;
+            const S3StoragePerColdTierDay = newColdDays > 0 ? newS3Storage / newColdDays : 0;
+
+            const newIndexData = {
+              name: indexName,
+              hebrewName: indexName,
+              hotRetentionDays: newHotDays,
+              coldRetentionDays: newColdDays,
+              elasticStorageGB: newElasticStorage,
+              S3StorageGB: newS3Storage,
+              totalRetentionDays: newHotDays + newColdDays,
+              initialHotRetentionDays: newHotDays,
+              initialColdRetentionDays: newColdDays,
+              elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
+              S3StoragePerColdTierDay: S3StoragePerColdTierDay,
+              elasticStoragePerColdTierDay: 0
+            };
+            setIndices(prevIndices => [newIndexData, ...prevIndices]);
+            setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
+            setChangeLog(prev => {
+              return {
+                ...prev,
+                [indexName]: {
+                  original: {
+                    hotDays: 0,
+                    coldDays: 0,
+                    elasticStorage: 0,
+                    s3Storage: 0,
+                  },
+                  current: {
+                    hotDays: newHotDays,
+                    coldDays: newColdDays,
+                    elasticStorage: newElasticStorage,
+                    s3Storage: newS3Storage,
+                  }
+                }
+              };
+            });
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error importing changes:', error);
+    }
+    setShowImportModal(false);
+  };
+
   return (
-    <div className="bg-white shadow-lg w-72 p-6 sticky top-0 h-screen overflow-y-auto">
+    <div className="bg-white shadow-lg w-72 p-6 sticky top-0 h-screen overflow-y-auto z-40">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-800">{t.changeLog}</h2>
         <div className="flex gap-2">
@@ -232,20 +318,33 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
               </button>
             </>
           ) : (
-            <div className="relative">
-              <input
-                type="file"
-                onChange={handleImportFromFile}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                accept=".txt"
-              />
-              <button
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Upload className="h-4 w-4 mx-2 text-gray-800" />
-              </button>
-            </div>
+            <GenericDropdown
+              buttonLabel={<Upload className="h-4 w-4 mx-2 text-gray-800" />}
+              options={[
+                { label: t.importFromFile, value: 'importFromFile' },
+                { label: t.importFromText, value: 'importFromText' }
+              ]}
+              onSelect={(value) => {
+                if (value === 'importFromFile') {
+                  document.getElementById('import-file-input')?.click();
+                }
+                if (value === 'importFromText') {
+                  setShowImportModal(true);
+                }
+              }}
+              width="w-40"
+              type="radio"
+              showChevron={false}
+              hideInputs={true}
+            />
           )}
+          <input
+            id="import-file-input"
+            type="file"
+            onChange={handleImportFromFile}
+            className="hidden"
+            accept=".txt"
+          />
         </div>
       </div>
       <div className="space-y-4">
@@ -301,6 +400,34 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
           </div>
         )}
       </div>
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <GenericModal showModal={showImportModal} setShowModal={setShowImportModal}>
+            <div className="p-4">
+              <h2 className="text-lg font-semibold text-gray-800">{t.importFromText}</h2>
+              <textarea
+                className="w-full h-40 p-2 mt-2 border border-gray-300 rounded-md text-gray-900"
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+              />
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setShowImportModal(false)}
+                  className="px-4 py-2 mr-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  onClick={handleImportFromText}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  {t.import}
+                </button>
+              </div>
+            </div>
+          </GenericModal>
+        </div>
+      )}
     </div>
   );
 };
