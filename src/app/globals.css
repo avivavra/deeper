@@ -1,3 +1,17 @@
+@font-face {
+  font-family: 'Heebo';
+  src: url('../assets/fonts/Heebo-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Heebo';
+  src: url('../assets/fonts/Heebo-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,7 +31,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Heebo', Arial, Helvetica, sans-serif; /* Updated font-family */
 }
 
 /* Custom scroll bar styles */
