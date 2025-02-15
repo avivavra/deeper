@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Audience, ChangeLogEntry, Direction, DisplayMethod, IndexData, NewIndex, NewIndexInputType, Translation } from './models';
-import { clusters } from './exampleData';
+import { Audience, ChangeLogEntry, ClusterData, Direction, DisplayMethod, IndexData, NewIndex, NewIndexInputType, Translation } from './models';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
 import StorageHeader from './StorageHeader';
@@ -12,6 +11,7 @@ import IndexRetentionManagement from './IndexRetentionManagement';
 import AddIndexForm from './AddIndexForm';
 import GenericModal from '../../components/GenericModal';
 import { config } from '../../../config';
+import { ClustersApi } from '@/api/clusters/clustersApi';
 
 const DAILY_SECONDS = 86400;
 const GB_TO_BYTES = 1024 * 1024 * 1024;
@@ -27,15 +27,16 @@ const emptyNewIndex = (): NewIndex => ({
   importFromIndex: ''
 });
 
-const StorageDashboardPage = () => {
+const StorageDashboardPage = ({ clustersApi }: { clustersApi: ClustersApi }) => {
   // Original data and main states
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedCluster, setSelectedCluster] = useState(clusters[0]);
+  const [clusters, setClusters] = useState<{ name: string; hebrewName: string; }[]>(clustersApi.getClusterNames());
+  const [selectedCluster, setSelectedCluster] = useState<ClusterData | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<{ [key: string]: boolean }>({});
-  const [indices, setIndices] = useState<IndexData[]>(clusters[0].indices);
+  const [indices, setIndices] = useState<IndexData[]>([]);
   const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
-  const [totalElasticStorage, setTotalElasticStorage] = useState(clusters[0].totalElasticStorage); // GB
-  const [totalS3Storage, setTotalS3Storage] = useState(clusters[0].totalS3Storage); // GB
+  const [totalElasticStorage, setTotalElasticStorage] = useState(0); // GB
+  const [totalS3Storage, setTotalS3Storage] = useState(0); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [newIndex, setNewIndex] = useState<NewIndex>(emptyNewIndex());
   const [audience, setAudience] = useState<Audience>(config.defaultMode as Audience);
@@ -44,9 +45,26 @@ const StorageDashboardPage = () => {
   const direction: Direction = audience === 'user' ? 'rtl' : 'ltr';
 
   const handleResetChanges = () => {
-    setIndices(selectedCluster.indices);
-    setChangeLog({});
-    setSelectedIndices(selectedCluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+    if (selectedCluster) {
+      setIndices(selectedCluster.indices);
+      setChangeLog({});
+      setSelectedIndices(selectedCluster.indices.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+    }
+  };
+
+  useEffect(() => {
+    const fetchClusters = async () => {
+      if (clusters.length > 0) {
+        const initialCluster = await clustersApi.getCluster(clusters[0].name);
+        setSelectedCluster(initialCluster);
+      }
+    };
+    fetchClusters();
+  }, [clustersApi]);
+
+  const handleSetSelectedCluster = async (clusterName: string) => {
+    const clusterData = await clustersApi.getCluster(clusterName);
+    setSelectedCluster(clusterData);
   };
 
   useEffect(() => {
@@ -200,7 +218,7 @@ const StorageDashboardPage = () => {
       });
 
       const updatedIndex = updatedIndices.find(i => i.name === indexName) as IndexData;
-      const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
+      const originalIndex = selectedCluster?.indices.find(i => i.name === indexName);
 
       setChangeLog(prev => ({
         ...prev,
@@ -228,7 +246,7 @@ const StorageDashboardPage = () => {
     setIndices(prevIndices => {
       const newIndices = prevIndices.map(index => {
         if (index.name === indexName) {
-          const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
+          const originalIndex = selectedCluster?.indices.find(i => i.name === indexName);
 
           const originalHotDays = originalIndex ? originalIndex.hotRetentionDays : index.initialHotRetentionDays;
           const originalColdDays = originalIndex ? originalIndex.coldRetentionDays : index.initialColdRetentionDays;
@@ -262,7 +280,7 @@ const StorageDashboardPage = () => {
       });
 
       const newIndex = newIndices.find(i => i.name === indexName);
-      const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
+      const originalIndex = selectedCluster?.indices.find(i => i.name === indexName);
 
       setChangeLog(prev => ({
         ...prev,
@@ -287,7 +305,7 @@ const StorageDashboardPage = () => {
   };
 
   const handleRevertChange = (indexName: string) => {
-    const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
+    const originalIndex = selectedCluster?.indices.find(i => i.name === indexName);
     if (!originalIndex) {
       // If the index was newly added, remove it
       setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
@@ -318,7 +336,7 @@ const StorageDashboardPage = () => {
     });
 
     setChangeLog(prev => {
-      const isNewIndex = !selectedCluster.indices.some(index => index.name === indexName);
+      const isNewIndex = !selectedCluster?.indices.some(index => index.name === indexName);
       if (isNewIndex) {
         const { [indexName]: _, ...rest } = prev;
         return rest;
@@ -365,7 +383,7 @@ const StorageDashboardPage = () => {
         setAudience={setAudience}
         clusters={clusters}
         selectedCluster={selectedCluster}
-        setSelectedCluster={setSelectedCluster}
+        setSelectedCluster={handleSetSelectedCluster}
         indices={indices}
         selectedIndices={selectedIndices}
         handleIndexToggle={handleIndexToggle}

@@ -6,9 +6,9 @@ import { Audience, ClusterData, IndexData, Translation } from './models';
 interface StorageHeaderProps {
   audience: Audience;
   setAudience: (audience: Audience) => void;
-  clusters: ClusterData[];
+  clusters: { name: string; hebrewName: string; }[];
   selectedCluster: ClusterData;
-  setSelectedCluster: (cluster: ClusterData) => void;
+  setSelectedCluster: (clusterName: string) => void;
   indices: IndexData[];
   selectedIndices: { [key: string]: boolean };
   handleIndexToggle: (indexName: string) => void;
@@ -53,9 +53,9 @@ const StorageHeader: React.FC<StorageHeaderProps> = ({
             options={clusters.map(cluster => ({
               label: translateIndexNames ? cluster.hebrewName : cluster.name,
               value: cluster.name,
-              checked: selectedCluster.name === cluster.name
+              checked: selectedCluster?.name === cluster.name
             }))}
-            onSelect={(value) => setSelectedCluster(clusters.find(cluster => cluster.name === value)!)}
+            onSelect={(value) => setSelectedCluster(value)}
             width="w-56"
             type="radio"
           />

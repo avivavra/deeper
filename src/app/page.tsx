@@ -1,4 +1,4 @@
-import StorageDashboardPage from "./pages/storage-dashboard/StorageDashboardPage";
+import StorageDashboardPage from "./bootstraps/StorageDashboardPage";
 
 export default function Home() {
   return (
