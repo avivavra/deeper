@@ -14,6 +14,8 @@ import { config } from '../../../config';
 import { ClustersApi } from '@/api/clusters/clustersApi';
 import StorageDashboardLayout from './StorageDashboardLayout';
 import useAsyncState from '../../utils/useAsyncState';
+import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
+import './StorageDashboardPage.css';
 
 const DAILY_SECONDS = 86400;
 const GB_TO_BYTES = 1024 * 1024 * 1024;
@@ -396,9 +398,9 @@ const StorageDashboardPage = ({ clustersApi }: { clustersApi: ClustersApi }) => 
         }
         storageUsage={
           selectedCluster.status === 'loading' ? (
-            <div>Loading...</div>
+            <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
           ) : selectedCluster.status === 'error' ? (
-            <div>Error loading cluster data</div>
+            <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
           ) : (
             <StorageUsageOverview
               {...displayProps}
@@ -415,25 +417,37 @@ const StorageDashboardPage = ({ clustersApi }: { clustersApi: ClustersApi }) => 
           )
         }
         chart={
-          <IndexRetentionPeriodsChart
-            {...displayProps}
-            filteredIndices={filteredIndices}
-          />
+          selectedCluster.status === 'loading' ? (
+            <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
+          ) : selectedCluster.status === 'error' ? (
+            <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
+          ) : (
+            <IndexRetentionPeriodsChart
+              {...displayProps}
+              filteredIndices={filteredIndices}
+            />
+          )
         }
         retentionManagement={
-          <IndexRetentionManagement
-            {...displayProps}
-            isEditMode={isEditMode}
-            filteredIndices={filteredIndices}
-            handleTotalRetentionChange={handleTotalRetentionChange}
-            handleIndexRetentionChange={handleIndexRetentionChange}
-            handleRemoveIndex={handleRemoveIndex}
-            setShowAddIndex={setShowAddIndex}
-            showAddIndex={showAddIndex}
-            newIndex={newIndex}
-            setNewIndex={setNewIndex}
-            handleAddIndex={handleAddIndex}
-          />
+          selectedCluster.status === 'loading' ? (
+            <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
+          ) : selectedCluster.status === 'error' ? (
+            <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
+          ) : (
+            <IndexRetentionManagement
+              {...displayProps}
+              isEditMode={isEditMode}
+              filteredIndices={filteredIndices}
+              handleTotalRetentionChange={handleTotalRetentionChange}
+              handleIndexRetentionChange={handleIndexRetentionChange}
+              handleRemoveIndex={handleRemoveIndex}
+              setShowAddIndex={setShowAddIndex}
+              showAddIndex={showAddIndex}
+              newIndex={newIndex}
+              setNewIndex={setNewIndex}
+              handleAddIndex={handleAddIndex}
+            />
+          )
         }
         changeLog={
           isEditMode && (
