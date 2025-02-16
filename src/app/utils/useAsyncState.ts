@@ -11,10 +11,10 @@ const useAsyncState = <T>(fetchFunction: () => Promise<T>, initialState: T | nul
       : { status: 'loading', data: null }
   );
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (fetchFn?: () => Promise<T>) => {
     setState({ status: 'loading', data: null });
     try {
-      const data = await fetchFunction();
+      const data = await (fetchFn ? fetchFn() : fetchFunction());
       setState({ status: 'succeeded', data });
     } catch (error) {
       setState({ status: 'error', data: null });
