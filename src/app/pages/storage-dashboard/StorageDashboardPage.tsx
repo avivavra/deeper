@@ -371,7 +371,7 @@ const StorageDashboardPage = ({ clustersApi }: { clustersApi: ClustersApi }) => 
   } = {
     direction,
     t,
-    displayMethod: audience === 'user' ? 'combined' : 'separate',
+    displayMethod: audience === 'user' && config.combineForUser ? 'combined' : 'separate',
     translateIndexNames: audience === 'user',
     displayRates: audience === 'developer'
   }

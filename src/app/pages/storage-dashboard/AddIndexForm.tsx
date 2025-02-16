@@ -172,7 +172,7 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium text-gray-800">{t.coldTierRetention} ({t.days})</label>
+                        <label className="text-sm font-medium text-gray-800">{t.coldTierRetentionQuestion} ({t.days})</label>
                         <input
                             type="number"
                             value={newIndex.coldRetention || ''}

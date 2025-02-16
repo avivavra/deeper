@@ -5,5 +5,6 @@ export const config = {
         high: 80,
         medium: 70
     },
-    defaultMode: 'developer'
+    defaultMode: 'developer',
+    combineForUser: false,
 };

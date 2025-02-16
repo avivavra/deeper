@@ -72,6 +72,7 @@ export type Translation = {
     addIndex: string;
     hotTierRetention: string;
     coldTierRetention: string;
+    coldTierRetentionQuestion: string;
     totalRetentionPeriod: string;
     hotTier: string;
     coldTier: string;
