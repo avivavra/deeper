@@ -1,25 +1,25 @@
-import { ClusterData } from "@/app/pages/storage-dashboard/models";
+import { ClusterData, IndexData } from "@/app/pages/storage-dashboard/models";
 import { ClustersApi } from "./clustersApi";
-import { clusters } from "@/app/pages/storage-dashboard/exampleData";
 
 export class DelayMockClustersApi implements ClustersApi {
-    getClusterNames() {
-        return clusters.map(cluster => ({
-            name: cluster.name,
-            hebrewName: cluster.hebrewName
-        }));
-    };
+    private clustersApi: ClustersApi;
+
+    constructor(clustersApi: ClustersApi) {
+        this.clustersApi = clustersApi;
+    }
 
     getCluster(name: string): Promise<ClusterData> {
-        const cluster = clusters.find(cluster => cluster.name === name);
-
-        if (!cluster) {
-            throw new Error(`Cluster not found: ${name}`);
-        }
-
         return new Promise(resolve => {
             setTimeout(() => {
-                resolve(cluster);
+                resolve(this.clustersApi.getCluster(name));
+            }, 1500);
+        });
+    }
+
+    getIndices(clusterName: string): Promise<IndexData[]> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(this.clustersApi.getIndices(clusterName));
             }, 1500);
         });
     }

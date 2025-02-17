@@ -40,7 +40,6 @@ export type ChangeLogEntry = {
 export type ClusterData = {
     name: string;
     hebrewName: string;
-    indices: IndexData[];
     totalElasticStorage: number; // GB
     totalS3Storage: number; // GB
 };

@@ -4,28 +4,28 @@ type AsyncState<T> =
   | { status: 'loading' | 'error'; data: null }
   | { status: 'succeeded'; data: T };
 
-const useAsyncState = <T>(fetchFunction: () => Promise<T>, initialState: T | null = null) => {
+const useAsyncState = <T>(initialState: T | (() => Promise<T>)) => {
   const [state, setState] = useState<AsyncState<T>>(
-    initialState
-      ? { status: 'succeeded', data: initialState }
-      : { status: 'loading', data: null }
+    typeof initialState === 'function'
+      ? { status: 'loading', data: null }
+      : { status: 'succeeded', data: initialState }
   );
 
-  const fetchData = useCallback(async (fetchFn?: () => Promise<T>) => {
+  const fetchData = useCallback(async (fetchFunction: () => Promise<T>) => {
     setState({ status: 'loading', data: null });
     try {
-      const data = await (fetchFn ? fetchFn() : fetchFunction());
+      const data = await fetchFunction();
       setState({ status: 'succeeded', data });
     } catch (error) {
       setState({ status: 'error', data: null });
     }
-  }, [fetchFunction]);
+  }, []);
 
   useEffect(() => {
-    if (!initialState) {
-      fetchData();
+    if (typeof initialState === 'function') {
+      fetchData(initialState as () => Promise<T>);
     }
-  }, [fetchData, initialState]);
+  }, [initialState, fetchData]);
 
   return { state, fetchData };
 };

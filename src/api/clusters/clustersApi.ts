@@ -1,6 +1,6 @@
-import { ClusterData } from "@/app/pages/storage-dashboard/models";
+import { ClusterData, IndexData } from "@/app/pages/storage-dashboard/models";
 
 export type ClustersApi = {
-    getClusterNames: () => { name: string; hebrewName: string; }[];
     getCluster: (name: string) => Promise<ClusterData>;
+    getIndices: (clusterName: string) => Promise<IndexData[]>;
 };

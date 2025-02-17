@@ -1,15 +1,8 @@
 import { ClusterData } from "@/app/pages/storage-dashboard/models";
 import { ClustersApi } from "./clustersApi";
-import { clusters } from "@/app/pages/storage-dashboard/exampleData";
+import { clusterAIndices, clusterBIndices, clusters } from "@/app/pages/storage-dashboard/exampleData";
 
 export class MockClustersApi implements ClustersApi {
-    getClusterNames() {
-        return clusters.map(cluster => ({
-            name: cluster.name,
-            hebrewName: cluster.hebrewName
-        }));
-    };
-
     getCluster(name: string): Promise<ClusterData> {
         const cluster = clusters.find(cluster => cluster.name === name);
 
@@ -18,5 +11,15 @@ export class MockClustersApi implements ClustersApi {
         }
 
         return Promise.resolve(cluster);
+    }
+
+    getIndices(clusterName: string) {
+        if (clusterName === 'Cluster A') {
+            return Promise.resolve(clusterAIndices);
+        } else if (clusterName === 'Cluster B') {
+            return Promise.resolve(clusterBIndices);
+        } else {
+            throw new Error(`Cluster not found: ${clusterName}`);
+        }
     }
 }
