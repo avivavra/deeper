@@ -1,126 +1,33 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Audience, ChangeLogEntry, ClusterData, ClusterMetadata, Direction, DisplayMethod, IndexData, NewIndexInputType, Translation } from './models';
 import { translations } from './translations';
-import ChangeLog from './ChangeLog';
-import StorageHeader from './StorageHeader';
-import StorageUsageOverview from './StorageUsageOverview';
-import IndexRetentionPeriodsChart from './IndexRetentionPeriodsChart';
-import IndexRetentionManagement from './IndexRetentionManagement';
-import AddIndexForm from './AddIndexForm';
+import ChangeLog from './sub-components/ChangeLog';
+import StorageHeader from './sub-components/StorageHeader';
+import StorageUsageOverview from './sub-components/StorageUsageOverview';
+import IndexRetentionPeriodsChart from './sub-components/IndexRetentionPeriodsChart';
+import IndexRetentionManagement from './sub-components/IndexRetentionManagement';
+import AddIndexForm from './sub-components/AddIndexForm';
 import GenericModal from '../../components/GenericModal';
-import { config } from '../../../config/config';
 import { ClustersApi } from '@/api/clusters/clustersApi';
 import StorageDashboardLayout from './StorageDashboardLayout';
-import useAsyncState from '../../utils/useAsyncState';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
+import { useAudience } from './hooks/useAudience';
+import { useEditMode } from './hooks/useEditMode';
+import { useCluster } from './hooks/useCluster';
 
 import './StorageDashboardPage.css';
 
 type StorageDashboardPageProps = {
   clustersApi: ClustersApi;
   clustersMetadata: ClusterMetadata[];
+  defaultMode: Audience;
+  combineForUser: boolean;
 };
 
-const useAudience = () => {
-  const [audience, setAudience] = useState<Audience>(config.defaultMode as Audience);
-  const direction: Direction = audience === 'user' ? 'rtl' : 'ltr';
-  const t = translations[audience === 'user' ? 'hebrew' : 'english'];
-
-  useEffect(() => {
-    document.documentElement.dir = direction;
-  }, [audience]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 'd') {
-        event.preventDefault();
-        setAudience(prev => (prev === 'developer' ? 'user' : 'developer'));
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  return { audience, setAudience, direction, t };
-};
-
-const useEditMode = () => {
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  const handleEditModeToggle = useCallback(() => {
-    setIsEditMode(prev => !prev);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 'e') {
-        event.preventDefault();
-        handleEditModeToggle();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleEditModeToggle]);
-
-  return { isEditMode, handleEditModeToggle };
-};
-
-const useCluster = (clustersApi: ClustersApi, clustersMetadata: ClusterMetadata[]) => {
-  const [selectedClusterMetadata, setSelectedClusterMetadata] = useState<ClusterMetadata>(clustersMetadata[0]);
-
-  const fetchInitialClusterStorage = useCallback(async () => {
-    const clustersStorage = await clustersApi.getClusterStorage(clustersMetadata[0].name);
-
-    return {
-      ...(clustersMetadata[0]),
-      ...clustersStorage
-    };
-  }, [clustersMetadata, clustersApi]);
-
-  const { state: selectedCluster, fetchData: setSelectedCluster } = useAsyncState<ClusterData>(fetchInitialClusterStorage);
-
-  const handleSetSelectedCluster = useCallback((clusterName: string) => {
-    const clusterMetadata = clustersMetadata.find(c => c.name === clusterName);
-    if (clusterMetadata) {
-      setSelectedClusterMetadata(clusterMetadata);
-      setSelectedCluster(async () => {
-        const clusterStorage = await clustersApi.getClusterStorage(clusterName);
-
-        return {
-          ...clusterMetadata,
-          ...clusterStorage
-        };
-      });
-    }
-  }, [clustersApi, clustersMetadata, setSelectedCluster]);
-
-  const { state: indices, fetchData: setIndices } = useAsyncState<IndexData[]>([]);
-
-  useEffect(() => {
-    setIndices(() => clustersApi.getIndices(selectedClusterMetadata.name));
-  }, [setIndices, clustersApi, selectedClusterMetadata.name]);
-
-  const totalElasticStorage = selectedCluster.data?.totalElasticStorage || 0;
-  const totalS3Storage = selectedCluster.data?.totalS3Storage || 0;
-  const combinedStorage = totalElasticStorage + totalS3Storage;
-
-  return {
-    selectedClusterMetadata,
-    selectedCluster,
-    handleSetSelectedCluster,
-    indices,
-    totalElasticStorage,
-    totalS3Storage,
-    combinedStorage
-  };
-};
-
-const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboardPageProps) => {
-  const { audience, setAudience, direction, t } = useAudience();
+const StorageDashboardPage = ({ clustersApi, clustersMetadata, defaultMode, combineForUser }: StorageDashboardPageProps) => {
+  const { audience, setAudience, direction, t } = useAudience(defaultMode);
   const { isEditMode, handleEditModeToggle } = useEditMode();
   const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, indices, totalElasticStorage, totalS3Storage, combinedStorage } = useCluster(clustersApi, clustersMetadata);
 
@@ -365,7 +272,7 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
   } = {
     direction,
     t,
-    displayMethod: audience === 'user' && config.combineForUser ? 'combined' : 'separate',
+    displayMethod: audience === 'user' && combineForUser ? 'combined' : 'separate',
     translateIndexNames: audience === 'user',
     displayRates: audience === 'developer'
   }

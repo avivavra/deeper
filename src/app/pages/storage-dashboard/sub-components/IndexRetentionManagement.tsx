@@ -1,9 +1,9 @@
 import React from 'react';
 import { Plus, MoreVertical } from 'lucide-react';
-import GenericDropdown from '../../components/GenericDropdown';
-import CustomSlider from '../../components/CustomSlider';
-import TooltipIcon from '../../components/TooltipIcon';
-import { Direction, DisplayMethod, IndexData, Translation } from './models';
+import GenericDropdown from '../../../components/GenericDropdown';
+import CustomSlider from '../../../components/CustomSlider';
+import TooltipIcon from '../../../components/TooltipIcon';
+import { Direction, DisplayMethod, IndexData, Translation } from '../models';
 
 type IndexRetentionManagementProps = {
     isEditMode: boolean;

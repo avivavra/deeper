@@ -1,6 +1,6 @@
 import { ClusterData, ClusterStorage } from "@/app/pages/storage-dashboard/models";
 import { ClustersApi } from "./clustersApi";
-import { clusterAIndices, clusterBIndices, clusters } from "@/app/pages/storage-dashboard/exampleData";
+import { clusterAIndices, clusterBIndices, clusters } from "./exampleData";
 
 export class MockClustersApi implements ClustersApi {
     getClusterStorage(name: string): Promise<ClusterStorage> {
@@ -12,7 +12,9 @@ export class MockClustersApi implements ClustersApi {
 
         return Promise.resolve({
             totalElasticStorage: cluster.totalElasticStorage,
-            totalS3Storage: cluster.totalS3Storage
+            totalS3Storage: cluster.totalS3Storage,
+            usedElasticStorage: cluster.usedElasticStorage,
+            usedS3Storage: cluster.usedS3Storage
         });
     }
 

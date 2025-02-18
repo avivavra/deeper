@@ -34,6 +34,8 @@ export type ClusterMetadata = {
 export type ClusterStorage = {
     totalElasticStorage: number; // GB
     totalS3Storage: number; // GB
+    usedElasticStorage: number; // GB
+    usedS3Storage: number; // GB
 }
 
 export type ClusterData = ClusterMetadata & ClusterStorage;

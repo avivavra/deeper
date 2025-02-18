@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Translation, IndexData, NewIndexInputType } from './models';
+import { Translation, IndexData, NewIndexInputType } from '../models';
 import { config } from '@/config/config';
 
 const DAILY_SECONDS = 86400;

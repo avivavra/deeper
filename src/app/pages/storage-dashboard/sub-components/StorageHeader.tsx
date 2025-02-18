@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pencil, Eye } from 'lucide-react';
-import GenericDropdown from '../../components/GenericDropdown';
-import { Audience, ClusterData, ClusterMetadata, IndexData, Translation } from './models';
+import GenericDropdown from '../../../components/GenericDropdown';
+import { Audience, ClusterData, ClusterMetadata, IndexData, Translation } from '../models';
 
 interface StorageHeaderProps {
   audience: Audience;

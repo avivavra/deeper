@@ -1,21 +1,21 @@
-import { ClusterData } from "./models";
+import { ClusterData } from "../../app/pages/storage-dashboard/models";
 
 export const clusters: ClusterData[] = [
   {
     name: 'Cluster A',
     hebrewName: 'אשכול א',
     totalElasticStorage: 500, // GB
-    // usedElasticStorage: 342.2, // GB
+    usedElasticStorage: 342.2, // GB
     totalS3Storage: 1000, // GB
-    // usedS3Storage: 757.5 // GB
+    usedS3Storage: 757.5 // GB
   },
   {
     name: 'Cluster B',
     hebrewName: 'אשכול ב',
     totalElasticStorage: 300, // GB
-    // usedElasticStorage: 214.7, // GB
+    usedElasticStorage: 214.7, // GB
     totalS3Storage: 900, // GB
-    // usedS3Storage: 627.5 // GB
+    usedS3Storage: 627.5 // GB
   }
 ];
 

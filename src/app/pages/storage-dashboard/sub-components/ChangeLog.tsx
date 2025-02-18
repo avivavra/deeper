@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
-import { ChangeLogEntry, Direction, DisplayMethod, IndexData, Translation } from './models';
-import GenericDropdown from '../../components/GenericDropdown';
-import GenericModal from '../../components/GenericModal';
+import { ChangeLogEntry, Direction, DisplayMethod, IndexData, Translation } from '../models';
+import GenericDropdown from '../../../components/GenericDropdown';
+import GenericModal from '../../../components/GenericModal';
 
 interface ChangeLogProps {
   changeLog: { [key: string]: ChangeLogEntry };
