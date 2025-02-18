@@ -37,12 +37,17 @@ export type ChangeLogEntry = {
     };
 };
 
-export type ClusterData = {
+export type ClusterMetadata = {
     name: string;
     hebrewName: string;
+};
+
+export type ClusterStorage = {
     totalElasticStorage: number; // GB
     totalS3Storage: number; // GB
-};
+}
+
+export type ClusterData = ClusterMetadata & ClusterStorage;
 
 export type Audience = 'developer' | 'user';
 

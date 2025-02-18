@@ -1,16 +1,19 @@
-import { ClusterData } from "@/app/pages/storage-dashboard/models";
+import { ClusterData, ClusterStorage } from "@/app/pages/storage-dashboard/models";
 import { ClustersApi } from "./clustersApi";
 import { clusterAIndices, clusterBIndices, clusters } from "@/app/pages/storage-dashboard/exampleData";
 
 export class MockClustersApi implements ClustersApi {
-    getCluster(name: string): Promise<ClusterData> {
+    getClusterStorage(name: string): Promise<ClusterStorage> {
         const cluster = clusters.find(cluster => cluster.name === name);
 
         if (!cluster) {
             throw new Error(`Cluster not found: ${name}`);
         }
 
-        return Promise.resolve(cluster);
+        return Promise.resolve({
+            totalElasticStorage: cluster.totalElasticStorage,
+            totalS3Storage: cluster.totalS3Storage
+        });
     }
 
     getIndices(clusterName: string) {

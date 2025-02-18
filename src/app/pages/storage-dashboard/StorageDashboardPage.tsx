@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Audience, ChangeLogEntry, ClusterData, Direction, DisplayMethod, IndexData, NewIndex, NewIndexInputType, Translation } from './models';
+import { Audience, ChangeLogEntry, ClusterData, ClusterMetadata, Direction, DisplayMethod, IndexData, NewIndex, NewIndexInputType, Translation } from './models';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
 import StorageHeader from './StorageHeader';
@@ -15,6 +15,7 @@ import { ClustersApi } from '@/api/clusters/clustersApi';
 import StorageDashboardLayout from './StorageDashboardLayout';
 import useAsyncState from '../../utils/useAsyncState';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
+
 import './StorageDashboardPage.css';
 
 const DAILY_SECONDS = 86400;
@@ -33,31 +34,34 @@ const emptyNewIndex = (): NewIndex => ({
 
 type StorageDashboardPageProps = {
   clustersApi: ClustersApi;
-  clusterNames: { name: string; hebrewName: string; }[];
+  clustersMetadata: ClusterMetadata[];
 };
 
-const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPageProps) => {
+const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboardPageProps) => {
   // Original data and main states
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const fetchInitialCluster = useCallback(() =>
-    clustersApi.getCluster(clusterNames[0].name),
-    [clusterNames, clustersApi]);
-  const fetchInitialIndices = useCallback(() =>
-    clustersApi.getIndices(clusterNames[0].name),
-    [clustersApi, clusterNames[0].name]);
+  const fetchInitialClusterStorage = useCallback(async () => {
+    const clustersStorage = await clustersApi.getClusterStorage(clustersMetadata[0].name)
 
-  const [selectedClusterName, setSelectedClusterName] = useState<{ name: string; hebrewName: string }>(clusterNames[0]);
+    return {
+      ...(clustersMetadata[0]),
+      ...clustersStorage
+    }
+  }, [clustersMetadata, clustersApi]);
 
-  const { state: selectedCluster, fetchData: setSelectedCluster } = useAsyncState<ClusterData>(fetchInitialCluster);
+  const [selectedClusterMetadata, setSelectedClusterMetadata] = useState<ClusterMetadata>(clustersMetadata[0]);
+
+  const { state: selectedCluster, fetchData: setSelectedCluster } = useAsyncState<ClusterData>(fetchInitialClusterStorage);
+
+  const totalElasticStorage = selectedCluster.data?.totalElasticStorage || 0;
+  const totalS3Storage = selectedCluster.data?.totalS3Storage || 0;
 
   const { state: originalIndices, fetchData: setOriginalIndices } = useAsyncState<IndexData[]>([]);
 
   const [indices, setIndices] = useState<IndexData[]>([]);
-  const [selectedIndices, setSelectedIndices] = useState<{ [key: string]: boolean }>({});
+  const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
   const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
-  const [totalElasticStorage, setTotalElasticStorage] = useState(0); // GB
-  const [totalS3Storage, setTotalS3Storage] = useState(0); // GB
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [newIndex, setNewIndex] = useState<NewIndex>(emptyNewIndex());
   const [audience, setAudience] = useState<Audience>(config.defaultMode as Audience);
@@ -69,27 +73,23 @@ const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPag
     if (originalIndices.status === 'succeeded' && originalIndices.data) {
       setIndices(originalIndices.data);
       setChangeLog({});
-      setSelectedIndices(originalIndices.data.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+      setIndicesSelection(originalIndices.data.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
     }
   };
 
   useEffect(() => {
-    setOriginalIndices(() => clustersApi.getIndices(selectedClusterName.name));
-  }, [setOriginalIndices, clustersApi, selectedClusterName.name]);
+    setOriginalIndices(() => clustersApi.getIndices(selectedClusterMetadata.name));
+  }, [setOriginalIndices, clustersApi, selectedClusterMetadata.name]);
 
   useEffect(() => {
-    if (selectedCluster.status === 'succeeded') {
-      setTotalElasticStorage(selectedCluster.data.totalElasticStorage);
-      setTotalS3Storage(selectedCluster.data.totalS3Storage);
-    }
     if (originalIndices.status === 'succeeded') {
       const indicesData = originalIndices.data;
       setIndices(indicesData);
-      setSelectedIndices(indicesData.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+      setIndicesSelection(indicesData.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
     }
 
     handleResetChanges();
-  }, [originalIndices, selectedCluster]);
+  }, [originalIndices]);
 
   useEffect(() => {
     document.documentElement.dir = direction;
@@ -103,12 +103,19 @@ const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPag
   };
 
   const handleSetSelectedCluster = useCallback((clusterName: string) => {
-    const cluster = clusterNames.find(c => c.name === clusterName);
-    if (cluster) {
-      setSelectedClusterName(cluster);
-      setSelectedCluster(() => clustersApi.getCluster(clusterName));
+    const clusterMetadata = clustersMetadata.find(c => c.name === clusterName);
+    if (clusterMetadata) {
+      setSelectedClusterMetadata(clusterMetadata);
+      setSelectedCluster(async () => {
+        const clusterStorage = await clustersApi.getClusterStorage(clusterName);
+
+        return {
+          ...clusterMetadata,
+          ...clusterStorage
+        };
+      });
     }
-  }, [clustersApi, clusterNames, setSelectedCluster]);
+  }, [clustersApi, clustersMetadata, setSelectedCluster]);
 
   // Add keyboard shortcuts
   useEffect(() => {
@@ -137,7 +144,7 @@ const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPag
   const combinedStorage = totalElasticStorage + totalS3Storage;
   const combinedStoragePercentage = combinedStorage ? parseFloat(((usedCombinedStorage / combinedStorage) * 100).toFixed(digits)) : 0;
 
-  const filteredIndices = indices ? indices.filter(index => selectedIndices[index.name]) : [];
+  const filteredIndices = indices ? indices.filter(index => indicesSelection[index.name]) : [];
 
   const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: NewIndexInputType) => {
     const dailyData = inputType === 'frequency'
@@ -186,7 +193,7 @@ const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPag
     };
 
     setIndices([newIndexData, ...indices]);
-    setSelectedIndices(prev => ({ ...prev, [newIndex.name]: true }));
+    setIndicesSelection(prev => ({ ...prev, [newIndex.name]: true }));
     setChangeLog(prev => ({
       ...prev,
       [newIndex.name]: {
@@ -209,7 +216,7 @@ const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPag
   };
 
   const handleIndexToggle = (indexName: string) => {
-    setSelectedIndices(prev => ({
+    setIndicesSelection(prev => ({
       ...prev,
       [indexName]: !prev[indexName]
     }));
@@ -331,14 +338,14 @@ const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPag
     if (!originalIndex) {
       // If the index was newly added, remove it
       setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
-      setSelectedIndices(prev => {
+      setIndicesSelection(prev => {
         const { [indexName]: _, ...rest } = prev;
         return rest;
       });
     } else {
       // If the index was modified, revert to the original
       setIndices(prevIndices => [originalIndex, ...prevIndices.filter(index => index.name !== indexName)]);
-      setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
+      setIndicesSelection(prev => ({ ...prev, [indexName]: true }));
     }
 
     setChangeLog(prev => {
@@ -352,7 +359,7 @@ const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPag
     if (!indexToRemove) return;
 
     setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
-    setSelectedIndices(prev => {
+    setIndicesSelection(prev => {
       const { [indexName]: _, ...rest } = prev;
       return rest;
     });
@@ -405,11 +412,11 @@ const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPag
             {...displayProps}
             audience={audience}
             setAudience={setAudience}
-            clusters={clusterNames}
-            selectedCluster={selectedClusterName}
+            clustersMetadata={clustersMetadata}
+            selectedClusterMetadata={selectedClusterMetadata}
             setSelectedCluster={handleSetSelectedCluster}
             indices={indices}
-            selectedIndices={selectedIndices}
+            selectedIndices={indicesSelection}
             handleIndexToggle={handleIndexToggle}
             isEditMode={isEditMode}
             handleModeToggle={handleEditModeToggle}
@@ -479,7 +486,7 @@ const StorageDashboardPage = ({ clustersApi, clusterNames }: StorageDashboardPag
               handleResetChanges={handleResetChanges}
               setIndices={setIndices}
               handleIndexRetentionChange={handleIndexRetentionChange}
-              setSelectedIndices={setSelectedIndices}
+              setSelectedIndices={setIndicesSelection}
               setChangeLog={setChangeLog}
             />
           )

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Pencil, Eye } from 'lucide-react';
 import GenericDropdown from '../../components/GenericDropdown';
-import { Audience, ClusterData, IndexData, Translation } from './models';
+import { Audience, ClusterData, ClusterMetadata, IndexData, Translation } from './models';
 
 interface StorageHeaderProps {
   audience: Audience;
   setAudience: (audience: Audience) => void;
-  clusters: { name: string; hebrewName: string; }[];
-  selectedCluster: ClusterData;
+  clustersMetadata: ClusterMetadata[];
+  selectedClusterMetadata: ClusterMetadata;
   setSelectedCluster: (clusterName: string) => void;
   indices: IndexData[];
   selectedIndices: { [key: string]: boolean };
@@ -21,8 +21,8 @@ interface StorageHeaderProps {
 const StorageHeader: React.FC<StorageHeaderProps> = ({
   audience,
   setAudience,
-  clusters,
-  selectedCluster,
+  clustersMetadata: clusters,
+  selectedClusterMetadata,
   setSelectedCluster,
   indices,
   selectedIndices,
@@ -53,7 +53,7 @@ const StorageHeader: React.FC<StorageHeaderProps> = ({
             options={clusters.map(cluster => ({
               label: translateIndexNames ? cluster.hebrewName : cluster.name,
               value: cluster.name,
-              checked: selectedCluster?.name === cluster.name
+              checked: selectedClusterMetadata?.name === cluster.name
             }))}
             onSelect={(value) => setSelectedCluster(value)}
             width="w-56"

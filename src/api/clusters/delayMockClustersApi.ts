@@ -1,4 +1,4 @@
-import { ClusterData, IndexData } from "@/app/pages/storage-dashboard/models";
+import { ClusterData, ClusterStorage, IndexData } from "@/app/pages/storage-dashboard/models";
 import { ClustersApi } from "./clustersApi";
 
 export class DelayMockClustersApi implements ClustersApi {
@@ -8,10 +8,10 @@ export class DelayMockClustersApi implements ClustersApi {
         this.clustersApi = clustersApi;
     }
 
-    getCluster(name: string): Promise<ClusterData> {
+    getClusterStorage(name: string): Promise<ClusterStorage> {
         return new Promise(resolve => {
             setTimeout(() => {
-                resolve(this.clustersApi.getCluster(name));
+                resolve(this.clustersApi.getClusterStorage(name));
             }, 1500);
         });
     }

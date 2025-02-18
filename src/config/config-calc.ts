@@ -1,3 +1,3 @@
 import { config } from "./config";
 
-export const clusterNames = Object.values(config.clustersConnection);
+export const clustersMetadata = Object.values(config.clustersConnection);
