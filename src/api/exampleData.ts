@@ -1,4 +1,4 @@
-import { ClusterData } from "../../app/pages/storage-dashboard/models";
+import { ClusterData } from "../app/pages/storage-dashboard/models";
 
 export const clusters: ClusterData[] = [
   {

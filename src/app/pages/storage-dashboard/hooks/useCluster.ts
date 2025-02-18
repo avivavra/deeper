@@ -1,19 +1,20 @@
-import { ClustersApi } from "@/api/clusters/clustersApi";
+import { ClusterSummarizerFactory } from "@/api/summary/clusterSummarizerFactory";
 import { useCallback, useEffect, useState } from "react";
 import { ClusterData, ClusterMetadata, IndexData } from "../models";
 import useAsyncState from "@/app/utils/useAsyncState";
 
-export const useCluster = (clustersApi: ClustersApi, clustersMetadata: ClusterMetadata[]) => {
+export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, clustersMetadata: ClusterMetadata[]) => {
   const [selectedClusterMetadata, setSelectedClusterMetadata] = useState<ClusterMetadata>(clustersMetadata[0]);
 
   const fetchInitialClusterStorage = useCallback(async () => {
-    const clustersStorage = await clustersApi.getClusterStorage(clustersMetadata[0].name);
+    const summarizer = clustersSummarizerFactory.createSummarizer(clustersMetadata[0].name);
+    const clustersStorage = await summarizer.summarize();
 
     return {
       ...(clustersMetadata[0]),
       ...clustersStorage
     };
-  }, [clustersMetadata, clustersApi]);
+  }, [clustersMetadata, clustersSummarizerFactory]);
 
   const { state: selectedCluster, fetchData: setSelectedCluster } = useAsyncState<ClusterData>(fetchInitialClusterStorage);
 
@@ -22,7 +23,8 @@ export const useCluster = (clustersApi: ClustersApi, clustersMetadata: ClusterMe
     if (clusterMetadata) {
       setSelectedClusterMetadata(clusterMetadata);
       setSelectedCluster(async () => {
-        const clusterStorage = await clustersApi.getClusterStorage(clusterName);
+        const summarizer = clustersSummarizerFactory.createSummarizer(clusterName);
+        const clusterStorage = await summarizer.summarize();
 
         return {
           ...clusterMetadata,
@@ -30,13 +32,16 @@ export const useCluster = (clustersApi: ClustersApi, clustersMetadata: ClusterMe
         };
       });
     }
-  }, [clustersApi, clustersMetadata, setSelectedCluster]);
+  }, [clustersSummarizerFactory, clustersMetadata, setSelectedCluster]);
 
   const { state: indices, fetchData: setIndices } = useAsyncState<IndexData[]>([]);
 
   useEffect(() => {
-    setIndices(() => clustersApi.getIndices(selectedClusterMetadata.name));
-  }, [setIndices, clustersApi, selectedClusterMetadata.name]);
+    setIndices(async () => {
+      const summarizer = clustersSummarizerFactory.createSummarizer(selectedClusterMetadata.name);
+      return summarizer.summarizeIndices();
+    });
+  }, [setIndices, clustersSummarizerFactory, selectedClusterMetadata.name]);
 
   const totalElasticStorage = selectedCluster.data?.totalElasticStorage || 0;
   const totalS3Storage = selectedCluster.data?.totalS3Storage || 0;

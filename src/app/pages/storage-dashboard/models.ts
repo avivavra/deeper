@@ -1,12 +1,15 @@
-export type IndexData = {
+export type ElasticIndexData = {
+    hotRetentionDays: number;
+    coldRetentionDays: number;
+    elasticStorageGB: number;
+}
+
+export type IndexData = ElasticIndexData & {
     name: string;
     hebrewName: string;
     elasticStoragePerHotTierDay: number;
     S3StoragePerColdTierDay: number;
     elasticStoragePerColdTierDay: number;
-    hotRetentionDays: number;
-    coldRetentionDays: number;
-    elasticStorageGB: number;
     S3StorageGB: number;
     totalRetentionDays: number;
 };
@@ -31,12 +34,17 @@ export type ClusterMetadata = {
     hebrewName: string;
 };
 
-export type ClusterStorage = {
+export type ElasticClusterStorage = {
     totalElasticStorage: number; // GB
-    totalS3Storage: number; // GB
     usedElasticStorage: number; // GB
+};
+
+export type S3ClusterStorage = {    
+    totalS3Storage: number; // GB
     usedS3Storage: number; // GB
-}
+};
+
+export type ClusterStorage = ElasticClusterStorage & S3ClusterStorage;
 
 export type ClusterData = ClusterMetadata & ClusterStorage;
 

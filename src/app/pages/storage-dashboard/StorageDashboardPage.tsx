@@ -10,7 +10,7 @@ import IndexRetentionPeriodsChart from './sub-components/IndexRetentionPeriodsCh
 import IndexRetentionManagement from './sub-components/IndexRetentionManagement';
 import AddIndexForm from './sub-components/AddIndexForm';
 import GenericModal from '../../components/GenericModal';
-import { ClustersApi } from '@/api/clusters/clustersApi';
+import { ClusterSummarizerFactory } from '@/api/summary/clusterSummarizerFactory';
 import StorageDashboardLayout from './StorageDashboardLayout';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
 import { useAudience } from './hooks/useAudience';
@@ -20,16 +20,16 @@ import { useCluster } from './hooks/useCluster';
 import './StorageDashboardPage.css';
 
 type StorageDashboardPageProps = {
-  clustersApi: ClustersApi;
+  clustersSummarizerFactory: ClusterSummarizerFactory;
   clustersMetadata: ClusterMetadata[];
   defaultMode: Audience;
   combineForUser: boolean;
 };
 
-const StorageDashboardPage = ({ clustersApi, clustersMetadata, defaultMode, combineForUser }: StorageDashboardPageProps) => {
+const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode, combineForUser }: StorageDashboardPageProps) => {
   const { audience, setAudience, direction, t } = useAudience(defaultMode);
   const { isEditMode, handleEditModeToggle } = useEditMode();
-  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, indices, totalElasticStorage, totalS3Storage, combinedStorage } = useCluster(clustersApi, clustersMetadata);
+  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, indices, totalElasticStorage, totalS3Storage, combinedStorage } = useCluster(clustersSummarizerFactory, clustersMetadata);
 
   const [displayIndices, setDisplayIndices] = useState<IndexData[]>([]);
   const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
