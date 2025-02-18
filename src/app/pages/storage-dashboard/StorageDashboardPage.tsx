@@ -23,69 +23,65 @@ type StorageDashboardPageProps = {
   clustersMetadata: ClusterMetadata[];
 };
 
-const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboardPageProps) => {
-  // Original data and main states
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  const fetchInitialClusterStorage = useCallback(async () => {
-    const clustersStorage = await clustersApi.getClusterStorage(clustersMetadata[0].name)
-
-    return {
-      ...(clustersMetadata[0]),
-      ...clustersStorage
-    }
-  }, [clustersMetadata, clustersApi]);
-
-  const [selectedClusterMetadata, setSelectedClusterMetadata] = useState<ClusterMetadata>(clustersMetadata[0]);
-
-  const { state: selectedCluster, fetchData: setSelectedCluster } = useAsyncState<ClusterData>(fetchInitialClusterStorage);
-
-  const totalElasticStorage = selectedCluster.data?.totalElasticStorage || 0;
-  const totalS3Storage = selectedCluster.data?.totalS3Storage || 0;
-
-  const { state: originalIndices, fetchData: setOriginalIndices } = useAsyncState<IndexData[]>([]);
-
-  const [indices, setIndices] = useState<IndexData[]>([]);
-  const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
-  const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
-  const [showAddIndex, setShowAddIndex] = useState(false);
+const useAudience = () => {
   const [audience, setAudience] = useState<Audience>(config.defaultMode as Audience);
-
-  const t = translations[audience === 'user' ? 'hebrew' : 'english'];
   const direction: Direction = audience === 'user' ? 'rtl' : 'ltr';
-
-  const handleResetChanges = () => {
-    if (originalIndices.status === 'succeeded' && originalIndices.data) {
-      setIndices(originalIndices.data);
-      setChangeLog({});
-      setIndicesSelection(originalIndices.data.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
-    }
-  };
-
-  useEffect(() => {
-    setOriginalIndices(() => clustersApi.getIndices(selectedClusterMetadata.name));
-  }, [setOriginalIndices, clustersApi, selectedClusterMetadata.name]);
-
-  useEffect(() => {
-    if (originalIndices.status === 'succeeded') {
-      const indicesData = originalIndices.data;
-      setIndices(indicesData);
-      setIndicesSelection(indicesData.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
-    }
-
-    handleResetChanges();
-  }, [originalIndices]);
+  const t = translations[audience === 'user' ? 'hebrew' : 'english'];
 
   useEffect(() => {
     document.documentElement.dir = direction;
   }, [audience]);
 
-  const handleEditModeToggle = () => {
-    if (isEditMode) {
-      handleResetChanges();
-    }
-    setIsEditMode(!isEditMode);
-  };
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'd') {
+        event.preventDefault();
+        setAudience(prev => (prev === 'developer' ? 'user' : 'developer'));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return { audience, setAudience, direction, t };
+};
+
+const useEditMode = () => {
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const handleEditModeToggle = useCallback(() => {
+    setIsEditMode(prev => !prev);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'e') {
+        event.preventDefault();
+        handleEditModeToggle();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleEditModeToggle]);
+
+  return { isEditMode, handleEditModeToggle };
+};
+
+const useCluster = (clustersApi: ClustersApi, clustersMetadata: ClusterMetadata[]) => {
+  const [selectedClusterMetadata, setSelectedClusterMetadata] = useState<ClusterMetadata>(clustersMetadata[0]);
+
+  const fetchInitialClusterStorage = useCallback(async () => {
+    const clustersStorage = await clustersApi.getClusterStorage(clustersMetadata[0].name);
+
+    return {
+      ...(clustersMetadata[0]),
+      ...clustersStorage
+    };
+  }, [clustersMetadata, clustersApi]);
+
+  const { state: selectedCluster, fetchData: setSelectedCluster } = useAsyncState<ClusterData>(fetchInitialClusterStorage);
 
   const handleSetSelectedCluster = useCallback((clusterName: string) => {
     const clusterMetadata = clustersMetadata.find(c => c.name === clusterName);
@@ -102,37 +98,68 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
     }
   }, [clustersApi, clustersMetadata, setSelectedCluster]);
 
-  // Add keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 'd') {
-        event.preventDefault();
-        setAudience(prev => (prev === 'developer' ? 'user' : 'developer'));
-      }
-      if (event.ctrlKey && event.key === 'e') {
-        event.preventDefault();
-        handleEditModeToggle();
-      }
-    };
+  const { state: indices, fetchData: setIndices } = useAsyncState<IndexData[]>([]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  useEffect(() => {
+    setIndices(() => clustersApi.getIndices(selectedClusterMetadata.name));
+  }, [setIndices, clustersApi, selectedClusterMetadata.name]);
+
+  const totalElasticStorage = selectedCluster.data?.totalElasticStorage || 0;
+  const totalS3Storage = selectedCluster.data?.totalS3Storage || 0;
+  const combinedStorage = totalElasticStorage + totalS3Storage;
+
+  return {
+    selectedClusterMetadata,
+    selectedCluster,
+    handleSetSelectedCluster,
+    indices,
+    totalElasticStorage,
+    totalS3Storage,
+    combinedStorage
+  };
+};
+
+const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboardPageProps) => {
+  const { audience, setAudience, direction, t } = useAudience();
+  const { isEditMode, handleEditModeToggle } = useEditMode();
+  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, indices, totalElasticStorage, totalS3Storage, combinedStorage } = useCluster(clustersApi, clustersMetadata);
+
+  const [displayIndices, setDisplayIndices] = useState<IndexData[]>([]);
+  const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
+  const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
+  const [showAddIndex, setShowAddIndex] = useState(false);
+
+  const handleResetChanges = () => {
+    if (indices.status === 'succeeded' && indices.data) {
+      setDisplayIndices(indices.data);
+      setChangeLog({});
+      setIndicesSelection(indices.data.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+    }
+  };
+
+  useEffect(() => {
+    if (indices.status === 'succeeded') {
+      const indicesData = indices.data;
+      setDisplayIndices(indicesData);
+      setIndicesSelection(indicesData.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+    }
+
+    handleResetChanges();
+  }, [indices]);
 
   const digits = 2;
-  const usedElasticStorage = indices ? parseFloat(indices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0).toFixed(digits)) : 0;
-  const usedS3Storage = indices ? parseFloat(indices.reduce((acc, curr) => acc + curr.S3StorageGB, 0).toFixed(digits)) : 0;
+  const usedElasticStorage = displayIndices ? parseFloat(displayIndices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0).toFixed(digits)) : 0;
+  const usedS3Storage = displayIndices ? parseFloat(displayIndices.reduce((acc, curr) => acc + curr.S3StorageGB, 0).toFixed(digits)) : 0;
   const elasticStoragePercentage = totalElasticStorage ? parseFloat(((usedElasticStorage / totalElasticStorage) * 100).toFixed(digits)) : 0;
   const s3StoragePercentage = totalS3Storage ? parseFloat(((usedS3Storage / totalS3Storage) * 100).toFixed(digits)) : 0;
   const usedCombinedStorage = parseFloat((usedElasticStorage + usedS3Storage).toFixed(digits));
 
-  const combinedStorage = totalElasticStorage + totalS3Storage;
   const combinedStoragePercentage = combinedStorage ? parseFloat(((usedCombinedStorage / combinedStorage) * 100).toFixed(digits)) : 0;
 
-  const filteredIndices = indices ? indices.filter(index => indicesSelection[index.name]) : [];
+  const filteredIndices = displayIndices ? displayIndices.filter(index => indicesSelection[index.name]) : [];
 
   const handleAddIndex = (newIndex: IndexData) => {
-    setIndices([newIndex, ...indices]);
+    setDisplayIndices([newIndex, ...displayIndices]);
     setIndicesSelection(prev => ({ ...prev, [newIndex.name]: true }));
     setChangeLog(prev => ({
       ...prev,
@@ -162,7 +189,7 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
   };
 
   const handleIndexRetentionChange = (indexName: string, newHotDays: number, newColdDays: number) => {
-    setIndices(prevIndices => {
+    setDisplayIndices(prevIndices => {
       const updatedIndices = prevIndices.map(index => {
         if (index.name === indexName) {
           const newElasticStorage = Math.round(
@@ -186,7 +213,7 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
       });
 
       const updatedIndex = updatedIndices.find(i => i.name === indexName) as IndexData;
-      const originalIndex = originalIndices.data?.find(i => i.name === indexName);
+      const originalIndex = indices.data?.find(i => i.name === indexName);
 
       setChangeLog(prev => ({
         ...prev,
@@ -211,10 +238,10 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
   };
 
   const handleTotalRetentionChange = (indexName: string, newTotalDays: number) => {
-    setIndices(prevIndices => {
+    setDisplayIndices(prevIndices => {
       const newIndices = prevIndices.map(index => {
         if (index.name === indexName) {
-          const originalIndex = originalIndices.data?.find(i => i.name === indexName);
+          const originalIndex = indices.data?.find(i => i.name === indexName);
 
           const originalHotDays = originalIndex ? originalIndex.hotRetentionDays : index.initialHotRetentionDays;
           const originalColdDays = originalIndex ? originalIndex.coldRetentionDays : index.initialColdRetentionDays;
@@ -248,7 +275,7 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
       });
 
       const newIndex = newIndices.find(i => i.name === indexName);
-      const originalIndex = originalIndices.data?.find(i => i.name === indexName);
+      const originalIndex = indices.data?.find(i => i.name === indexName);
 
       setChangeLog(prev => ({
         ...prev,
@@ -273,17 +300,17 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
   };
 
   const handleRevertChange = (indexName: string) => {
-    const originalIndex = originalIndices.data?.find(i => i.name === indexName);
+    const originalIndex = indices.data?.find(i => i.name === indexName);
     if (!originalIndex) {
       // If the index was newly added, remove it
-      setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
+      setDisplayIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
       setIndicesSelection(prev => {
         const { [indexName]: _, ...rest } = prev;
         return rest;
       });
     } else {
       // If the index was modified, revert to the original
-      setIndices(prevIndices => [originalIndex, ...prevIndices.filter(index => index.name !== indexName)]);
+      setDisplayIndices(prevIndices => [originalIndex, ...prevIndices.filter(index => index.name !== indexName)]);
       setIndicesSelection(prev => ({ ...prev, [indexName]: true }));
     }
 
@@ -294,17 +321,17 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
   };
 
   const handleRemoveIndex = (indexName: string) => {
-    const indexToRemove = indices?.find(index => index.name === indexName);
+    const indexToRemove = displayIndices?.find(index => index.name === indexName);
     if (!indexToRemove) return;
 
-    setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
+    setDisplayIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
     setIndicesSelection(prev => {
       const { [indexName]: _, ...rest } = prev;
       return rest;
     });
 
     setChangeLog(prev => {
-      const isNewIndex = !originalIndices.data?.some(index => index.name === indexName);
+      const isNewIndex = !indices.data?.some(index => index.name === indexName);
       if (isNewIndex) {
         const { [indexName]: _, ...rest } = prev;
         return rest;
@@ -354,7 +381,7 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
             clustersMetadata={clustersMetadata}
             selectedClusterMetadata={selectedClusterMetadata}
             setSelectedCluster={handleSetSelectedCluster}
-            indices={indices}
+            indices={displayIndices}
             selectedIndices={indicesSelection}
             handleIndexToggle={handleIndexToggle}
             isEditMode={isEditMode}
@@ -362,9 +389,9 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
           />
         }
         storageUsage={
-          selectedCluster.status === 'loading' || originalIndices.status === 'loading' ? (
+          selectedCluster.status === 'loading' || indices.status === 'loading' ? (
             <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
-          ) : selectedCluster.status === 'error' || originalIndices.status === 'error' ? (
+          ) : selectedCluster.status === 'error' || indices.status === 'error' ? (
             <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
           ) : (
             <StorageUsageOverview
@@ -382,9 +409,9 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
           )
         }
         chart={
-          selectedCluster.status === 'loading' || originalIndices.status === 'loading' ? (
+          selectedCluster.status === 'loading' || indices.status === 'loading' ? (
             <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
-          ) : selectedCluster.status === 'error' || originalIndices.status === 'error' ? (
+          ) : selectedCluster.status === 'error' || indices.status === 'error' ? (
             <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
           ) : (
             <IndexRetentionPeriodsChart
@@ -394,9 +421,9 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
           )
         }
         retentionManagement={
-          selectedCluster.status === 'loading' || originalIndices.status === 'loading' ? (
+          selectedCluster.status === 'loading' || indices.status === 'loading' ? (
             <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
-          ) : selectedCluster.status === 'error' || originalIndices.status === 'error' ? (
+          ) : selectedCluster.status === 'error' || indices.status === 'error' ? (
             <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
           ) : (
             <IndexRetentionManagement
@@ -416,11 +443,11 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
             <ChangeLog
               {...displayProps}
               changeLog={changeLog}
-              indices={indices}
+              indices={displayIndices}
               selectedCluster={selectedCluster.data}
               handleRevertChange={handleRevertChange}
               handleResetChanges={handleResetChanges}
-              setIndices={setIndices}
+              setIndices={setDisplayIndices}
               handleIndexRetentionChange={handleIndexRetentionChange}
               setSelectedIndices={setIndicesSelection}
               setChangeLog={setChangeLog}
@@ -434,7 +461,7 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
           <AddIndexForm
             {...displayProps}
             handleAddIndex={handleAddIndex}
-            indices={indices}
+            indices={displayIndices}
             setShowAddIndex={setShowAddIndex}
           />
         </GenericModal>
