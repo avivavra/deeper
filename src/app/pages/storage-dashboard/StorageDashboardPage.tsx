@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Audience, ChangeLogEntry, ClusterData, ClusterMetadata, Direction, DisplayMethod, IndexData, NewIndex, NewIndexInputType, Translation } from './models';
+import { Audience, ChangeLogEntry, ClusterData, ClusterMetadata, Direction, DisplayMethod, IndexData, NewIndexInputType, Translation } from './models';
 import { translations } from './translations';
 import ChangeLog from './ChangeLog';
 import StorageHeader from './StorageHeader';
@@ -17,20 +17,6 @@ import useAsyncState from '../../utils/useAsyncState';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
 
 import './StorageDashboardPage.css';
-
-const DAILY_SECONDS = 86400;
-const GB_TO_BYTES = 1024 * 1024 * 1024;
-
-const emptyNewIndex = (): NewIndex => ({
-  name: '',
-  docSize: '',
-  frequency: '',
-  avgDocs: '',
-  inputType: 'frequency',
-  totalRetention: '',
-  coldRetention: '',
-  importFromIndex: ''
-});
 
 type StorageDashboardPageProps = {
   clustersApi: ClustersApi;
@@ -63,7 +49,6 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
   const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
   const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
   const [showAddIndex, setShowAddIndex] = useState(false);
-  const [newIndex, setNewIndex] = useState<NewIndex>(emptyNewIndex());
   const [audience, setAudience] = useState<Audience>(config.defaultMode as Audience);
 
   const t = translations[audience === 'user' ? 'hebrew' : 'english'];
@@ -146,53 +131,8 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
 
   const filteredIndices = indices ? indices.filter(index => indicesSelection[index.name]) : [];
 
-  const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: NewIndexInputType) => {
-    const dailyData = inputType === 'frequency'
-      ? (docSize * frequency * DAILY_SECONDS) / GB_TO_BYTES
-      : (docSize * avgDocs) / GB_TO_BYTES;
-    return {
-      elasticStoragePerHotTierDay: dailyData,
-      S3StoragePerColdTierDay: dailyData * config.hotTierMultiplier,
-      elasticStoragePerColdTierDay: dailyData * config.coldTierMultiplier
-    };
-  };
-
-  const handleAddIndex = () => {
-    let rates;
-    if (newIndex.inputType === 'import') {
-      const selectedIndex = indices?.find(index => index.name === newIndex.importFromIndex);
-      if (selectedIndex) {
-        rates = {
-          elasticStoragePerHotTierDay: selectedIndex.elasticStoragePerHotTierDay,
-          S3StoragePerColdTierDay: selectedIndex.S3StoragePerColdTierDay,
-          elasticStoragePerColdTierDay: selectedIndex.elasticStoragePerColdTierDay
-        };
-      } else {
-        throw new Error(`selected index to import from ${newIndex.importFromIndex} not found`);
-      }
-    } else {
-      rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency), Number(newIndex.avgDocs), newIndex.inputType);
-    }
-
-    const hotRetentionDays = Number(newIndex.totalRetention) - Number(newIndex.coldRetention);
-    const coldRetentionDays = Number(newIndex.coldRetention);
-
-    const newIndexData = {
-      name: newIndex.name,
-      hebrewName: newIndex.name,
-      elasticStoragePerHotTierDay: parseFloat(rates.elasticStoragePerHotTierDay.toFixed(2)),
-      S3StoragePerColdTierDay: parseFloat(rates.S3StoragePerColdTierDay.toFixed(2)),
-      elasticStoragePerColdTierDay: parseFloat(rates.elasticStoragePerColdTierDay.toFixed(2)),
-      hotRetentionDays,
-      coldRetentionDays,
-      elasticStorageGB: parseFloat((rates.elasticStoragePerHotTierDay * hotRetentionDays).toFixed(2)),
-      S3StorageGB: parseFloat((rates.S3StoragePerColdTierDay * coldRetentionDays).toFixed(2)),
-      totalRetentionDays: hotRetentionDays + coldRetentionDays,
-      initialHotRetentionDays: hotRetentionDays,
-      initialColdRetentionDays: coldRetentionDays
-    };
-
-    setIndices([newIndexData, ...indices]);
+  const handleAddIndex = (newIndex: IndexData) => {
+    setIndices([newIndex, ...indices]);
     setIndicesSelection(prev => ({ ...prev, [newIndex.name]: true }));
     setChangeLog(prev => ({
       ...prev,
@@ -204,14 +144,13 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
           s3Storage: 0,
         },
         current: {
-          hotDays: hotRetentionDays,
-          coldDays: coldRetentionDays,
-          elasticStorage: newIndexData.elasticStorageGB,
-          s3Storage: newIndexData.S3StorageGB,
+          hotDays: newIndex.hotRetentionDays,
+          coldDays: newIndex.coldRetentionDays,
+          elasticStorage: newIndex.elasticStorageGB,
+          s3Storage: newIndex.S3StorageGB,
         }
       }
     }));
-    setNewIndex(emptyNewIndex());
     setShowAddIndex(false);
   };
 
@@ -469,9 +408,6 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
               handleRemoveIndex={handleRemoveIndex}
               setShowAddIndex={setShowAddIndex}
               showAddIndex={showAddIndex}
-              newIndex={newIndex}
-              setNewIndex={setNewIndex}
-              handleAddIndex={handleAddIndex}
             />
           )
         }
@@ -497,8 +433,6 @@ const StorageDashboardPage = ({ clustersApi, clustersMetadata }: StorageDashboar
         <GenericModal showModal={showAddIndex} setShowModal={setShowAddIndex}>
           <AddIndexForm
             {...displayProps}
-            newIndex={newIndex}
-            setNewIndex={setNewIndex}
             handleAddIndex={handleAddIndex}
             indices={indices}
             setShowAddIndex={setShowAddIndex}

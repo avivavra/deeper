@@ -3,7 +3,7 @@ import { Plus, MoreVertical } from 'lucide-react';
 import GenericDropdown from '../../components/GenericDropdown';
 import CustomSlider from '../../components/CustomSlider';
 import TooltipIcon from '../../components/TooltipIcon';
-import { Direction, DisplayMethod, IndexData, NewIndex, NewIndexInputType, Translation } from './models';
+import { Direction, DisplayMethod, IndexData, Translation } from './models';
 
 type IndexRetentionManagementProps = {
     isEditMode: boolean;
@@ -17,9 +17,6 @@ type IndexRetentionManagementProps = {
     handleRemoveIndex: (indexName: string) => void;
     setShowAddIndex: (show: boolean) => void;
     showAddIndex: boolean;
-    newIndex: NewIndex;
-    setNewIndex: (newIndex: IndexData) => void;
-    handleAddIndex: () => void;
 };
 
 const IndexRetentionManagement = ({

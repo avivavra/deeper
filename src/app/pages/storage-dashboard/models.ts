@@ -11,17 +11,6 @@ export type IndexData = {
     totalRetentionDays: number;
 };
 
-export type NewIndex = {
-    name: string;
-    docSize: string;
-    frequency: string;
-    avgDocs: string;
-    inputType: NewIndexInputType;
-    totalRetention: string;
-    coldRetention: string;
-    importFromIndex: string;
-};
-
 export type ChangeLogEntry = {
     original: {
         hotDays: number;

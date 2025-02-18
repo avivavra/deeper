@@ -1,17 +1,54 @@
 import React, { useState } from 'react';
-import { Translation, IndexData, NewIndex } from './models';
+import { Translation, IndexData, NewIndexInputType } from './models';
+import { config } from '@/config/config';
+
+const DAILY_SECONDS = 86400;
+const GB_TO_BYTES = 1024 * 1024 * 1024;
+
+const emptyNewIndex = (): NewIndex => ({
+    name: '',
+    docSize: '',
+    frequency: '',
+    avgDocs: '',
+    inputType: 'frequency',
+    totalRetention: '',
+    coldRetention: '',
+    importFromIndex: ''
+});
+
+const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: NewIndexInputType) => {
+    const dailyData = inputType === 'frequency'
+        ? (docSize * frequency * DAILY_SECONDS) / GB_TO_BYTES
+        : (docSize * avgDocs) / GB_TO_BYTES;
+    return {
+        elasticStoragePerHotTierDay: dailyData,
+        S3StoragePerColdTierDay: dailyData * config.hotTierMultiplier,
+        elasticStoragePerColdTierDay: dailyData * config.coldTierMultiplier
+    };
+};
+
+type NewIndex = {
+    name: string;
+    docSize: string;
+    frequency: string;
+    avgDocs: string;
+    inputType: NewIndexInputType;
+    totalRetention: string;
+    coldRetention: string;
+    importFromIndex: string;
+};
 
 interface AddIndexForm {
     t: Translation;
-    newIndex: NewIndex;
-    setNewIndex: React.Dispatch<React.SetStateAction<NewIndex>>;
     setShowAddIndex: React.Dispatch<React.SetStateAction<boolean>>;
-    handleAddIndex: () => void;
+    handleAddIndex: (newIndexData: IndexData) => void;
     indices: IndexData[];
     translateIndexNames: boolean;
 }
 
-const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setShowAddIndex, handleAddIndex, indices, translateIndexNames }) => {
+const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handleAddIndex, indices, translateIndexNames }) => {
+    const [newIndex, setNewIndex] = useState<NewIndex>(emptyNewIndex());
+
     const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
 
     const handleColdRetentionChange = (value: string) => {
@@ -52,7 +89,37 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, newIndex, setNewIndex, setSho
 
     const handleSubmit = () => {
         if (validateForm()) {
-            handleAddIndex();
+            let rates;
+            if (newIndex.inputType === 'import') {
+                const importedIndex = indices.find(index => index.name === newIndex.importFromIndex);
+                if (!importedIndex) {
+                    throw new Error(`Imported index '${newIndex.importFromIndex}' not found`);
+                }
+                const { elasticStoragePerHotTierDay, elasticStoragePerColdTierDay, S3StoragePerColdTierDay } = importedIndex;
+                rates = { elasticStoragePerHotTierDay, elasticStoragePerColdTierDay, S3StoragePerColdTierDay };
+            } else {
+                rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency), Number(newIndex.avgDocs), newIndex.inputType);
+            }
+
+            const hotRetentionDays = Number(newIndex.totalRetention) - Number(newIndex.coldRetention);
+            const coldRetentionDays = Number(newIndex.coldRetention);
+
+            const newIndexData = {
+                name: newIndex.name,
+                hebrewName: newIndex.name,
+                elasticStoragePerHotTierDay: parseFloat(rates.elasticStoragePerHotTierDay.toFixed(2)),
+                S3StoragePerColdTierDay: parseFloat(rates.S3StoragePerColdTierDay.toFixed(2)),
+                elasticStoragePerColdTierDay: parseFloat(rates.elasticStoragePerColdTierDay.toFixed(2)),
+                hotRetentionDays,
+                coldRetentionDays,
+                elasticStorageGB: parseFloat((rates.elasticStoragePerHotTierDay * hotRetentionDays + rates.elasticStoragePerColdTierDay * coldRetentionDays).toFixed(2)),
+                S3StorageGB: parseFloat((rates.S3StoragePerColdTierDay * coldRetentionDays).toFixed(2)),
+                totalRetentionDays: hotRetentionDays + coldRetentionDays,
+                initialHotRetentionDays: hotRetentionDays,
+                initialColdRetentionDays: coldRetentionDays
+            };
+
+            handleAddIndex(newIndexData);
         }
     };
 
