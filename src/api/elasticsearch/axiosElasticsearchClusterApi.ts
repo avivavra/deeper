@@ -1,5 +1,6 @@
 import { convertToGB } from '@/logic/converts';
 import axios, { AxiosInstance } from 'axios';
+import { ElasticsearchClusterApi } from './elasticsearchClusterApi';
 
 type ClusterStats = {
     nodes: {
@@ -15,20 +16,20 @@ type IlmPolicyResponse = {
     [ilm: string]: {
         policy: {
             phases: {
-                hot: { min_age: string },
+                // hot: { min_age: string },
                 cold: { min_age: string },
                 warm: { min_age: string },
                 delete: { min_age: string }
             }
         },
         in_use_by: {
-            composable_template: string[];
+            composable_templates: string[];
             indices: string[];
         }
     }
 };
 
-export class AxiosElasticsearchClusterApi {
+export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
     private axiosInstance: AxiosInstance;
 
     constructor(url: string, username: string, password: string) {
@@ -99,15 +100,24 @@ export class AxiosElasticsearchClusterApi {
     }
 
     private async fetchIndicesStorage(indices: string[]): Promise<Map<string, number>> {
-        const response = await this.axiosInstance.get<{ index: string; store: { size_in_bytes: number } }[]>('/_cat/indices', {
+        const response = await this.axiosInstance.get<{ indices: { [index: string]: { total: { store: { size_in_bytes: number } } } } }>('/_stats/store', {
             params: {
-                format: 'json',
-                h: 'index,store.size_in_bytes',
-                index: indices.join(',')
+                level: 'indices',
+                filter_path: '**.store.size_in_bytes',
+                index: indices.join(','),
             }
         });
 
-        return new Map(response.data.map(stat => [stat.index, stat.store.size_in_bytes]));
+        const indexStats = response.data.indices;
+        const indexStatsMap = new Map<string, number>();
+
+        for (const index in indexStats) {
+            if (indexStats.hasOwnProperty(index)) {
+                indexStatsMap.set(index, indexStats[index].total.store.size_in_bytes);
+            }
+        }
+
+        return indexStatsMap;
     }
 
     private constructTemplates(policies: IlmPolicyResponse, indexStatsMap: Map<string, number>): { indexTemplate: string; hotRetentionDays: number; coldRetentionDays: number; storage: number; }[] {
@@ -119,18 +129,19 @@ export class AxiosElasticsearchClusterApi {
                 const inUseBy = policy.in_use_by;
                 const phases = policy.policy.phases;
 
+                if (!phases.delete) continue;
+                
                 let hotRetentionDays = 0;
                 let coldRetentionDays = 0;
 
-                if (phases.hot && phases.hot.min_age) {
-                    hotRetentionDays = parseInt(phases.hot.min_age, 10);
-                }
-
                 if (phases.cold && phases.cold.min_age) {
-                    coldRetentionDays = parseInt(phases.cold.min_age, 10);
+                    hotRetentionDays = this.parseDurationToDays(phases.cold.min_age);
+                    coldRetentionDays = this.parseDurationToDays(phases.delete.min_age);
+                } else {
+                    hotRetentionDays = this.parseDurationToDays(phases.delete.min_age);
                 }
 
-                for (const indexTemplate of inUseBy.composable_template) {
+                for (const indexTemplate of inUseBy.composable_templates) {
                     let totalStorage = 0;
 
                     for (const index of inUseBy.indices) {
@@ -152,5 +163,31 @@ export class AxiosElasticsearchClusterApi {
         }
 
         return templates;
+    }
+
+    private parseDurationToDays(duration: string): number {
+        const durationRegex = /(\d+)([mhd])/;
+        const match = duration.match(durationRegex);
+
+        if (!match) {
+            throw new Error(`Invalid duration format: ${duration}`);
+        }
+
+        const value = parseInt(match[1], 10);
+        const unit = match[2];
+
+        let days;
+        switch (unit) {
+            case 'm':
+                days = value / 1440;
+            case 'h':
+                days = value / 24;
+            case 'd':
+                days = value;
+            default:
+                throw new Error(`Unknown duration unit: ${unit}`);
+        }
+
+        return Math.round(days);
     }
 }
