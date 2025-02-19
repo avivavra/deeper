@@ -1,6 +1,6 @@
-import { ElasticClusterStorage, ElasticIndexData } from "@/app/pages/storage-dashboard/models";
+import { ElasticClusterStorage, ElasticIndexTemplate } from "@/app/pages/storage-dashboard/models";
 
 export interface ElasticsearchClusterApi {
     getStorage: (name: string) => Promise<ElasticClusterStorage>;
-    getIndicesOfPattern: (pattern: string) => Promise<ElasticIndexData[]>;
+    getIndexTemplate: (name: string) => Promise<ElasticIndexTemplate[]>;
 }

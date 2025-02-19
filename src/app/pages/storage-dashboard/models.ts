@@ -1,10 +1,10 @@
-export type ElasticIndexData = {
+export type ElasticIndexTemplate = {
     hotRetentionDays: number;
     coldRetentionDays: number;
     elasticStorageGB: number;
 }
 
-export type IndexData = ElasticIndexData & {
+export type IndexData = ElasticIndexTemplate & {
     name: string;
     hebrewName: string;
     elasticStoragePerHotTierDay: number;
