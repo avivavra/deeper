@@ -13,23 +13,19 @@ export class MockS3BucketApiFactory implements S3BucketApiFactory {
                         usedS3Storage: (clusters.find(c => c.name === "Cluster A") as S3ClusterStorage).usedS3Storage
                     }),
                 getFolders: () =>
-                    Promise.resolve(clusterAIndices.map(index => ({
-                        name: index.name,
-                        storage: index.S3StorageGB
-                    })))
-            } as S3BucketApi;
-        } else if (bucketName === "Cluster B") {
-            return {
-                getStorage: () =>
-                    Promise.resolve({
-                        totalS3Storage: (clusters.find(c => c.name === "Cluster B") as S3ClusterStorage).totalS3Storage,
-                        usedS3Storage: (clusters.find(c => c.name === "Cluster B") as S3ClusterStorage).usedS3Storage
-                    }),
-                getFolders: () =>
-                    Promise.resolve(clusterBIndices.map(index => ({
-                        name: index.name,
-                        storage: index.S3StorageGB
-                    })))
+                    Promise.resolve([{
+                        name: ".fleet-fileds-tohost-meta",
+                        storage: 30
+                    }, {
+                        name: ".monitoring-ent-search-mb",
+                        storage: 15
+                    }, {
+                        name: "synthetics-browser.screenshot",
+                        storage: 10
+                    }, {
+                        name: "metrics-apm.app@template",
+                        storage: 12
+                    }])
             } as S3BucketApi;
         } else {
             throw new Error("Cluster not found");

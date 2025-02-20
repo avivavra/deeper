@@ -8,15 +8,35 @@ export const config = {
     defaultMode: 'developer',
     combineForUser: false,
     clustersConnection: {
-        'clusterA': {
+        'Cluster A': {
             name: 'Cluster A',
             hebrewName: 'אשכול A',
-            url: 'https://clusterA.com',
+            url: 'elasticsearch/local',
+            username: 'elastic',
+            password: 'y6WgXosR',
+            indicesMetadata: [
+                {
+                    name: ".fleet-fileds-tohost-meta",
+                    hebrewName: "אינדקס 1"
+                },
+                {
+                    name: ".monitoring-ent-search-mb",
+                    hebrewName: "אינדקס 2"
+                },
+                {
+                    name: "synthetics-browser.screenshot",
+                    hebrewName: "אינדקס 3"
+                },
+                {
+                    name: "metrics-apm.app@template",
+                    hebrewName: "אינדקס 4"
+                }
+            ]
         },
-        'clusterB': {
-            name: 'Cluster B',
-            hebrewName: 'אשכול B',
-            url: 'https://clusterA.com',
-        }
+        // 'clusterB': {
+        //     name: 'Cluster B',
+        //     hebrewName: 'אשכול B',
+        //     url: 'https://clusterA.com',
+        // }
     }
 };

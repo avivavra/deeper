@@ -17,6 +17,7 @@ const useAsyncState = <T>(initialState: T | (() => Promise<T>)) => {
       const data = await fetchFunction();
       setState({ status: 'succeeded', data });
     } catch (error) {
+      console.error(error);
       setState({ status: 'error', data: null });
     }
   }, []);

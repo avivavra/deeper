@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: '/elasticsearch/local/:path*',
+        destination: 'http://localhost:9200/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
