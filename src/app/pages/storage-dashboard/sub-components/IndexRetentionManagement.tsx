@@ -13,7 +13,7 @@ type IndexRetentionManagementProps = {
     t: Translation;
     displayRates: boolean;
     handleTotalRetentionChange: (indexName: string, newTotalDays: number) => void;
-    handleIndexRetentionChange: (indexName: string, newHotDays: number, newColdDays: number) => void;
+    handleIndexRetentionChange: (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
     handleRemoveIndex: (indexName: string) => void;
     setShowAddIndex: (show: boolean) => void;
     showAddIndex: boolean;
@@ -31,6 +31,20 @@ const IndexRetentionManagement = ({
     handleRemoveIndex,
     setShowAddIndex,
 }: IndexRetentionManagementProps) => {
+
+    const handleRetentionChange = (indexName: string, newHotDays: number, newColdDays: number) => {
+        const index = filteredIndices.find(i => i.name === indexName);
+        if (!index) return;
+
+        const hotDaysDiff = newHotDays - index.hotRetentionDays;
+        const coldDaysDiff = newColdDays - index.coldRetentionDays;
+
+        const newElasticStorage = index.elasticStorageGB + (index.elasticStoragePerHotTierDay * hotDaysDiff) + (index.elasticStoragePerColdTierDay * coldDaysDiff);
+        const newS3Storage = index.S3StorageGB + (index.S3StoragePerColdTierDay * coldDaysDiff);
+
+        handleIndexRetentionChange(indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+    };
+
     return (
         <div>
             <div className="p-6">
@@ -95,7 +109,7 @@ const IndexRetentionManagement = ({
                                                     value={[index.hotRetentionDays]}
                                                     min={1}
                                                     max={90}
-                                                    onChange={(value) => handleIndexRetentionChange(index.name, value[0], index.coldRetentionDays)}
+                                                    onChange={(value) => handleRetentionChange(index.name, value[0], index.coldRetentionDays)}
                                                 />
                                             </div>
 
@@ -109,7 +123,7 @@ const IndexRetentionManagement = ({
                                                     value={[index.coldRetentionDays]}
                                                     min={0}
                                                     max={180}
-                                                    onChange={(value) => handleIndexRetentionChange(index.name, index.hotRetentionDays, value[0])}
+                                                    onChange={(value) => handleRetentionChange(index.name, index.hotRetentionDays, value[0])}
                                                 />
                                             </div>
                                         </>

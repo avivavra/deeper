@@ -94,18 +94,10 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
     }));
   };
 
-  const handleIndexRetentionChange = (indexName: string, newHotDays: number, newColdDays: number) => {
+  const handleIndexRetentionChange = (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => {
     setDisplayIndices(prevIndices => {
       const updatedIndices = prevIndices.map(index => {
         if (index.name === indexName) {
-          const newElasticStorage = (
-            (index.elasticStoragePerHotTierDay * newHotDays) +
-            (index.elasticStoragePerColdTierDay * newColdDays)
-          );
-          const newS3Storage = (
-            index.S3StoragePerColdTierDay * newColdDays
-          );
-
           return {
             ...index,
             hotRetentionDays: newHotDays,
