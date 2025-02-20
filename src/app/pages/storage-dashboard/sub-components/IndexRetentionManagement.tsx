@@ -141,7 +141,7 @@ const IndexRetentionManagement = ({
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.elasticsearchStorage}</span>
                                                 <span className="text-right">
-                                                    <span dir='ltr'>{index.elasticStorageGB} GB</span>
+                                                    <span dir='ltr'>{index.elasticStorageGB.toFixed(2)} GB</span>
                                                     {displayRates && (
                                                         <TooltipIcon
                                                             content={`${t.hotTier}: ${index.elasticStoragePerHotTierDay.toFixed(2)}GB/${t.day}, ${t.coldTier}: ${index.elasticStoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
@@ -153,7 +153,7 @@ const IndexRetentionManagement = ({
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.s3Storage}</span>
                                                 <span className="text-right">
-                                                    <span dir='ltr'>{index.S3StorageGB} GB</span>
+                                                    <span dir='ltr'>{index.S3StorageGB.toFixed(2)} GB</span>
                                                     {displayRates && (
                                                         <TooltipIcon
                                                             content={`${t.coldTier}: ${index.S3StoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
@@ -174,7 +174,7 @@ const IndexRetentionManagement = ({
                                         </div>
                                         <div className="flex justify-between text-sm text-gray-800 mt-4">
                                             <span>{t.storage}</span>
-                                            <span dir={direction}>{index.elasticStorageGB + index.S3StorageGB} GB</span>
+                                            <span dir={direction}>{(index.elasticStorageGB + index.S3StorageGB).toFixed(2)} GB</span>
                                         </div>
                                     </>
                                 )}

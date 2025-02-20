@@ -179,15 +179,13 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         let days;
         switch (unit) {
             case 'm':
-                days = value / 1440;
+                return value / 1440;
             case 'h':
-                days = value / 24;
+                return value / 24;
             case 'd':
-                days = value;
+                return value;
             default:
                 throw new Error(`Unknown duration unit: ${unit}`);
         }
-
-        return Math.round(days);
     }
 }

@@ -55,13 +55,12 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
   }, [indices]);
 
   const digits = 2;
-  const usedElasticStorage = displayIndices ? parseFloat(displayIndices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0).toFixed(digits)) : 0;
-  const usedS3Storage = displayIndices ? parseFloat(displayIndices.reduce((acc, curr) => acc + curr.S3StorageGB, 0).toFixed(digits)) : 0;
-  const elasticStoragePercentage = totalElasticStorage ? parseFloat(((usedElasticStorage / totalElasticStorage) * 100).toFixed(digits)) : 0;
-  const s3StoragePercentage = totalS3Storage ? parseFloat(((usedS3Storage / totalS3Storage) * 100).toFixed(digits)) : 0;
-  const usedCombinedStorage = parseFloat((usedElasticStorage + usedS3Storage).toFixed(digits));
-
-  const combinedStoragePercentage = combinedStorage ? parseFloat(((usedCombinedStorage / combinedStorage) * 100).toFixed(digits)) : 0;
+  const usedElasticStorage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0) : 0;
+  const usedS3Storage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.S3StorageGB, 0) : 0;
+  const elasticStoragePercentage = totalElasticStorage ? (usedElasticStorage / totalElasticStorage) * 100 : 0;
+  const s3StoragePercentage = totalS3Storage ? (usedS3Storage / totalS3Storage) * 100 : 0;
+  const usedCombinedStorage = usedElasticStorage + usedS3Storage;
+  const combinedStoragePercentage = combinedStorage ? (usedCombinedStorage / combinedStorage) * 100 : 0;
 
   const filteredIndices = displayIndices ? displayIndices.filter(index => indicesSelection[index.name]) : [];
 
@@ -99,11 +98,11 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
     setDisplayIndices(prevIndices => {
       const updatedIndices = prevIndices.map(index => {
         if (index.name === indexName) {
-          const newElasticStorage = Math.round(
+          const newElasticStorage = (
             (index.elasticStoragePerHotTierDay * newHotDays) +
             (index.elasticStoragePerColdTierDay * newColdDays)
           );
-          const newS3Storage = Math.round(
+          const newS3Storage = (
             index.S3StoragePerColdTierDay * newColdDays
           );
 
@@ -161,11 +160,11 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
             newColdDays = 0;
           }
 
-          const newElasticStorage = Math.round(
+          const newElasticStorage = (
             (index.elasticStoragePerHotTierDay * newHotDays) +
             (index.elasticStoragePerColdTierDay * newColdDays)
           );
-          const newS3Storage = Math.round(
+          const newS3Storage = (
             index.S3StoragePerColdTierDay * newColdDays
           );
 

@@ -34,7 +34,7 @@ const StorageBar: React.FC<{
       <div className="flex justify-between mb-2">
         <span className="font-medium text-gray-800">{label}</span>
         <span className={usedStorage > totalStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-          <span dir='ltr'>{usedStorage}/{totalStorage} GB ({storagePercentage.toFixed(1)}%)</span>
+          <span dir='ltr'>{usedStorage.toFixed(2)}/{totalStorage.toFixed(2)} GB ({Number(storagePercentage).toFixed(1)}%)</span>
           {usedStorage > totalStorage && ` (${overLimit})`}
         </span>
       </div>

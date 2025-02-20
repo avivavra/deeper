@@ -48,9 +48,9 @@ export class ClusterSummarizer {
                 hotRetentionDays: matchingIndexTemplate.hotRetentionDays,
                 coldRetentionDays: matchingIndexTemplate.coldRetentionDays,
                 elasticStorageGB: matchingIndexTemplate.storage,
-                elasticStoragePerColdTierDay: 0,
-                elasticStoragePerHotTierDay: 0,
-                S3StoragePerColdTierDay: 0,
+                elasticStoragePerColdTierDay: 1,
+                elasticStoragePerHotTierDay: 1,
+                S3StoragePerColdTierDay: 1,
                 S3StorageGB: matchingFolder.storage,
                 totalRetentionDays: matchingIndexTemplate.hotRetentionDays + matchingIndexTemplate.coldRetentionDays
             };

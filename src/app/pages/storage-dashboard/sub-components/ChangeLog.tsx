@@ -30,8 +30,8 @@ const formatChangeLog = (changeLog: { [key: string]: ChangeLogEntry }) => {
     return `Index: ${indexName}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
-Elasticsearch Storage: ${change.original.elasticStorage} GB → ${change.current.elasticStorage} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange} GB)
-S3 Storage: ${change.original.s3Storage} GB → ${change.current.s3Storage} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange} GB)
+Elasticsearch Storage: ${change.original.elasticStorage.toFixed(2)} GB → ${change.current.elasticStorage.toFixed(2)} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange.toFixed(2)} GB)
+S3 Storage: ${change.original.s3Storage.toFixed(2)} GB → ${change.current.s3Storage.toFixed(2)} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange.toFixed(2)} GB)
 `;
   }).join('\n');
 };
@@ -315,10 +315,10 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
                     </div>
                     <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
                     <div className="text-sm ml-2 text-gray-800">
-                      {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{change.current.elasticStorage - change.original.elasticStorage} GB
+                      {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{(change.current.elasticStorage - change.original.elasticStorage).toFixed(2)} GB
                     </div>
                     <div className="text-sm ml-2 text-gray-800">
-                      {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{change.current.s3Storage - change.original.s3Storage} GB
+                      {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{(change.current.s3Storage - change.original.s3Storage).toFixed(2)} GB
                     </div>
                   </>
                 )}

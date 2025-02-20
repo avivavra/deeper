@@ -107,13 +107,13 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handleAddInd
             const newIndexData = {
                 name: newIndex.name,
                 hebrewName: newIndex.name,
-                elasticStoragePerHotTierDay: parseFloat(rates.elasticStoragePerHotTierDay.toFixed(2)),
-                S3StoragePerColdTierDay: parseFloat(rates.S3StoragePerColdTierDay.toFixed(2)),
-                elasticStoragePerColdTierDay: parseFloat(rates.elasticStoragePerColdTierDay.toFixed(2)),
+                elasticStoragePerHotTierDay: rates.elasticStoragePerHotTierDay,
+                S3StoragePerColdTierDay: rates.S3StoragePerColdTierDay,
+                elasticStoragePerColdTierDay: rates.elasticStoragePerColdTierDay,
                 hotRetentionDays,
                 coldRetentionDays,
-                elasticStorageGB: parseFloat((rates.elasticStoragePerHotTierDay * hotRetentionDays + rates.elasticStoragePerColdTierDay * coldRetentionDays).toFixed(2)),
-                S3StorageGB: parseFloat((rates.S3StoragePerColdTierDay * coldRetentionDays).toFixed(2)),
+                elasticStorageGB: rates.elasticStoragePerHotTierDay * hotRetentionDays + rates.elasticStoragePerColdTierDay * coldRetentionDays,
+                S3StorageGB: rates.S3StoragePerColdTierDay * coldRetentionDays,
                 totalRetentionDays: hotRetentionDays + coldRetentionDays,
                 initialHotRetentionDays: hotRetentionDays,
                 initialColdRetentionDays: coldRetentionDays
