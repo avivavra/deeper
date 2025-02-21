@@ -54,7 +54,6 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
     handleResetChanges();
   }, [indices]);
 
-  const digits = 2;
   const usedElasticStorage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0) : 0;
   const usedS3Storage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.S3StorageGB, 0) : 0;
   const elasticStoragePercentage = totalElasticStorage ? (usedElasticStorage / totalElasticStorage) * 100 : 0;

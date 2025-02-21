@@ -78,7 +78,10 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
             // const storageReservedForSystem = freeStorage - availableStorage;
             // const storageForData = totalStorage - storageReservedForSystem;
 
-            return { totalStorage: convertToGB(totalStorage), usedStorage: convertToGB(totalStorage - freeStorage) };
+            return {
+                totalStorage: convertToGB(totalStorage),
+                usedStorage: convertToGB(totalStorage - freeStorage)
+            };
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get cluster storage: ${error.message}`);
@@ -157,7 +160,8 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                         hotRetentionDays,
                         coldRetentionDays,
                         hotTierStorage: convertToGB(hotTierStorage),
-                        coldTierStorage: convertToGB(coldTierStorage)
+                        coldTierStorage: convertToGB(coldTierStorage),
+                        indices: inUseBy.indices
                     });
                 }
             }

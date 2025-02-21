@@ -65,7 +65,15 @@ const IndexRetentionManagement = ({
                         {filteredIndices.map(index => (
                             <div key={index.name} className="bg-gray-50 p-4 rounded-lg border relative">
                                 <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-bold text-gray-800">{direction === 'ltr' ? index.name : index.hebrewName}</h3>
+                                    <h3 className="text-lg font-bold text-gray-800">
+                                        {direction === 'ltr' ? index.name : index.hebrewName}
+                                        {displayRates && (
+                                            <TooltipIcon
+                                                content={index.indices.length > 0 ? index.indices.join('\n') : "No Indices"}
+                                                alignment={direction === 'rtl' ? 'right' : 'left'}
+                                            />
+                                        )}
+                                    </h3>
                                     {isEditMode && (
                                         <div className="relative">
                                             <GenericDropdown

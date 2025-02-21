@@ -42,17 +42,26 @@ export class ClusterSummarizer {
                 throw new Error(`No S3 folder found for index template ${indexMetadata.name}`);
             }
 
+            const elasticStoragePerHotTierDay = matchingIndexTemplate.hotRetentionDays
+                ? matchingIndexTemplate.hotTierStorage / matchingIndexTemplate.hotRetentionDays
+                : 0;
+
+            const elasticStoragePerColdTierDay = matchingIndexTemplate.coldRetentionDays
+                ? matchingIndexTemplate.coldTierStorage / matchingIndexTemplate.coldRetentionDays
+                : 0;
+
             return {
                 name: indexMetadata.name,
                 hebrewName: indexMetadata.hebrewName,
                 hotRetentionDays: matchingIndexTemplate.hotRetentionDays,
                 coldRetentionDays: matchingIndexTemplate.coldRetentionDays,
                 elasticStorageGB: matchingIndexTemplate.hotTierStorage + matchingIndexTemplate.coldTierStorage,
-                elasticStoragePerHotTierDay: matchingIndexTemplate.hotTierStorage / matchingIndexTemplate.hotRetentionDays,
-                elasticStoragePerColdTierDay: matchingIndexTemplate.coldTierStorage / matchingIndexTemplate.coldRetentionDays,
-                S3StoragePerColdTierDay: 1,
+                elasticStoragePerHotTierDay,
+                elasticStoragePerColdTierDay,
+                S3StoragePerColdTierDay: elasticStoragePerColdTierDay * 0.6, // TODO: implement
                 S3StorageGB: matchingFolder.storage,
-                totalRetentionDays: matchingIndexTemplate.hotRetentionDays + matchingIndexTemplate.coldRetentionDays
+                totalRetentionDays: matchingIndexTemplate.hotRetentionDays + matchingIndexTemplate.coldRetentionDays,
+                indices: matchingIndexTemplate.indices
             };
         });
     }

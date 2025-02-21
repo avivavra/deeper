@@ -2,6 +2,7 @@ export type ElasticIndexTemplate = {
     hotRetentionDays: number;
     coldRetentionDays: number;
     elasticStorageGB: number;
+    indices: string[];
 }
 
 export type IndexData = ElasticIndexTemplate & {

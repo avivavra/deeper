@@ -4,6 +4,7 @@ export type IndexTemplateData = {
     coldRetentionDays: number;
     hotTierStorage: number;
     coldTierStorage: number;
+    indices: string[];
 }
 
 export interface ElasticsearchClusterApi {
