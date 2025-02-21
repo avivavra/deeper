@@ -1,6 +1,6 @@
 import { convertToGB } from '@/logic/converts';
 import axios, { AxiosInstance } from 'axios';
-import { ElasticsearchClusterApi } from './elasticsearchClusterApi';
+import { ElasticsearchClusterApi, IndexTemplateData } from './elasticsearchClusterApi';
 
 type ClusterStats = {
     nodes: {
@@ -28,6 +28,25 @@ type IlmPolicyResponse = {
         }
     }
 };
+
+interface IndexStorageStats {
+    hotTierBytes: number;
+    warmTierBytes: number;
+    coldTierBytes: number;
+    frozenTierBytes: number;
+}
+
+interface NodeStats {
+    name: string;
+    roles: string[];
+}
+
+interface ShardAllocation {
+    index: string;
+    shard: string;
+    node: string;
+    store: string;
+}
 
 export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
     private axiosInstance: AxiosInstance;
@@ -69,11 +88,11 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         }
     }
 
-    public async getIndexTemplates(): Promise<{ indexTemplate: string; hotRetentionDays: number; coldRetentionDays: number; storage: number; }[]> {
+    public async getIndexTemplates(): Promise<IndexTemplateData[]> {
         try {
             const policies = await this.fetchIlmPolicies();
             const allIndices = this.extractAllIndices(policies);
-            const indicesStorage = await this.fetchIndicesStorage(allIndices);
+            const indicesStorage = await this.getIndicesStorageStats(allIndices);
 
             return this.constructTemplates(policies, indicesStorage);
         } catch (error) {
@@ -99,29 +118,8 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         return Object.values(policies).flatMap(policy => policy.in_use_by.indices);
     }
 
-    private async fetchIndicesStorage(indices: string[]): Promise<Map<string, number>> {
-        const response = await this.axiosInstance.get<{ indices: { [index: string]: { total: { store: { size_in_bytes: number } } } } }>('/_stats/store', {
-            params: {
-                level: 'indices',
-                filter_path: '**.store.size_in_bytes',
-                index: indices.join(','),
-            }
-        });
-
-        const indexStats = response.data.indices;
-        const indexStatsMap = new Map<string, number>();
-
-        for (const index in indexStats) {
-            if (indexStats.hasOwnProperty(index)) {
-                indexStatsMap.set(index, indexStats[index].total.store.size_in_bytes);
-            }
-        }
-
-        return indexStatsMap;
-    }
-
-    private constructTemplates(policies: IlmPolicyResponse, indexStatsMap: Map<string, number>): { indexTemplate: string; hotRetentionDays: number; coldRetentionDays: number; storage: number; }[] {
-        const templates: { indexTemplate: string; hotRetentionDays: number; coldRetentionDays: number; storage: number; }[] = [];
+    private constructTemplates(policies: IlmPolicyResponse, indexStatsMap: Record<string, IndexStorageStats>): IndexTemplateData[] {
+        const templates: IndexTemplateData[] = [];
 
         for (const policyName in policies) {
             if (policies.hasOwnProperty(policyName)) {
@@ -142,21 +140,24 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                 }
 
                 for (const indexTemplate of inUseBy.composable_templates) {
-                    let totalStorage = 0;
+                    let hotTierStorage = 0;
+                    let coldTierStorage = 0;
 
                     for (const index of inUseBy.indices) {
-                        const indexStorage = indexStatsMap.get(index);
+                        const indexStorage = indexStatsMap[index];
                         if (!indexStorage) {
                             throw new Error(`Index ${index} is missing storage information`);
                         }
-                        totalStorage += indexStorage;
+                        hotTierStorage += indexStorage.hotTierBytes + indexStorage.warmTierBytes;
+                        coldTierStorage += indexStorage.coldTierBytes + indexStorage.frozenTierBytes;
                     }
 
                     templates.push({
                         indexTemplate,
                         hotRetentionDays,
                         coldRetentionDays,
-                        storage: convertToGB(totalStorage)
+                        hotTierStorage: convertToGB(hotTierStorage),
+                        coldTierStorage: convertToGB(coldTierStorage)
                     });
                 }
             }
@@ -176,7 +177,6 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         const value = parseInt(match[1], 10);
         const unit = match[2];
 
-        let days;
         switch (unit) {
             case 'm':
                 return value / 1440;
@@ -187,5 +187,85 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
             default:
                 throw new Error(`Unknown duration unit: ${unit}`);
         }
+    }
+
+    async getIndicesStorageStats(indexNames: string[]): Promise<Record<string, IndexStorageStats>> {
+        try {
+            const nodeTiers = await this.getNodeTiers();
+            const allShards = await this.getShardAllocation(indexNames);
+            const shardsByIndex = this.groupShardsByIndex(allShards);
+
+            return indexNames.reduce((acc: Record<string, IndexStorageStats>, indexName) => {
+                const indexShards = shardsByIndex[indexName] || [];
+                const tiersStorage = this.calculateTiersStorage(indexShards, nodeTiers);
+
+                acc[indexName] = {
+                    hotTierBytes: tiersStorage.hot || 0,
+                    warmTierBytes: tiersStorage.warm || 0,
+                    coldTierBytes: tiersStorage.cold || 0,
+                    frozenTierBytes: tiersStorage.frozen || 0
+                };
+
+                return acc;
+            }, {});
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Elasticsearch request failed: ${error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    private async getNodeTiers(): Promise<Record<string, string>> {
+        const nodesResponse = await this.axiosInstance.get<{ nodes: Record<string, NodeStats> }>('/_nodes/_all/stats');
+        const nodes = nodesResponse.data.nodes;
+        const tierPriority = ['data_hot', 'data_warm', 'data_cold', 'data_frozen'];
+
+        return Object.entries(nodes).reduce((acc: Record<string, string>, [nodeId, node]: [string, NodeStats]) => {
+            const nodeName = node.name;
+            const roles: string[] = node.roles;
+            const highestTierRole = tierPriority.find(tier => roles.includes(tier));
+            if (highestTierRole) {
+                acc[nodeName] = highestTierRole.replace('data_', '');
+            }
+            return acc;
+        }, {});
+    }
+
+    private async getShardAllocation(indexNames: string[]): Promise<ShardAllocation[]> {
+        const indices = indexNames.join(',');
+        const response = await this.axiosInstance.get<ShardAllocation[]>('/_cat/shards', {
+            params: {
+                format: 'json',
+                bytes: 'b',
+                h: 'index,shard,node,store',
+                index: indices
+            }
+        });
+        return response.data;
+    }
+
+    private groupShardsByIndex(shards: ShardAllocation[]): Record<string, ShardAllocation[]> {
+        return shards.reduce((acc: Record<string, ShardAllocation[]>, shard: ShardAllocation) => {
+            if (!shard.node) {
+                return acc;
+            }
+            if (!acc[shard.index]) {
+                acc[shard.index] = [];
+            }
+            acc[shard.index].push(shard);
+            return acc;
+        }, {});
+    }
+
+    private calculateTiersStorage(shards: ShardAllocation[], nodeTiers: Record<string, string>): Record<string, number> {
+        return shards.reduce((acc: Record<string, number>, shard: ShardAllocation) => {
+            if (!shard.store || !shard.node || !nodeTiers[shard.node]) {
+                return acc;
+            }
+            const tier = nodeTiers[shard.node];
+            acc[tier] = (acc[tier] || 0) + parseInt(shard.store, 10);
+            return acc;
+        }, {});
     }
 }

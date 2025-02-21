@@ -47,9 +47,9 @@ export class ClusterSummarizer {
                 hebrewName: indexMetadata.hebrewName,
                 hotRetentionDays: matchingIndexTemplate.hotRetentionDays,
                 coldRetentionDays: matchingIndexTemplate.coldRetentionDays,
-                elasticStorageGB: matchingIndexTemplate.storage,
-                elasticStoragePerColdTierDay: 1,
-                elasticStoragePerHotTierDay: 1,
+                elasticStorageGB: matchingIndexTemplate.hotTierStorage + matchingIndexTemplate.coldTierStorage,
+                elasticStoragePerHotTierDay: matchingIndexTemplate.hotTierStorage / matchingIndexTemplate.hotRetentionDays,
+                elasticStoragePerColdTierDay: matchingIndexTemplate.coldTierStorage / matchingIndexTemplate.coldRetentionDays,
                 S3StoragePerColdTierDay: 1,
                 S3StorageGB: matchingFolder.storage,
                 totalRetentionDays: matchingIndexTemplate.hotRetentionDays + matchingIndexTemplate.coldRetentionDays
