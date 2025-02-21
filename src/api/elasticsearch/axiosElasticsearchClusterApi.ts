@@ -16,7 +16,6 @@ type IlmPolicyResponse = {
     [ilm: string]: {
         policy: {
             phases: {
-                // hot: { min_age: string },
                 cold: { min_age: string },
                 warm: { min_age: string },
                 delete: { min_age: string }
@@ -29,19 +28,21 @@ type IlmPolicyResponse = {
     }
 };
 
-interface IndexStorageStats {
+type IndexStorageByTier = {
     hotTierBytes: number;
     warmTierBytes: number;
     coldTierBytes: number;
     frozenTierBytes: number;
 }
 
-interface NodeStats {
+type Tier = 'hot' | 'warm' | 'cold' | 'frozen';
+
+type NodeStats = {
     name: string;
     roles: string[];
 }
 
-interface ShardAllocation {
+type ShardAllocation = {
     index: string;
     shard: string;
     node: string;
@@ -75,9 +76,6 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                 available_in_bytes: availableStorage
             } = response.data.nodes.fs;
 
-            // const storageReservedForSystem = freeStorage - availableStorage;
-            // const storageForData = totalStorage - storageReservedForSystem;
-
             return {
                 totalStorage: convertToGB(totalStorage),
                 usedStorage: convertToGB(totalStorage - freeStorage)
@@ -95,9 +93,9 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         try {
             const policies = await this.fetchIlmPolicies();
             const allIndices = this.extractAllIndices(policies);
-            const indicesStorage = await this.getIndicesStorageStats(allIndices);
+            const indicesStorageByTier = await this.getIndicesStorageByTier(allIndices);
 
-            return this.constructTemplates(policies, indicesStorage);
+            return this.constructTemplates(policies, indicesStorageByTier);
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get index templates: ${error.message}`);
@@ -117,17 +115,94 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         return response.data;
     }
 
+    /** Extract all indices that are linked to an ilm policy */
     private extractAllIndices(policies: IlmPolicyResponse): string[] {
         return Object.values(policies).flatMap(policy => policy.in_use_by.indices);
     }
 
-    private constructTemplates(policies: IlmPolicyResponse, indexStatsMap: Record<string, IndexStorageStats>): IndexTemplateData[] {
+    async getIndicesStorageByTier(indexNames: string[]): Promise<Record<string, IndexStorageByTier>> {
+        try {
+            const nodeTiers = await this.getNodeTiers();
+            const shardsByIndex = await this.groupShardsByIndex();
+
+            return indexNames.reduce((acc: Record<string, IndexStorageByTier>, indexName) => {
+                const indexShards = shardsByIndex[indexName] || [];
+                const tiersStorage = this.calculateTiersStorage(indexShards, nodeTiers);
+
+                acc[indexName] = {
+                    hotTierBytes: tiersStorage.hot || 0,
+                    warmTierBytes: tiersStorage.warm || 0,
+                    coldTierBytes: tiersStorage.cold || 0,
+                    frozenTierBytes: tiersStorage.frozen || 0
+                };
+
+                return acc;
+            }, {});
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Elasticsearch request failed: ${error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    private async getNodeTiers(): Promise<Record<string, Tier>> {
+        const nodesResponse = await this.axiosInstance.get<{ nodes: Record<string, NodeStats> }>('/_nodes/_all/stats');
+        const nodes = nodesResponse.data.nodes;
+        const tierPriority = ['data_hot', 'data_warm', 'data_cold', 'data_frozen'];
+
+        return Object.entries(nodes).reduce((acc: Record<string, Tier>, [nodeId, node]: [string, NodeStats]) => {
+            const nodeName = node.name;
+            const roles: string[] = node.roles;
+            const highestTierRole = tierPriority.find(tier => roles.includes(tier));
+            if (highestTierRole) {
+                acc[nodeName] = highestTierRole.replace('data_', '') as Tier;
+            }
+            return acc;
+        }, {});
+    }
+
+    private async groupShardsByIndex(): Promise<Record<string, ShardAllocation[]>> {
+        const response = await this.axiosInstance.get<ShardAllocation[]>('/_cat/shards', {
+            params: {
+                format: 'json',
+                bytes: 'b',
+                h: 'index,shard,node,store'
+            }
+        });
+        const shards = response.data;
+        
+        return shards.reduce((acc: Record<string, ShardAllocation[]>, shard: ShardAllocation) => {
+            if (!shard.node) {
+                return acc;
+            }
+            if (!acc[shard.index]) {
+                acc[shard.index] = [];
+            }
+            acc[shard.index].push(shard);
+            return acc;
+        }, {});
+    }
+
+    private calculateTiersStorage(shards: ShardAllocation[], nodeTiers: Record<string, string>): Record<string, number> {
+        return shards.reduce((acc: Record<string, number>, shard: ShardAllocation) => {
+            if (!shard.store || !shard.node || !nodeTiers[shard.node]) {
+                return acc;
+            }
+            const tier = nodeTiers[shard.node];
+            acc[tier] = (acc[tier] || 0) + parseInt(shard.store, 10);
+            return acc;
+        }, {});
+    }
+
+        private constructTemplates(policies: IlmPolicyResponse, indexStorageByTier: Record<string, IndexStorageByTier>): IndexTemplateData[] {
         const templates: IndexTemplateData[] = [];
 
         for (const policyName in policies) {
             if (policies.hasOwnProperty(policyName)) {
                 const policy = policies[policyName];
-                const inUseBy = policy.in_use_by;
+                const policyIndexTemplates = policy.in_use_by.composable_templates;
+                const policyIndices = policy.in_use_by.indices;
                 const phases = policy.policy.phases;
 
                 if (!phases.delete) continue;
@@ -142,12 +217,12 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                     hotRetentionDays = this.parseDurationToDays(phases.delete.min_age);
                 }
 
-                for (const indexTemplate of inUseBy.composable_templates) {
+                for (const indexTemplate of policyIndexTemplates) {
                     let hotTierStorage = 0;
                     let coldTierStorage = 0;
 
-                    for (const index of inUseBy.indices) {
-                        const indexStorage = indexStatsMap[index];
+                    for (const index of policyIndices) {
+                        const indexStorage = indexStorageByTier[index];
                         if (!indexStorage) {
                             throw new Error(`Index ${index} is missing storage information`);
                         }
@@ -161,7 +236,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                         coldRetentionDays,
                         hotTierStorage: convertToGB(hotTierStorage),
                         coldTierStorage: convertToGB(coldTierStorage),
-                        indices: inUseBy.indices
+                        indices: policyIndices
                     });
                 }
             }
@@ -191,85 +266,5 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
             default:
                 throw new Error(`Unknown duration unit: ${unit}`);
         }
-    }
-
-    async getIndicesStorageStats(indexNames: string[]): Promise<Record<string, IndexStorageStats>> {
-        try {
-            const nodeTiers = await this.getNodeTiers();
-            const allShards = await this.getShardAllocation(indexNames);
-            const shardsByIndex = this.groupShardsByIndex(allShards);
-
-            return indexNames.reduce((acc: Record<string, IndexStorageStats>, indexName) => {
-                const indexShards = shardsByIndex[indexName] || [];
-                const tiersStorage = this.calculateTiersStorage(indexShards, nodeTiers);
-
-                acc[indexName] = {
-                    hotTierBytes: tiersStorage.hot || 0,
-                    warmTierBytes: tiersStorage.warm || 0,
-                    coldTierBytes: tiersStorage.cold || 0,
-                    frozenTierBytes: tiersStorage.frozen || 0
-                };
-
-                return acc;
-            }, {});
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Elasticsearch request failed: ${error.message}`);
-            }
-            throw error;
-        }
-    }
-
-    private async getNodeTiers(): Promise<Record<string, string>> {
-        const nodesResponse = await this.axiosInstance.get<{ nodes: Record<string, NodeStats> }>('/_nodes/_all/stats');
-        const nodes = nodesResponse.data.nodes;
-        const tierPriority = ['data_hot', 'data_warm', 'data_cold', 'data_frozen'];
-
-        return Object.entries(nodes).reduce((acc: Record<string, string>, [nodeId, node]: [string, NodeStats]) => {
-            const nodeName = node.name;
-            const roles: string[] = node.roles;
-            const highestTierRole = tierPriority.find(tier => roles.includes(tier));
-            if (highestTierRole) {
-                acc[nodeName] = highestTierRole.replace('data_', '');
-            }
-            return acc;
-        }, {});
-    }
-
-    private async getShardAllocation(indexNames: string[]): Promise<ShardAllocation[]> {
-        const indices = indexNames.join(',');
-        const response = await this.axiosInstance.get<ShardAllocation[]>('/_cat/shards', {
-            params: {
-                format: 'json',
-                bytes: 'b',
-                h: 'index,shard,node,store',
-                index: indices
-            }
-        });
-        return response.data;
-    }
-
-    private groupShardsByIndex(shards: ShardAllocation[]): Record<string, ShardAllocation[]> {
-        return shards.reduce((acc: Record<string, ShardAllocation[]>, shard: ShardAllocation) => {
-            if (!shard.node) {
-                return acc;
-            }
-            if (!acc[shard.index]) {
-                acc[shard.index] = [];
-            }
-            acc[shard.index].push(shard);
-            return acc;
-        }, {});
-    }
-
-    private calculateTiersStorage(shards: ShardAllocation[], nodeTiers: Record<string, string>): Record<string, number> {
-        return shards.reduce((acc: Record<string, number>, shard: ShardAllocation) => {
-            if (!shard.store || !shard.node || !nodeTiers[shard.node]) {
-                return acc;
-            }
-            const tier = nodeTiers[shard.node];
-            acc[tier] = (acc[tier] || 0) + parseInt(shard.store, 10);
-            return acc;
-        }, {});
     }
 }
