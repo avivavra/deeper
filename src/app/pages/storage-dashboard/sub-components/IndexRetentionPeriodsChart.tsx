@@ -1,6 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
-import { Direction, DisplayMethod, IndexData, Translation } from '../models';
+import { IndexData } from '../models/cluster-models';
+import { Direction, DisplayMethod, Translation } from '../models/display-models';
 
 type IndexRetentionPeriodsChartProps = {
   direction: Direction;

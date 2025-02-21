@@ -1,4 +1,4 @@
-import { ClusterData, ClusterMetadata, IndexData } from "@/app/pages/storage-dashboard/models";
+import { ClusterData, ClusterMetadata, IndexData } from "@/app/pages/storage-dashboard/models/cluster-models";
 import { ElasticsearchClusterApi } from "../elasticsearch/elasticsearchClusterApi";
 import { S3BucketApi } from "../s3/s3BucketApi";
 

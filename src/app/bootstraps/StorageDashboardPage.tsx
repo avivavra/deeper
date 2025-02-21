@@ -3,7 +3,7 @@
 import { config } from '../../config/config';
 import { default as StorageDashboardPageComponent } from '../pages/storage-dashboard/StorageDashboardPage';
 import { clustersMetadata } from '@/config/config-calc';
-import { Audience } from '../pages/storage-dashboard/models';
+import { Audience } from '../pages/storage-dashboard/models/display-models';
 import { ConfigElasticsearchClusterApiFactory } from '@/api/elasticsearch/configElasticsearchClusterApiFactory';
 import { ConfigClusterSummarizerFactory } from '@/api/summary/configClusterSummarizerFactory';
 import { MockS3BucketApiFactory } from '@/api/s3/mockS3BucketApiFactory';

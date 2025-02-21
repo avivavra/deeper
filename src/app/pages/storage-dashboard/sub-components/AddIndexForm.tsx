@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Translation, IndexData, NewIndexInputType } from '../models';
+import { IndexData } from '../models/cluster-models';
+import { Translation, NewIndexInputType } from '../models/display-models';
 import { config } from '@/config/config';
 
 const DAILY_SECONDS = 86400;

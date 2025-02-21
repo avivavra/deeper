@@ -3,7 +3,8 @@ import { Plus, MoreVertical } from 'lucide-react';
 import GenericDropdown from '../../../components/GenericDropdown';
 import CustomSlider from '../../../components/CustomSlider';
 import TooltipIcon from '../../../components/TooltipIcon';
-import { Direction, DisplayMethod, IndexData, Translation } from '../models';
+import { IndexData } from '../models/cluster-models';
+import { Direction, DisplayMethod, Translation } from '../models/display-models';
 
 type IndexRetentionManagementProps = {
     isEditMode: boolean;

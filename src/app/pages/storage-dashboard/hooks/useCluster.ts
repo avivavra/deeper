@@ -1,6 +1,6 @@
 import { ClusterSummarizerFactory } from "@/api/summary/clusterSummarizerFactory";
 import { useCallback, useEffect, useState } from "react";
-import { ClusterData, ClusterMetadata, IndexData } from "../models";
+import { ClusterData, ClusterMetadata, IndexData } from "../models/cluster-models";
 import useAsyncState from "@/app/utils/useAsyncState";
 
 export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, clustersMetadata: ClusterMetadata[]) => {

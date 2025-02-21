@@ -1,4 +1,4 @@
-import { Translation } from "./models";
+import { Translation } from "./models/display-models";
 
 export const translations: {
   english: Translation;

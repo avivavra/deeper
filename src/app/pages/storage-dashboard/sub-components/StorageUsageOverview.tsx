@@ -1,5 +1,5 @@
 import React from 'react';
-import { DisplayMethod, Translation } from '../models';
+import { DisplayMethod, Translation } from '../models/display-models';
 import { config } from '../../../../config/config';
 
 type StorageUsageOverviewProps = {

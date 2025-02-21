@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
-import { ChangeLogEntry, Direction, DisplayMethod, IndexData, Translation } from '../models';
+import { IndexData } from '../models/cluster-models';
+import { ChangeLogEntry, Direction, DisplayMethod, Translation } from '../models/display-models';
 import GenericDropdown from '../../../components/GenericDropdown';
 import GenericModal from '../../../components/GenericModal';
 

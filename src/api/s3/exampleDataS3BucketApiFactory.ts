@@ -1,4 +1,4 @@
-import { S3ClusterStorage } from "@/app/pages/storage-dashboard/models";
+import { S3ClusterStorage } from "@/app/pages/storage-dashboard/models/cluster-models";
 import { clusters, clusterAIndices, clusterBIndices } from "../exampleData";
 import { S3BucketApi } from "./s3BucketApi";
 import { S3BucketApiFactory } from "./s3BucketApiFactory";

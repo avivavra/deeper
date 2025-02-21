@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Audience, ChangeLogEntry, ClusterData, ClusterMetadata, Direction, DisplayMethod, IndexData, NewIndexInputType, Translation } from './models';
-import { translations } from './translations';
+import { ClusterMetadata, IndexData } from './models/cluster-models';
+import { Audience, ChangeLogEntry, Direction, DisplayMethod, Translation } from './models/display-models';
 import ChangeLog from './sub-components/ChangeLog';
 import StorageHeader from './sub-components/StorageHeader';
 import StorageUsageOverview from './sub-components/StorageUsageOverview';

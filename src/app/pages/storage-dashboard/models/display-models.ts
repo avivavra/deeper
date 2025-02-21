@@ -1,19 +1,10 @@
-export type ElasticIndexTemplate = {
-    hotRetentionDays: number;
-    coldRetentionDays: number;
-    elasticStorageGB: number;
-    indices: string[];
-}
+export type Direction = 'rtl' | 'ltr';
 
-export type IndexData = ElasticIndexTemplate & {
-    name: string;
-    hebrewName: string;
-    elasticStoragePerHotTierDay: number;
-    S3StoragePerColdTierDay: number;
-    elasticStoragePerColdTierDay: number;
-    S3StorageGB: number;
-    totalRetentionDays: number;
-};
+export type Audience = 'developer' | 'user';
+
+export type DisplayMethod = 'combined' | 'separate';
+
+export type NewIndexInputType = 'frequency' | 'avgDocs' | 'import';
 
 export type ChangeLogEntry = {
     original: {
@@ -29,33 +20,6 @@ export type ChangeLogEntry = {
         s3Storage: number;
     };
 };
-
-export type ClusterMetadata = {
-    name: string;
-    hebrewName: string;
-};
-
-export type ElasticClusterStorage = {
-    totalElasticStorage: number; // GB
-    usedElasticStorage: number; // GB
-};
-
-export type S3ClusterStorage = {    
-    totalS3Storage: number; // GB
-    usedS3Storage: number; // GB
-};
-
-export type ClusterStorage = ElasticClusterStorage & S3ClusterStorage;
-
-export type ClusterData = ClusterMetadata & ClusterStorage;
-
-export type Audience = 'developer' | 'user';
-
-export type NewIndexInputType = 'frequency' | 'avgDocs' | 'import';
-
-export type Direction = 'rtl' | 'ltr';
-
-export type DisplayMethod = 'combined' | 'separate';
 
 export type Translation = {
     title: string;
