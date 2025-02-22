@@ -61,14 +61,6 @@ export class ClusterSummarizer {
             const matchingFolder = s3Folders.find(folder => folder.name === indexTemplate.name);
             if (!matchingFolder) throw new Error(`No S3 folder found for index template ${indexTemplate.name}`);
 
-            const elasticStoragePerHotTierDay = indexTemplate.hotRetentionDays
-                ? indexTemplate.hotTierStorage / indexTemplate.hotRetentionDays
-                : 0;
-
-            const elasticStoragePerColdTierDay = indexTemplate.coldRetentionDays
-                ? indexTemplate.coldTierStorage / indexTemplate.coldRetentionDays
-                : 0;
-
             return {
                 name: indexTemplate.name,
                 hebrewName: indexTemplate.hebrewName,
@@ -76,9 +68,9 @@ export class ClusterSummarizer {
                 coldRetentionDays: indexTemplate.coldRetentionDays,
                 totalRetentionDays: indexTemplate.hotRetentionDays + indexTemplate.coldRetentionDays,
                 elasticStorage: indexTemplate.hotTierStorage + indexTemplate.coldTierStorage,
-                elasticStoragePerHotTierDay,
-                elasticStoragePerColdTierDay,
-                S3StoragePerColdTierDay: elasticStoragePerColdTierDay * 0.6, // TODO: implement
+                elasticStoragePerHotTierDay: indexTemplate.hotTierStoragePerDay,
+                elasticStoragePerColdTierDay: indexTemplate.coldTierStoragePerDay,
+                S3StoragePerColdTierDay: indexTemplate.coldTierStoragePerDay * 0.6, // TODO: implement
                 S3Storage: matchingFolder.storage,
                 indexNamesByTier: indexTemplate.indexNamesByTier
             };
@@ -102,19 +94,24 @@ export class ClusterSummarizer {
             const matchingIndices = this.getMatchingIndices(indices, template.patterns);
             const normalIndices = this.getNormalIndices(matchingIndices);
 
-            const indicesByTier = this.mapByTier(normalIndices, matchingIlmPolicy, now);
+            const normalIndicesByTier = this.mapByTier(normalIndices, matchingIlmPolicy, now);
 
-            const hotTierIndices = [...(indicesByTier.hot || []), ...(indicesByTier.warm || [])];
-            const coldTierIndices = [...(indicesByTier.cold || []), ...(indicesByTier.frozen || [])];
+            const normalHotTierIndices = [...(normalIndicesByTier.hot || []), ...(normalIndicesByTier.warm || [])];
+            const normalColdTierIndices = [...(normalIndicesByTier.cold || []), ...(normalIndicesByTier.frozen || [])];
 
             const hotRetentionDays = convertToDays(matchingIlmPolicy.hotTierRetentionPeriod + matchingIlmPolicy.warmTierRetentionPeriod);
             const coldRetentionDays = convertToDays(matchingIlmPolicy.coldTierRetentionPeriod + matchingIlmPolicy.frozenTierRetentionPeriod);
 
-            const hotTierStorage = hotTierIndices.reduce((acc, index) => acc + index.storage, 0);
-            const coldTierStorage = coldTierIndices.reduce((acc, index) => acc + index.storage, 0);
+            const hotTierStorage = normalHotTierIndices.reduce((acc, index) => acc + index.storage, 0);
+            const coldTierStorage = normalColdTierIndices.reduce((acc, index) => acc + index.storage, 0);
 
-            const hotTierStoragePerDay = this.getAverageStoragePerDayMultiple(hotTierIndices, indexTemplate.frequency, now);
-            const coldTierStoragePerDay = this.getAverageStoragePerDayMultiple(coldTierIndices, indexTemplate.frequency, now);
+            const hotTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalHotTierIndices, indexTemplate.frequency, now);
+            const coldTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalColdTierIndices, indexTemplate.frequency, now);
+
+            const indicesByTier = this.mapByTier(matchingIndices, matchingIlmPolicy, now);
+
+            const hotTierIndices = [...(indicesByTier.hot || []), ...(indicesByTier.warm || [])];
+            const coldTierIndices = [...(indicesByTier.cold || []), ...(indicesByTier.frozen || [])];
 
             return {
                 name: template.name,
@@ -194,13 +191,17 @@ export class ClusterSummarizer {
                 if (daysSinceCreation > 1) return index.storage;
                 return index.storage / daysSinceCreation;
             case 'monthly':
-                // TODO: make more generic
-                if (daysSinceCreation > 30) return index.storage;
-                return index.storage / (daysSinceCreation / 30);
+                const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const daysInLastMonth = convertToDays(now.getTime() - lastMonth.getTime());
+
+                if (daysSinceCreation > daysInLastMonth) return index.storage;
+                return index.storage / (daysSinceCreation / daysInLastMonth);
             case 'yearly':
-                // TODO: make more generic
-                if (daysSinceCreation > 365) return index.storage;
-                return index.storage / (daysSinceCreation / 365);
+                const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                const daysInLastYear = convertToDays(now.getTime() - lastYear.getTime());
+
+                if (daysSinceCreation > daysInLastYear) return index.storage;
+                return index.storage / (daysSinceCreation / daysInLastYear);
             default:
                 throw new Error(`Unknown index frequency: ${indexFrequency}`);
         }

@@ -131,8 +131,8 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
               original: {
                 hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
                 coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-                elasticStorage: originalIndex ? originalIndex.elasticStorageGB : 0,
-                s3Storage: originalIndex ? originalIndex.S3StorageGB : 0,
+                elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
+                s3Storage: originalIndex ? originalIndex.S3Storage : 0,
               },
               current: {
                 hotDays: 0,
@@ -156,8 +156,8 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
             hebrewName: indexName,
             hotRetentionDays: newHotDays,
             coldRetentionDays: newColdDays,
-            elasticStorageGB: newElasticStorage,
-            S3StorageGB: newS3Storage,
+            elasticStorage: newElasticStorage,
+            S3Storage: newS3Storage,
             totalRetentionDays: newHotDays + newColdDays,
             initialHotRetentionDays: newHotDays,
             initialColdRetentionDays: newColdDays,
@@ -303,7 +303,7 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
                     </div>
                     <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
                     <div className="text-sm ml-2 text-gray-800">
-                      {t.storage}: {totalStorageChange > 0 ? '+' : ''}{totalStorageChange} GB
+                      {t.storage}: {totalStorageChange > 0 ? '+' : ''}{totalStorageChange.toFixed(2)} GB
                     </div>
                   </>
                 ) : (

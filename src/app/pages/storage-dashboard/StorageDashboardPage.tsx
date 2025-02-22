@@ -102,8 +102,8 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
             hotRetentionDays: newHotDays,
             coldRetentionDays: newColdDays,
             totalRetentionDays: newHotDays + newColdDays,
-            elasticStorageGB: newElasticStorage,
-            S3StorageGB: newS3Storage
+            elasticStorage: newElasticStorage,
+            S3Storage: newS3Storage
           };
         }
         return index;
@@ -164,8 +164,8 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
             hotRetentionDays: newHotDays,
             coldRetentionDays: newColdDays,
             totalRetentionDays: newTotalDays,
-            elasticStorageGB: newElasticStorage,
-            S3StorageGB: newS3Storage
+            elasticStorage: newElasticStorage,
+            S3Storage: newS3Storage
           };
         }
         return index;

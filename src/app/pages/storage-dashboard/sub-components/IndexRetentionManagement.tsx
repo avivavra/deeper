@@ -74,27 +74,27 @@ const IndexRetentionManagement = ({
                                                     <>
                                                         <div>
                                                             <strong>Hot Tier</strong>
-                                                            <div>
-                                                                {index.indexNamesByTier.hotTier.length === 0 && "No Indices"}
-                                                                {index.indexNamesByTier.hotTier.slice(0, 3).join('\n')}
-                                                                {index.indexNamesByTier.hotTier.length > 3 && (
-                                                                    <>
-                                                                        <br />...
-                                                                    </>
-                                                                )}
-                                                            </div>
+                                                            <br />
+                                                            {
+                                                                index.indexNamesByTier.hotTier.length === 0
+                                                                    ? <div>No Indices</div>
+                                                                    : <span>{[...index.indexNamesByTier.hotTier.slice(0, 3).join(', ')]}</span>
+                                                            }
+                                                            {index.indexNamesByTier.hotTier.length > 3 && (
+                                                                <span>...</span>
+                                                            )}
                                                         </div>
                                                         <div className="mt-2">
                                                             <strong>Cold Tier</strong>
-                                                            <div>
-                                                                {index.indexNamesByTier.coldTier.length === 0 && "No Indices"}
-                                                                {index.indexNamesByTier.coldTier.slice(0, 3).join('\n')}
-                                                                {index.indexNamesByTier.coldTier.length > 3 && (
-                                                                    <>
-                                                                        <br />...
-                                                                    </>
-                                                                )}
-                                                            </div>
+                                                            <br />
+                                                            {
+                                                                index.indexNamesByTier.coldTier.length === 0
+                                                                    ? <div>No Indices</div>
+                                                                    : <span>{index.indexNamesByTier.coldTier.slice(0, 3).join(', ')}</span>
+                                                            }
+                                                            {index.indexNamesByTier.coldTier.length > 3 && (
+                                                                <span>...</span>
+                                                            )}
                                                         </div>
                                                     </>
                                                 }
