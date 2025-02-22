@@ -1,5 +1,6 @@
 import { ClusterData } from "../app/pages/storage-dashboard/models/cluster-models";
 
+// TODO: update the examples and mock or remove them
 export const clusters: ClusterData[] = [
   {
     name: 'Cluster A',

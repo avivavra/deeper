@@ -152,6 +152,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                     return null;
                 }
 
+                // TODO: create an order between the measurement units
                 const warmMinAge = phases.warm ? this.parseDurationToEpochMillis(phases.warm.min_age) : null;
                 const coldMinAge = phases.cold ? this.parseDurationToEpochMillis(phases.cold.min_age) : null;
                 const frozenMinAge = phases.frozen ? this.parseDurationToEpochMillis(phases.frozen.min_age) : null;

@@ -9,7 +9,7 @@ import { ConfigClusterSummarizerFactory } from '@/api/summary/configClusterSumma
 import { MockS3BucketApiFactory } from '@/api/s3/mockS3BucketApiFactory';
 
 const elasticsearchClusterApiFactory = new ConfigElasticsearchClusterApiFactory();
-const s3BucketApiFactory = new MockS3BucketApiFactory();
+const s3BucketApiFactory = new MockS3BucketApiFactory(); // TODO: implement
 const clustersSummarizerFactory = new ConfigClusterSummarizerFactory(elasticsearchClusterApiFactory, s3BucketApiFactory);
 
 const StorageDashboardPage = () => {

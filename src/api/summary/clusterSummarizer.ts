@@ -91,7 +91,7 @@ export class ClusterSummarizer {
             const matchingIlmPolicy = ilmPolicies.find(policy => policy.name === template.ilmPolicy);
             if (!matchingIlmPolicy) throw new Error(`Ilm policy ${template.ilmPolicy} does not exist or does not a delete phase`);
 
-            const matchingIndices = this.getMatchingIndices(indices, template.patterns);
+            const matchingIndices = this.getMatchingIndices(indices, template.patterns); // TODO: add warning for strange index template (no indices, ...)
             const normalIndices = this.getNormalIndices(matchingIndices);
 
             const normalIndicesByTier = this.mapByTier(normalIndices, matchingIlmPolicy, now);
@@ -133,7 +133,7 @@ export class ClusterSummarizer {
     }
 
     private getMatchingIndices(indices: Index[], patterns: string[]): Index[] {
-        return indices.filter(index => 
+        return indices.filter(index =>
             patterns.some(pattern => this.matchesPattern(index.name, pattern))
         );
     }

@@ -20,12 +20,13 @@ export type ClusterMetadata = {
     hebrewName: string;
 };
 
+// TODO: create an order between the measurement units
 export type ElasticClusterStorage = {
     totalElasticStorage: number; // GB
     usedElasticStorage: number; // GB
 };
 
-export type S3ClusterStorage = {    
+export type S3ClusterStorage = {
     totalS3Storage: number; // GB
     usedS3Storage: number; // GB
 };
