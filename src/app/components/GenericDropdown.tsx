@@ -11,7 +11,7 @@ interface GenericDropdownProps {
   hideInputs?: boolean;
 }
 
-const GenericDropdown: React.FC<GenericDropdownProps> = ({ buttonLabel, options, onSelect, width = 'w-56', type = 'radio', showChevron = true, hideInputs = false }) => {
+export const GenericDropdown: React.FC<GenericDropdownProps> = ({ buttonLabel, options, onSelect, width = 'w-56', type = 'radio', showChevron = true, hideInputs = false }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -64,5 +64,3 @@ const GenericDropdown: React.FC<GenericDropdownProps> = ({ buttonLabel, options,
     </div>
   );
 };
-
-export default GenericDropdown;

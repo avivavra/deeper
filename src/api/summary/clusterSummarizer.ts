@@ -1,7 +1,7 @@
-import { ClusterData, ClusterMetadata, IndexData } from "@/app/pages/storage-dashboard/models/cluster-models";
-import { ElasticsearchClusterApi, IlmPolicy, Index } from "../elasticsearch/elasticsearchClusterApi";
-import { S3BucketApi } from "../s3/s3BucketApi";
-import { convertToDays } from "@/logic/converts";
+import { ClusterData, ClusterMetadata, IndexData } from "@/app/pages/storage-dashboard/models";
+import { ElasticsearchClusterApi, IlmPolicy, Index } from "../elasticsearch";
+import { S3BucketApi } from "../s3";
+import { convertToDays } from "@/app/utils";
 
 type IndexFrequency = 'daily' | 'monthly' | 'yearly';
 
@@ -11,7 +11,7 @@ export type IndexTemplateConfig = {
     frequency: IndexFrequency;
 };
 
-export type IndexTemplate = {
+type IndexTemplate = {
     name: string;
     hebrewName: string;
     hotRetentionDays: number;

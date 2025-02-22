@@ -1,20 +1,16 @@
 "use client";
 
-import { config } from '../../config/config';
-import { default as StorageDashboardPageComponent } from '../pages/storage-dashboard/StorageDashboardPage';
-import { clustersMetadata } from '@/config/config-calc';
-import { Audience } from '../pages/storage-dashboard/models/display-models';
-import { ConfigElasticsearchClusterApiFactory } from '@/api/elasticsearch/configElasticsearchClusterApiFactory';
-import { ConfigClusterSummarizerFactory } from '@/api/summary/configClusterSummarizerFactory';
-import { MockS3BucketApiFactory } from '@/api/s3/mockS3BucketApiFactory';
-import { ExampleDataClusterSummarizerFactory } from '@/api/summary/exampleDataClusterSummarizerFactory';
+import { StorageDashboardPage as StorageDashboardPageComponent } from '../pages/storage-dashboard';
+import { config, clustersMetadata } from '@/config';
+import { Audience } from '../pages/storage-dashboard/models';
+import { MockS3BucketApiFactory, ConfigElasticsearchClusterApiFactory, ConfigClusterSummarizerFactory, ExampleDataClusterSummarizerFactory } from '@/api';
 
 const elasticsearchClusterApiFactory = new ConfigElasticsearchClusterApiFactory();
 const s3BucketApiFactory = new MockS3BucketApiFactory(); // TODO: implement
 const clustersSummarizerFactory = new ConfigClusterSummarizerFactory(elasticsearchClusterApiFactory, s3BucketApiFactory);
 // const clustersSummarizerFactory = new ExampleDataClusterSummarizerFactory();
 
-const StorageDashboardPage = () => {
+export const StorageDashboardPage = () => {
   return (
     <StorageDashboardPageComponent
       clustersSummarizerFactory={clustersSummarizerFactory}
@@ -24,5 +20,3 @@ const StorageDashboardPage = () => {
     />
   );
 };
-
-export default StorageDashboardPage;

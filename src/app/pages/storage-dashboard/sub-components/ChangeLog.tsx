@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2, Share2, Upload } from 'lucide-react';
-import { IndexData } from '../models/cluster-models';
-import { ChangeLogEntry, Direction, DisplayMethod, Translation } from '../models/display-models';
-import GenericDropdown from '../../../components/GenericDropdown';
-import GenericModal from '../../../components/GenericModal';
+import { IndexData, ChangeLogEntry, Direction, DisplayMethod, Translation } from '../models';
+import { GenericDropdown, GenericModal } from '../../../components';
 
 interface ChangeLogProps {
   changeLog: { [key: string]: ChangeLogEntry };
@@ -63,7 +61,7 @@ const parseChangeLog = (text: string) => {
   return parsedEntries;
 };
 
-const ChangeLog: React.FC<ChangeLogProps> = ({
+export const ChangeLog: React.FC<ChangeLogProps> = ({
   changeLog,
   direction,
   displayMethod,
@@ -363,5 +361,3 @@ const ChangeLog: React.FC<ChangeLogProps> = ({
     </div>
   );
 };
-
-export default ChangeLog;

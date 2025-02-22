@@ -1,4 +1,4 @@
-import { convertToGB } from '@/logic/converts';
+import { convertToGB } from '@/app/utils';
 import axios, { AxiosInstance } from 'axios';
 import { ElasticsearchClusterApi, IlmPolicy, Index, IndexTemplate } from './elasticsearchClusterApi';
 

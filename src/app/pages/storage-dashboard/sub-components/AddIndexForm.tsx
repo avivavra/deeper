@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { IndexData } from '../models/cluster-models';
-import { Translation, NewIndexInputType } from '../models/display-models';
-import { config } from '@/config/config';
+import { IndexData, Translation, NewIndexInputType } from '../models';
+import { config } from '@/config';
 
 const DAILY_SECONDS = 86400;
 const GB_TO_BYTES = 1024 * 1024 * 1024;
@@ -47,7 +46,7 @@ interface AddIndexForm {
     translateIndexNames: boolean;
 }
 
-const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handleAddIndex, indices, translateIndexNames }) => {
+export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handleAddIndex, indices, translateIndexNames }) => {
     const [newIndex, setNewIndex] = useState<NewIndex>(emptyNewIndex());
 
     const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
@@ -269,5 +268,3 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handleAddInd
         </div>
     );
 };
-
-export default AddIndexForm;

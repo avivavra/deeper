@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Audience, Direction } from "../models/display-models";
+import { Audience, Direction } from "../models";
 import { translations } from "../translations";
 
 export const useAudience = (defaultAudience: Audience) => {

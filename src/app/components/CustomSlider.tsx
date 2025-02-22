@@ -8,7 +8,7 @@ type CustomSliderProps = {
     resetKey: string;
 };
 
-const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSliderProps) => {
+export const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSliderProps) => {
     const [sliderValue, setSliderValue] = useState(value[0]);
     const sliderRef = useRef<HTMLInputElement>(null);
 
@@ -53,5 +53,3 @@ const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSliderProps
         />
     );
 };
-
-export default CustomSlider;

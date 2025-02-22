@@ -1,4 +1,4 @@
-import { clusterA } from "../summary/exampleData";
+import { clusterA } from "../exampleData";
 import { S3BucketApi } from "./s3BucketApi";
 import { S3BucketApiFactory } from "./s3BucketApiFactory";
 

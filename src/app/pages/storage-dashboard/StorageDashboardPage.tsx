@@ -1,21 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ClusterMetadata, IndexData } from './models/cluster-models';
-import { Audience, ChangeLogEntry, Direction, DisplayMethod, Translation } from './models/display-models';
-import ChangeLog from './sub-components/ChangeLog';
-import StorageHeader from './sub-components/StorageHeader';
-import StorageUsageOverview from './sub-components/StorageUsageOverview';
-import IndexRetentionPeriodsChart from './sub-components/IndexRetentionPeriodsChart';
-import IndexRetentionManagement from './sub-components/IndexRetentionManagement';
-import AddIndexForm from './sub-components/AddIndexForm';
-import GenericModal from '../../components/GenericModal';
-import { ClusterSummarizerFactory } from '@/api/summary/clusterSummarizerFactory';
-import StorageDashboardLayout from './StorageDashboardLayout';
+import { ClusterMetadata, IndexData, Audience, ChangeLogEntry, Direction, DisplayMethod, Translation } from './models';
+import { ChangeLog, StorageHeader, StorageUsageOverview, IndexRetentionPeriodsChart, IndexRetentionManagement, AddIndexForm } from './sub-components';
+import { GenericModal } from '../../components';
+import { ClusterSummarizerFactory } from '@/api';
+import { StorageDashboardLayout } from './StorageDashboardLayout';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
-import { useAudience } from './hooks/useAudience';
-import { useEditMode } from './hooks/useEditMode';
-import { useCluster } from './hooks/useCluster';
+import { useAudience, useEditMode, useCluster } from './hooks';
 
 import './StorageDashboardPage.css';
 
@@ -26,7 +18,7 @@ type StorageDashboardPageProps = {
   combineForUser: boolean;
 };
 
-const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode, combineForUser }: StorageDashboardPageProps) => {
+export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode, combineForUser }: StorageDashboardPageProps) => {
   const { audience, setAudience, direction, t } = useAudience(defaultMode);
   const { isEditMode, handleEditModeToggle } = useEditMode();
   const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, indices, totalElasticStorage, totalS3Storage, combinedStorage } = useCluster(clustersSummarizerFactory, clustersMetadata);
@@ -366,5 +358,3 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
     </>
   );
 };
-
-export default StorageDashboardPage;

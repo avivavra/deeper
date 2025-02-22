@@ -5,7 +5,7 @@ type TooltipIconProps = {
     alignment?: 'left' | 'right';
 };
 
-const TooltipIcon = ({ content, alignment = 'left' }: TooltipIconProps) => {
+export const TooltipIcon = ({ content, alignment = 'left' }: TooltipIconProps) => {
     const [visible, setVisible] = useState(false);
     const [position, setPosition] = useState<'top' | 'bottom'>('bottom');
     const [currentAlignment, setAlignment] = useState<'left' | 'right'>(alignment);
@@ -55,5 +55,3 @@ const TooltipIcon = ({ content, alignment = 'left' }: TooltipIconProps) => {
         </div>
     );
 };
-
-export default TooltipIcon;

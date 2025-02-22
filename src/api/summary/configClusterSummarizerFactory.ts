@@ -1,6 +1,6 @@
-import { config } from "@/config/config";
+import { config } from "@/config";
 import { ElasticsearchClusterApiFactory } from "../elasticsearch/elasticsearchClusterApiFactory";
-import { S3BucketApiFactory } from "../s3/s3BucketApiFactory";
+import { S3BucketApiFactory } from "../s3";
 import { ClusterSummarizer, IndexTemplateConfig } from "./clusterSummarizer";
 import { ClusterSummarizerFactory } from "./clusterSummarizerFactory";
 

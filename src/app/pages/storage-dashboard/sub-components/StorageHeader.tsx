@@ -1,8 +1,7 @@
 import React from 'react';
 import { Pencil, Eye } from 'lucide-react';
-import GenericDropdown from '../../../components/GenericDropdown';
-import { ClusterMetadata, IndexData } from '../models/cluster-models';
-import { Audience, Translation } from '../models/display-models';
+import { GenericDropdown } from '../../../components';
+import { ClusterMetadata, IndexData, Audience, Translation } from '../models';
 
 interface StorageHeaderProps {
   audience: Audience;
@@ -19,7 +18,7 @@ interface StorageHeaderProps {
   t: Translation;
 }
 
-const StorageHeader: React.FC<StorageHeaderProps> = ({
+export const StorageHeader: React.FC<StorageHeaderProps> = ({
   audience,
   setAudience,
   clustersMetadata: clusters,
@@ -95,5 +94,3 @@ const StorageHeader: React.FC<StorageHeaderProps> = ({
     </div>
   );
 };
-
-export default StorageHeader;

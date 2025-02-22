@@ -9,7 +9,7 @@ type StorageDashboardLayoutProps = {
   isEditMode: boolean;
 };
 
-const StorageDashboardLayout: React.FC<StorageDashboardLayoutProps> = ({
+export const StorageDashboardLayout: React.FC<StorageDashboardLayoutProps> = ({
   header,
   storageUsage,
   chart,
@@ -45,5 +45,3 @@ const StorageDashboardLayout: React.FC<StorageDashboardLayoutProps> = ({
     </div>
   );
 };
-
-export default StorageDashboardLayout;

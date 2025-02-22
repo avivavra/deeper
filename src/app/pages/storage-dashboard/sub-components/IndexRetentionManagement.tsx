@@ -1,10 +1,7 @@
 import React from 'react';
 import { Plus, MoreVertical } from 'lucide-react';
-import GenericDropdown from '../../../components/GenericDropdown';
-import CustomSlider from '../../../components/CustomSlider';
-import TooltipIcon from '../../../components/TooltipIcon';
-import { IndexData } from '../models/cluster-models';
-import { Direction, DisplayMethod, Translation } from '../models/display-models';
+import { TooltipIcon, CustomSlider, GenericDropdown } from '../../../components';
+import { IndexData, Direction, DisplayMethod, Translation } from '../models';
 
 type IndexRetentionManagementProps = {
     isEditMode: boolean;
@@ -20,7 +17,7 @@ type IndexRetentionManagementProps = {
     showAddIndex: boolean;
 };
 
-const IndexRetentionManagement = ({
+export const IndexRetentionManagement = ({
     isEditMode,
     filteredIndices,
     direction,
@@ -32,7 +29,6 @@ const IndexRetentionManagement = ({
     handleRemoveIndex,
     setShowAddIndex,
 }: IndexRetentionManagementProps) => {
-
     const handleRetentionChange = (indexName: string, newHotDays: number, newColdDays: number) => {
         const index = filteredIndices.find(i => i.name === indexName);
         if (!index) return;
@@ -236,5 +232,3 @@ const IndexRetentionManagement = ({
         </div>
     );
 };
-
-export default IndexRetentionManagement;

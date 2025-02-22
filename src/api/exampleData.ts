@@ -1,4 +1,4 @@
-import { ClusterData, ClusterMetadata, IndexData } from "../../app/pages/storage-dashboard/models/cluster-models";
+import { ClusterData, ClusterMetadata, IndexData } from "../app/pages/storage-dashboard/models";
 
 export const clustersMetadata: ClusterMetadata[] = [
   {

@@ -6,7 +6,7 @@ interface GenericModalProps {
     children: React.ReactNode;
 }
 
-const GenericModal: React.FC<GenericModalProps> = ({ showModal, setShowModal, children }) => {
+export const GenericModal: React.FC<GenericModalProps> = ({ showModal, setShowModal, children }) => {
     if (!showModal) return null;
 
     return (
@@ -17,5 +17,3 @@ const GenericModal: React.FC<GenericModalProps> = ({ showModal, setShowModal, ch
         </div>
     );
 };
-
-export default GenericModal;

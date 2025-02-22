@@ -1,4 +1,4 @@
-import { clusterAIndices, clusterBIndices, clusterA, clusterB } from "./exampleData";
+import { clusterAIndices, clusterBIndices, clusterA, clusterB } from "../exampleData";
 import { ClusterSummarizer } from "./clusterSummarizer";
 import { ClusterSummarizerFactory } from "./clusterSummarizerFactory";
 

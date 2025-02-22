@@ -1,6 +1,6 @@
 import React from 'react';
-import { DisplayMethod, Translation } from '../models/display-models';
-import { config } from '../../../../config/config';
+import { DisplayMethod, Translation } from '../models';
+import { config } from '@/config';
 
 type StorageUsageOverviewProps = {
   displayMethod: DisplayMethod;
@@ -48,7 +48,7 @@ const StorageBar: React.FC<{
   )
 };
 
-const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
+export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
   displayMethod,
   usedCombinedStorage,
   combinedStorage,
@@ -97,5 +97,3 @@ const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
     </div>
   );
 };
-
-export default StorageUsageOverview;

@@ -4,7 +4,7 @@ type AsyncState<T> =
   | { status: 'loading' | 'error'; data: null }
   | { status: 'succeeded'; data: T };
 
-const useAsyncState = <T>(initialState: T | (() => Promise<T>)) => {
+export const useAsyncState = <T>(initialState: T | (() => Promise<T>)) => {
   const [state, setState] = useState<AsyncState<T>>(
     typeof initialState === 'function'
       ? { status: 'loading', data: null }
@@ -30,5 +30,3 @@ const useAsyncState = <T>(initialState: T | (() => Promise<T>)) => {
 
   return { state, fetchData };
 };
-
-export default useAsyncState;
