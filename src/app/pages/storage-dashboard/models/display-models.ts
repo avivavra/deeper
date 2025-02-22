@@ -56,7 +56,6 @@ export type Translation = {
     day: string;
     days: string;
     storage: string;
-    overLimit: string;
     indexNamePlaceholder: string;
     removeIndex: string;
     perSecond: string;

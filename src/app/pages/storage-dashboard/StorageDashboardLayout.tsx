@@ -23,24 +23,24 @@ export const StorageDashboardLayout: React.FC<StorageDashboardLayoutProps> = ({
         {header}
       </div>
       <div className="flex flex-grow pt-16 overflow-hidden" style={{ paddingTop: '70px' }}>
-        {isEditMode && changeLog && (
-          <div className="w-72 bg-white shadow-lg p-6 overflow-y-auto flex-grow" style={{ maxHeight: 'calc(100vh - 70px)' }}>
-            {changeLog}
-          </div>
-        )}
         <div className={`flex-grow p-6 space-y-6 overflow-hidden ${isEditMode ? 'lg:w-[calc(100%-20rem)]' : ''}`}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg shadow-lg p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 70px - 70px - 120px)' }}>
-              {storageUsage}
-            </div>
             <div className="lg:col-span-2 bg-white rounded-lg shadow-lg p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 70px - 70px - 120px)' }}>
               {chart}
+            </div>
+            <div className="bg-white rounded-lg shadow-lg p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 70px - 70px - 120px)' }}>
+              {storageUsage}
             </div>
           </div>
           <div className={`bg-white rounded-lg shadow-lg p-6 flex-grow overflow-y-auto`} style={{ maxHeight: 'calc(100vh - 70px - 70px - 300px - 60px)' }}>
             {retentionManagement}
           </div>
         </div>
+        {isEditMode && changeLog && (
+          <div className="w-72 bg-white shadow-lg p-6 overflow-y-auto flex-grow" style={{ maxHeight: 'calc(100vh - 70px)' }}>
+            {changeLog}
+          </div>
+        )}
       </div>
     </div>
   );

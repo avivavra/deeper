@@ -1,6 +1,7 @@
 import React from 'react';
 import { DisplayMethod, Translation } from '../models';
 import { config } from '@/config';
+import { FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
 
 type StorageUsageOverviewProps = {
   displayMethod: DisplayMethod;
@@ -21,12 +22,19 @@ const StorageBar: React.FC<{
   usedStorage: number;
   totalStorage: number;
   storagePercentage: number;
-  overLimit: string;
-}> = ({ label, usedStorage, totalStorage, storagePercentage, overLimit }) => {
+}> = ({ label, usedStorage, totalStorage, storagePercentage }) => {
   const getStorageBarColor = (percentage: number) => {
     if (percentage > config.storageThresholds.high) return 'bg-red-500';
     if (percentage > config.storageThresholds.medium) return 'bg-orange-500';
     return 'bg-blue-600';
+  };
+
+  const isWarningZone = (percentage: number) => {
+    return percentage > config.storageThresholds.medium && percentage <= config.storageThresholds.high;
+  };
+
+  const isErrorZone = (percentage: number) => {
+    return percentage > config.storageThresholds.high;
   };
 
   return (
@@ -35,7 +43,8 @@ const StorageBar: React.FC<{
         <span className="font-medium text-gray-800">{label}</span>
         <span className={usedStorage > totalStorage ? "text-red-500 font-medium" : "text-gray-800"}>
           <span dir='ltr'>{usedStorage.toFixed(2)}/{totalStorage.toFixed(2)} GB ({Number(storagePercentage).toFixed(1)}%)</span>
-          {usedStorage > totalStorage && ` (${overLimit})`}
+          {isWarningZone(storagePercentage) && <FaExclamationTriangle className="text-orange-500 inline ml-1 mr-1" />}
+          {isErrorZone(storagePercentage) && <FaExclamationCircle className="text-red-500 inline ml-1 mr-1" />}
         </span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
@@ -73,7 +82,6 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
             usedStorage={usedCombinedStorage}
             totalStorage={combinedStorage}
             storagePercentage={combinedStoragePercentage}
-            overLimit={t.overLimit}
           />
         ) : (
           <>
@@ -82,14 +90,12 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
               usedStorage={usedElasticStorage}
               totalStorage={totalElasticStorage}
               storagePercentage={elasticStoragePercentage}
-              overLimit={t.overLimit}
             />
             <StorageBar
               label={t.s3Storage}
               usedStorage={usedS3Storage}
               totalStorage={totalS3Storage}
               storagePercentage={s3StoragePercentage}
-              overLimit={t.overLimit}
             />
           </>
         )}

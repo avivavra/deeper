@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, MoreVertical } from 'lucide-react';
+import { Plus, MoreVertical, Trash2 } from 'lucide-react';
 import { TooltipIcon, CustomSlider, GenericDropdown } from '../../../components';
 import { IndexData, Direction, DisplayMethod, Translation } from '../models';
 
@@ -50,9 +50,9 @@ export const IndexRetentionManagement = ({
                     {isEditMode && (
                         <button
                             onClick={() => setShowAddIndex(true)}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
-                            <Plus className="h-4 w-4 mx-2 text-gray-800" />
+                            <Plus className="h-4 w-4 mx-2 text-white" />
                             {t.addIndex}
                         </button>
                     )}
@@ -99,18 +99,12 @@ export const IndexRetentionManagement = ({
                                         )}
                                     </h3>
                                     {isEditMode && (
-                                        <div className="relative">
-                                            <GenericDropdown
-                                                buttonLabel={<MoreVertical className="h-4 w-4 text-gray-800" />}
-                                                options={[
-                                                    { label: t.removeIndex, value: 'remove' }
-                                                ]}
-                                                onSelect={() => handleRemoveIndex(index.name)}
-                                                width="w-40"
-                                                type="button"
-                                                showChevron={false}
-                                            />
-                                        </div>
+                                        <button
+                                            onClick={() => handleRemoveIndex(index.name)}
+                                            className="inline-flex items-center p-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
                                     )}
                                 </div>
 

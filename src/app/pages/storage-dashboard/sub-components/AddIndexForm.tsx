@@ -124,6 +124,12 @@ export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handl
         }
     };
 
+    const inputTypes = [
+        { value: 'frequency', label: t.docFrequency },
+        { value: 'avgDocs', label: t.avgDocs },
+        { value: 'import', label: t.importFromIndex }
+    ];
+
     return (
         <div className="p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.addIndex}</h2>
@@ -142,34 +148,19 @@ export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handl
                 <div className="pb-4 border-b"></div>
                 {/* Storage Per Day Area */}
                 <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-                    <div className="flex gap-2 mb-3">
-                        <button
-                            onClick={() => setNewIndex(prev => ({ ...prev, inputType: 'frequency' }))}
-                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
-                                ${newIndex.inputType === 'frequency'
-                                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-700/20'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    <div className="mb-3">
+                        <label className="text-sm font-medium text-gray-800">{t.selectInputType}</label>
+                        <select
+                            value={newIndex.inputType}
+                            onChange={(e) => setNewIndex(prev => ({ ...prev, inputType: e.target.value as NewIndexInputType }))}
+                            className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                         >
-                            {t.docFrequency}
-                        </button>
-                        <button
-                            onClick={() => setNewIndex(prev => ({ ...prev, inputType: 'avgDocs' }))}
-                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
-                                ${newIndex.inputType === 'avgDocs'
-                                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-700/20'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                        >
-                            {t.avgDocs}
-                        </button>
-                        <button
-                            onClick={() => setNewIndex(prev => ({ ...prev, inputType: 'import' }))}
-                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
-                                ${newIndex.inputType === 'import'
-                                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-700/20'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                        >
-                            {t.importFromIndex}
-                        </button>
+                            {inputTypes.map(type => (
+                                <option key={type.value} value={type.value}>
+                                    {type.label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     {newIndex.inputType === 'import' && (
                         <div>

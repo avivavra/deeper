@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Share2, Upload } from 'lucide-react';
+import { Trash2, Share2, Upload, RotateCw } from 'lucide-react';
 import { IndexData, ChangeLogEntry, Direction, DisplayMethod, Translation } from '../models';
 import { GenericDropdown, GenericModal } from '../../../components';
 
@@ -223,6 +223,12 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
         <div className="flex gap-2">
           {Object.keys(changeLog).length > 0 ? (
             <>
+              <button
+                onClick={handleResetChanges}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                <RotateCw className="h-4 w-4 mx-2 text-white" />
+              </button>
               <GenericDropdown
                 buttonLabel={<Share2 className="h-4 w-4 mx-2 text-gray-800" />}
                 options={[
@@ -240,12 +246,6 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
                 showChevron={false}
                 hideInputs={true}
               />
-              <button
-                onClick={handleResetChanges}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
-              </button>
             </>
           ) : (
             <GenericDropdown

@@ -49,7 +49,7 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
         </div>
         <div className="flex gap-4">
           <GenericDropdown
-            buttonLabel={t.selectCluster}
+            buttonLabel={translateIndexNames ? selectedClusterMetadata.hebrewName : selectedClusterMetadata.name}
             options={clusters.map(cluster => ({
               label: translateIndexNames ? cluster.hebrewName : cluster.name,
               value: cluster.name,
