@@ -1,7 +1,7 @@
 export type IndexTemplate = {
     name: string;
     patterns: string[];
-    ilmPolicy: string;
+    ilmPolicy?: string;
 };
 
 export type Index = {
@@ -23,5 +23,5 @@ export interface ElasticsearchClusterApi {
     fetchClusterStorage: () => Promise<{ totalStorage: number; usedStorage: number }>;
     fetchIndexTemplates: () => Promise<IndexTemplate[]>;
     fetchIndices: () => Promise<Index[]>;
-    fetchIlmPolicies: () => Promise<IlmPolicy[]>;
+    fetchIlmPoliciesWithDeletePhase: () => Promise<IlmPolicy[]>;
 }

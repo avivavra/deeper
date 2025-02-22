@@ -26,12 +26,12 @@ export const config = {
                     frequency: "monthly"
                 },
                 {
-                    name: "synthetics-browser.screenshot",
+                    name: ".fleet-fileds-fromhost-data",
                     hebrewName: "אינדקס 3",
                     frequency: "daily"
                 },
                 {
-                    name: "metrics-apm.app@template",
+                    name: ".alerts-observability.metrics.alerts-default-index-template",
                     hebrewName: "אינדקס 4",
                     frequency: "daily"
                 }
