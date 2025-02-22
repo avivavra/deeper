@@ -1,5 +1,4 @@
-import { S3ClusterStorage } from "@/app/pages/storage-dashboard/models/cluster-models";
-import { clusters } from "../exampleData";
+import { clusterA } from "../summary/exampleData";
 import { S3BucketApi } from "./s3BucketApi";
 import { S3BucketApiFactory } from "./s3BucketApiFactory";
 
@@ -9,8 +8,8 @@ export class MockS3BucketApiFactory implements S3BucketApiFactory {
             return {
                 getStorage: () =>
                     Promise.resolve({
-                        totalS3Storage: (clusters.find(c => c.name === "Cluster A") as S3ClusterStorage).totalS3Storage,
-                        usedS3Storage: (clusters.find(c => c.name === "Cluster A") as S3ClusterStorage).usedS3Storage
+                        totalS3Storage: clusterA.totalS3Storage,
+                        usedS3Storage: clusterA.usedS3Storage
                     }),
                 getFolders: () =>
                     Promise.resolve([{

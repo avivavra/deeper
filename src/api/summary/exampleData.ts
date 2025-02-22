@@ -1,0 +1,180 @@
+import { ClusterData, ClusterMetadata, IndexData } from "../../app/pages/storage-dashboard/models/cluster-models";
+
+export const clustersMetadata: ClusterMetadata[] = [
+  {
+    name: 'Cluster A',
+    hebrewName: 'אשכול א'
+  },
+  {
+    name: 'Cluster B',
+    hebrewName: 'אשכול ב'
+  }
+];
+
+export const clusterA: ClusterData = {
+  name: 'Cluster A',
+  hebrewName: 'אשכול א',
+  totalElasticStorage: 500, // GB
+  usedElasticStorage: 342.2, // GB
+  totalS3Storage: 1000, // GB
+  usedS3Storage: 757.5 // GB
+};
+
+export const clusterB: ClusterData = {
+  name: 'Cluster B',
+  hebrewName: 'אשכול ב',
+  totalElasticStorage: 300, // GB
+  usedElasticStorage: 214.7, // GB
+  totalS3Storage: 900, // GB
+  usedS3Storage: 627.5 // GB
+};
+
+export const clusterAIndices: IndexData[] = [
+  {
+    name: 'logs-production',
+    hebrewName: 'לוגים-ייצור',
+    elasticStoragePerHotTierDay: 4,
+    S3StoragePerColdTierDay: 3,
+    elasticStoragePerColdTierDay: 0.2,
+    hotRetentionDays: 30,
+    coldRetentionDays: 90,
+    elasticStorage: 4 * 30 + 0.2 * 90,
+    S3Storage: 3 * 90,
+    totalRetentionDays: 30 + 90,
+    indexNamesByTier: {
+      hotTier: ['logs-production-1', 'logs-production-2'],
+      coldTier: ['logs-production-3']
+    }
+  },
+  {
+    name: 'metrics-app1',
+    hebrewName: 'מדדים-אפליקציה1',
+    elasticStoragePerHotTierDay: 2,
+    S3StoragePerColdTierDay: 1.5,
+    elasticStoragePerColdTierDay: 0.1,
+    hotRetentionDays: 15,
+    coldRetentionDays: 45,
+    elasticStorage: 2 * 15 + 0.1 * 45,
+    S3Storage: 1.5 * 45,
+    totalRetentionDays: 15 + 45,
+    indexNamesByTier: {
+      hotTier: ['metrics-app1-1', 'metrics-app1-2'],
+      coldTier: []
+    }
+  },
+  {
+    name: 'metrics-app2',
+    hebrewName: 'מדדים-אפליקציה2',
+    elasticStoragePerHotTierDay: 3,
+    S3StoragePerColdTierDay: 2,
+    elasticStoragePerColdTierDay: 0.15,
+    hotRetentionDays: 20,
+    coldRetentionDays: 0,
+    elasticStorage: 3 * 20 + 0.15 * 0,
+    S3Storage: 0,
+    totalRetentionDays: 20 + 0,
+    indexNamesByTier: {
+      hotTier: ['metrics-app2-1'],
+      coldTier: []
+    }
+  },
+  {
+    name: 'audit-logs',
+    hebrewName: 'לוגים-ביקורת',
+    elasticStoragePerHotTierDay: 1,
+    S3StoragePerColdTierDay: 2.5,
+    elasticStoragePerColdTierDay: 0.25,
+    hotRetentionDays: 10,
+    coldRetentionDays: 120,
+    elasticStorage: 1 * 10 + 0.25 * 120,
+    S3Storage: 2.5 * 120,
+    totalRetentionDays: 10 + 120,
+    indexNamesByTier: {
+      hotTier: ['audit-logs-1'],
+      coldTier: []
+    }
+  },
+  {
+    name: 'user-activity',
+    hebrewName: 'פעילות-משתמש',
+    elasticStoragePerHotTierDay: 2.5,
+    S3StoragePerColdTierDay: 2,
+    elasticStoragePerColdTierDay: 0.12,
+    hotRetentionDays: 25,
+    coldRetentionDays: 60,
+    elasticStorage: 2.5 * 25 + 0.12 * 60,
+    S3Storage: 2 * 60,
+    totalRetentionDays: 25 + 60,
+    indexNamesByTier: {
+      hotTier: ['user-activity-1'],
+      coldTier: []
+    }
+  }
+];
+
+export const clusterBIndices: IndexData[] = [
+  {
+    name: 'metrics-app1',
+    hebrewName: 'מדדים-אפליקציה1',
+    elasticStoragePerHotTierDay: 2,
+    S3StoragePerColdTierDay: 1.5,
+    elasticStoragePerColdTierDay: 0.1,
+    hotRetentionDays: 15,
+    coldRetentionDays: 45,
+    elasticStorage: 2 * 15 + 0.1 * 45,
+    S3Storage: 1.5 * 45,
+    totalRetentionDays: 15 + 45,
+    indexNamesByTier: {
+      hotTier: ['metrics-app1-1', 'metrics-app1-2'],
+      coldTier: []
+    }
+  },
+  {
+    name: 'metrics-app2',
+    hebrewName: 'מדדים-אפליקציה2',
+    elasticStoragePerHotTierDay: 3,
+    S3StoragePerColdTierDay: 2,
+    elasticStoragePerColdTierDay: 0.15,
+    hotRetentionDays: 20,
+    coldRetentionDays: 70,
+    elasticStorage: 3 * 20 + 0.15 * 70,
+    S3Storage: 2 * 70,
+    totalRetentionDays: 20 + 70,
+    indexNamesByTier: {
+      hotTier: ['metrics-app2-1', 'metrics-app2-2'],
+      coldTier: []
+    }
+  },
+  {
+    name: 'audit-logs',
+    hebrewName: 'לוגים-ביקורת',
+    elasticStoragePerHotTierDay: 1,
+    S3StoragePerColdTierDay: 2.5,
+    elasticStoragePerColdTierDay: 0.25,
+    hotRetentionDays: 10,
+    coldRetentionDays: 120,
+    elasticStorage: 1 * 10 + 0.25 * 120,
+    S3Storage: 2.5 * 120,
+    totalRetentionDays: 10 + 120,
+    indexNamesByTier: {
+      hotTier: ['audit-logs-1'],
+      coldTier: []
+    }
+  },
+  {
+    name: 'user-activity',
+    hebrewName: 'פעילות-משתמש',
+    elasticStoragePerHotTierDay: 2.5,
+    S3StoragePerColdTierDay: 2,
+    elasticStoragePerColdTierDay: 0.12,
+    hotRetentionDays: 25,
+    coldRetentionDays: 60,
+    elasticStorage: 2.5 * 25 + 0.12 * 60,
+    S3Storage: 2 * 60,
+    totalRetentionDays: 25 + 60,
+    indexNamesByTier: {
+      hotTier: ['user-activity-1'],
+      coldTier: []
+    }
+  }
+];
