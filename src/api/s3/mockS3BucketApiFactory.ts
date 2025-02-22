@@ -14,6 +14,9 @@ export class MockS3BucketApiFactory implements S3BucketApiFactory {
                     }),
                 getFolders: () =>
                     Promise.resolve([{
+                        name: "test-template",
+                        storage: 20
+                    }, {
                         name: ".fleet-fileds-tohost-meta",
                         storage: 30
                     }, {

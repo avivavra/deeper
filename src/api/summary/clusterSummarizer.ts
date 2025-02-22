@@ -26,7 +26,7 @@ export type IndexTemplate = {
     }
 };
 
-type Tier = 'hot' | 'warm' | 'cold' | 'frozen';
+type Tier = 'hot' | 'warm' | 'cold' | 'frozen' | 'delete';
 
 export class ClusterSummarizer {
     constructor(
@@ -154,7 +154,25 @@ export class ClusterSummarizer {
     }
 
     private calculateTier(index: Index, ilmPolicy: IlmPolicy, now: Date): Tier {
-        throw new Error('Not Implemented');
+        const creationTime = new Date(index.creationTime).getTime();
+        const nowTime = now.getTime();
+
+        const hotTierEnd = creationTime + ilmPolicy.hotTierRetentionPeriod;
+        const warmTierEnd = hotTierEnd + ilmPolicy.warmTierRetentionPeriod;
+        const coldTierEnd = warmTierEnd + ilmPolicy.coldTierRetentionPeriod;
+        const frozenTierEnd = coldTierEnd + ilmPolicy.frozenTierRetentionPeriod;
+
+        if (nowTime <= hotTierEnd) {
+            return 'hot';
+        } else if (nowTime <= warmTierEnd) {
+            return 'warm';
+        } else if (nowTime <= coldTierEnd) {
+            return 'cold';
+        } else if (nowTime <= frozenTierEnd) {
+            return 'frozen';
+        } else {
+            return 'delete';
+        }
     }
 
     private mapByTier(indices: Index[], ilmPolicy: IlmPolicy, now: Date): Record<Tier, Index[]> {
@@ -169,7 +187,23 @@ export class ClusterSummarizer {
     }
 
     private getAverageStoragePerDay(index: Index, indexFrequency: IndexFrequency, now: Date): number {
-        throw new Error('Not Implemented');
+        const daysSinceCreation = convertToDays(now.getTime() - index.creationTime.getTime());
+
+        switch (indexFrequency) {
+            case 'daily':
+                if (daysSinceCreation > 1) return index.storage;
+                return index.storage / daysSinceCreation;
+            case 'monthly':
+                // TODO: make more generic
+                if (daysSinceCreation > 30) return index.storage;
+                return index.storage / (daysSinceCreation / 30);
+            case 'yearly':
+                // TODO: make more generic
+                if (daysSinceCreation > 365) return index.storage;
+                return index.storage / (daysSinceCreation / 365);
+            default:
+                throw new Error(`Unknown index frequency: ${indexFrequency}`);
+        }
     }
 
     private getAverageStoragePerDayMultiple(indices: Index[], indexFrequency: IndexFrequency, now: Date): number {
