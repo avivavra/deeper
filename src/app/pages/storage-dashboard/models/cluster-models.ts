@@ -1,18 +1,17 @@
-export type ElasticIndexTemplate = {
-    hotRetentionDays: number;
-    coldRetentionDays: number;
-    elasticStorageGB: number;
-    indices: string[];
-}
-
-export type IndexData = ElasticIndexTemplate & {
+export type IndexData = {
     name: string;
     hebrewName: string;
+    hotRetentionDays: number;
+    coldRetentionDays: number;
+    elasticStorage: number;
+    S3Storage: number;
     elasticStoragePerHotTierDay: number;
-    S3StoragePerColdTierDay: number;
     elasticStoragePerColdTierDay: number;
-    S3StorageGB: number;
-    totalRetentionDays: number;
+    S3StoragePerColdTierDay: number;
+    indexNamesByTier: {
+        hotTier: string[];
+        coldTier: string[];
+    };
 };
 
 export type ClusterMetadata = {

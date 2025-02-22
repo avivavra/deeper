@@ -14,22 +14,26 @@ export const config = {
             url: 'elasticsearch/local',
             username: 'elastic',
             password: 'y6WgXosR',
-            indicesMetadata: [
+            indexTemplatesConfig: [
                 {
                     name: ".fleet-fileds-tohost-meta",
-                    hebrewName: "אינדקס 1"
+                    hebrewName: "אינדקס 1",
+                    frequency: "daily"
                 },
                 {
                     name: ".monitoring-ent-search-mb",
-                    hebrewName: "אינדקס 2"
+                    hebrewName: "אינדקס 2",
+                    frequency: "monthly"
                 },
                 {
                     name: "synthetics-browser.screenshot",
-                    hebrewName: "אינדקס 3"
+                    hebrewName: "אינדקס 3",
+                    frequency: "daily"
                 },
                 {
                     name: "metrics-apm.app@template",
-                    hebrewName: "אינדקס 4"
+                    hebrewName: "אינדקס 4",
+                    frequency: "daily"
                 }
             ]
         },

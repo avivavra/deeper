@@ -6,7 +6,7 @@ export class MockElasticsearchClusterApiFactory implements ElasticsearchClusterA
     create(env: string, clusterName: string): ElasticsearchClusterApi {
         if (clusterName === "Cluster A") {
             return {
-                getClusterStorage: () =>
+                fetchClusterStorage: () =>
                     Promise.resolve({
                         totalStorage: clusters.find(c => c.name === "Cluster A")!.totalElasticStorage,
                         usedStorage: clusters.find(c => c.name === "Cluster A")!.usedElasticStorage
@@ -21,7 +21,7 @@ export class MockElasticsearchClusterApiFactory implements ElasticsearchClusterA
             } as ElasticsearchClusterApi;
         } else if (clusterName === "Cluster B") {
             return {
-                getClusterStorage: () =>
+                fetchClusterStorage: () =>
                     Promise.resolve({
                         totalStorage: clusters.find(c => c.name === "Cluster B")!.totalElasticStorage,
                         usedStorage: clusters.find(c => c.name === "Cluster B")!.usedElasticStorage

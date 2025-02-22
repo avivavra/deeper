@@ -1,13 +1,27 @@
-export type IndexTemplateData = {
-    indexTemplate: string;
-    hotRetentionDays: number;
-    coldRetentionDays: number;
-    hotTierStorage: number;
-    coldTierStorage: number;
-    indices: string[];
-}
+export type IndexTemplate = {
+    name: string;
+    patterns: string[];
+    ilmPolicy: string;
+};
+
+export type Index = {
+    name: string;
+    creationTime: Date;
+    docsCount: number;
+    storage: number;
+};
+
+export type IlmPolicy = {
+    name: string;
+    hotTierRetentionPeriod: number;
+    warmTierRetentionPeriod: number;
+    coldTierRetentionPeriod: number;
+    frozenTierRetentionPeriod: number;
+};
 
 export interface ElasticsearchClusterApi {
-    getClusterStorage: () => Promise<{ totalStorage: number; usedStorage: number }>;
-    getIndexTemplates: () => Promise<IndexTemplateData[]>;
+    fetchClusterStorage: () => Promise<{ totalStorage: number; usedStorage: number }>;
+    fetchIndexTemplates: () => Promise<IndexTemplate[]>;
+    fetchIndices: () => Promise<Index[]>;
+    fetchIlmPolicies: () => Promise<IlmPolicy[]>;
 }

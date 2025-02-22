@@ -1,6 +1,6 @@
 import { convertToGB } from '@/logic/converts';
 import axios, { AxiosInstance } from 'axios';
-import { ElasticsearchClusterApi, IndexTemplateData } from './elasticsearchClusterApi';
+import { ElasticsearchClusterApi, IlmPolicy, Index, IndexTemplate } from './elasticsearchClusterApi';
 
 type ClusterStats = {
     nodes: {
@@ -28,27 +28,6 @@ type IlmPolicyResponse = {
     }
 };
 
-type IndexStorageByTier = {
-    hotTierBytes: number;
-    warmTierBytes: number;
-    coldTierBytes: number;
-    frozenTierBytes: number;
-}
-
-type Tier = 'hot' | 'warm' | 'cold' | 'frozen';
-
-type NodeStats = {
-    name: string;
-    roles: string[];
-}
-
-type ShardAllocation = {
-    index: string;
-    shard: string;
-    node: string;
-    store: string;
-}
-
 export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
     private axiosInstance: AxiosInstance;
 
@@ -62,7 +41,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         });
     }
 
-    public async getClusterStorage(): Promise<{ totalStorage: number; usedStorage: number }> {
+    public async fetchClusterStorage(): Promise<{ totalStorage: number; usedStorage: number }> {
         try {
             const response = await this.axiosInstance.get<ClusterStats>('/_cluster/stats', {
                 params: {
@@ -88,183 +67,23 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
             }
         }
     }
-
-    public async getIndexTemplates(): Promise<IndexTemplateData[]> {
-        try {
-            const policies = await this.fetchIlmPolicies();
-            const allIndices = this.extractAllIndices(policies);
-            const indicesStorageByTier = await this.getIndicesStorageByTier(allIndices);
-
-            return this.constructTemplates(policies, indicesStorageByTier);
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to get index templates: ${error.message}`);
-            } else {
-                throw new Error('Failed to get index templates: Unknown error');
-            }
-        }
+    
+    fetchIndexTemplates(): Promise<IndexTemplate[]> {
+        throw new Error('Not implemented');
     }
 
-    private async fetchIlmPolicies(): Promise<IlmPolicyResponse> {
+    fetchIndices(): Promise<Index[]> {
+        throw new Error('Not implemented');
+    }
+
+    async fetchIlmPolicies(): Promise<IlmPolicy[]> {
         const response = await this.axiosInstance.get<IlmPolicyResponse>('/_ilm/policy', {
             params: {
                 filter_path: '**.in_use_by,**.policy.phases'
             }
         });
 
-        return response.data;
-    }
-
-    /** Extract all indices that are linked to an ilm policy */
-    private extractAllIndices(policies: IlmPolicyResponse): string[] {
-        return Object.values(policies).flatMap(policy => policy.in_use_by.indices);
-    }
-
-    async getIndicesStorageByTier(indexNames: string[]): Promise<Record<string, IndexStorageByTier>> {
-        try {
-            const nodeTiers = await this.getNodeTiers();
-            const shardsByIndex = await this.groupShardsByIndex();
-
-            return indexNames.reduce((acc: Record<string, IndexStorageByTier>, indexName) => {
-                const indexShards = shardsByIndex[indexName] || [];
-                const tiersStorage = this.calculateTiersStorage(indexShards, nodeTiers);
-
-                acc[indexName] = {
-                    hotTierBytes: tiersStorage.hot || 0,
-                    warmTierBytes: tiersStorage.warm || 0,
-                    coldTierBytes: tiersStorage.cold || 0,
-                    frozenTierBytes: tiersStorage.frozen || 0
-                };
-
-                return acc;
-            }, {});
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Elasticsearch request failed: ${error.message}`);
-            }
-            throw error;
-        }
-    }
-
-    private async getNodeTiers(): Promise<Record<string, Tier>> {
-        const nodesResponse = await this.axiosInstance.get<{ nodes: Record<string, NodeStats> }>('/_nodes/_all/stats');
-        const nodes = nodesResponse.data.nodes;
-        const tierPriority = ['data_hot', 'data_warm', 'data_cold', 'data_frozen'];
-
-        return Object.entries(nodes).reduce((acc: Record<string, Tier>, [nodeId, node]: [string, NodeStats]) => {
-            const nodeName = node.name;
-            const roles: string[] = node.roles;
-            const highestTierRole = tierPriority.find(tier => roles.includes(tier));
-            if (highestTierRole) {
-                acc[nodeName] = highestTierRole.replace('data_', '') as Tier;
-            }
-            return acc;
-        }, {});
-    }
-
-    private async groupShardsByIndex(): Promise<Record<string, ShardAllocation[]>> {
-        const response = await this.axiosInstance.get<ShardAllocation[]>('/_cat/shards', {
-            params: {
-                format: 'json',
-                bytes: 'b',
-                h: 'index,shard,node,store'
-            }
-        });
-        const shards = response.data;
-        
-        return shards.reduce((acc: Record<string, ShardAllocation[]>, shard: ShardAllocation) => {
-            if (!shard.node) {
-                return acc;
-            }
-            if (!acc[shard.index]) {
-                acc[shard.index] = [];
-            }
-            acc[shard.index].push(shard);
-            return acc;
-        }, {});
-    }
-
-    private calculateTiersStorage(shards: ShardAllocation[], nodeTiers: Record<string, string>): Record<string, number> {
-        return shards.reduce((acc: Record<string, number>, shard: ShardAllocation) => {
-            if (!shard.store || !shard.node || !nodeTiers[shard.node]) {
-                return acc;
-            }
-            const tier = nodeTiers[shard.node];
-            acc[tier] = (acc[tier] || 0) + parseInt(shard.store, 10);
-            return acc;
-        }, {});
-    }
-
-        private constructTemplates(policies: IlmPolicyResponse, indexStorageByTier: Record<string, IndexStorageByTier>): IndexTemplateData[] {
-        const templates: IndexTemplateData[] = [];
-
-        for (const policyName in policies) {
-            if (policies.hasOwnProperty(policyName)) {
-                const policy = policies[policyName];
-                const policyIndexTemplates = policy.in_use_by.composable_templates;
-                const policyIndices = policy.in_use_by.indices;
-                const phases = policy.policy.phases;
-
-                if (!phases.delete) continue;
-                
-                let hotRetentionDays = 0;
-                let coldRetentionDays = 0;
-
-                if (phases.cold && phases.cold.min_age) {
-                    hotRetentionDays = this.parseDurationToDays(phases.cold.min_age);
-                    coldRetentionDays = this.parseDurationToDays(phases.delete.min_age);
-                } else {
-                    hotRetentionDays = this.parseDurationToDays(phases.delete.min_age);
-                }
-
-                for (const indexTemplate of policyIndexTemplates) {
-                    let hotTierStorage = 0;
-                    let coldTierStorage = 0;
-
-                    for (const index of policyIndices) {
-                        const indexStorage = indexStorageByTier[index];
-                        if (!indexStorage) {
-                            throw new Error(`Index ${index} is missing storage information`);
-                        }
-                        hotTierStorage += indexStorage.hotTierBytes + indexStorage.warmTierBytes;
-                        coldTierStorage += indexStorage.coldTierBytes + indexStorage.frozenTierBytes;
-                    }
-
-                    templates.push({
-                        indexTemplate,
-                        hotRetentionDays,
-                        coldRetentionDays,
-                        hotTierStorage: convertToGB(hotTierStorage),
-                        coldTierStorage: convertToGB(coldTierStorage),
-                        indices: policyIndices
-                    });
-                }
-            }
-        }
-
-        return templates;
-    }
-
-    private parseDurationToDays(duration: string): number {
-        const durationRegex = /(\d+)([mhd])/;
-        const match = duration.match(durationRegex);
-
-        if (!match) {
-            throw new Error(`Invalid duration format: ${duration}`);
-        }
-
-        const value = parseInt(match[1], 10);
-        const unit = match[2];
-
-        switch (unit) {
-            case 'm':
-                return value / 1440;
-            case 'h':
-                return value / 24;
-            case 'd':
-                return value;
-            default:
-                throw new Error(`Unknown duration unit: ${unit}`);
-        }
+        throw new Error('Not implemented');
+        // return response.data;
     }
 }
