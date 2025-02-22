@@ -46,6 +46,12 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     handleResetChanges();
   }, [indices]);
 
+  useEffect(() => {
+    if (!isEditMode) {
+      handleResetChanges();
+    }
+  }, [isEditMode]);
+
   const usedElasticStorage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.elasticStorage, 0) : 0;
   const usedS3Storage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.S3Storage, 0) : 0;
   const elasticStoragePercentage = totalElasticStorage ? (usedElasticStorage / totalElasticStorage) * 100 : 0;
