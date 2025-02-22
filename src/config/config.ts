@@ -29,11 +29,6 @@ export const config = {
                     name: ".fleet-fileds-fromhost-data",
                     hebrewName: "אינדקס 3",
                     frequency: "daily"
-                },
-                {
-                    name: ".alerts-observability.metrics.alerts-default-index-template",
-                    hebrewName: "אינדקס 4",
-                    frequency: "daily"
                 }
             ]
         },

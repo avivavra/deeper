@@ -95,7 +95,7 @@ export class ClusterSummarizer {
             if (!template) throw new Error(`Index template ${indexTemplate.name} not found`);
 
             const matchingIlmPolicy = ilmPolicies.find(policy => policy.name === template.ilmPolicy);
-            if (!matchingIlmPolicy) throw new Error(`Ilm policy ${template.ilmPolicy} not found`);
+            if (!matchingIlmPolicy) throw new Error(`Ilm policy ${template.ilmPolicy} does not exist or does not a delete phase`);
 
             const matchingIndices = this.getMatchingIndices(indices, template.patterns);
             const normalIndices = this.getNormalIndices(matchingIndices);
@@ -134,11 +134,21 @@ export class ClusterSummarizer {
     }
 
     private getMatchingIndices(indices: Index[], patterns: string[]): Index[] {
-        throw new Error('Not Implemented');
+        return indices.filter(index => 
+            patterns.some(pattern => this.matchesPattern(index.name, pattern))
+        );
+    }
+
+    private matchesPattern(indexName: string, pattern: string): boolean {
+        const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+        return regex.test(indexName);
     }
 
     private getNormalIndices(indices: Index[]): Index[] {
-        throw new Error('Not Implemented');
+        const averageDocsCount = indices.reduce((acc, index) => acc + index.docsCount, 0) / indices.length;
+        const threshold = averageDocsCount / 2;
+
+        return indices.filter(index => index.docsCount >= threshold);
     }
 
     private calculateTier(index: Index, ilmPolicy: IlmPolicy, now: Date): Tier {

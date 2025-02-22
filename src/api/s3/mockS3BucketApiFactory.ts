@@ -20,11 +20,8 @@ export class MockS3BucketApiFactory implements S3BucketApiFactory {
                         name: ".monitoring-ent-search-mb",
                         storage: 15
                     }, {
-                        name: "synthetics-browser.screenshot",
+                        name: ".fleet-fileds-fromhost-data",
                         storage: 10
-                    }, {
-                        name: "metrics-apm.app@template",
-                        storage: 12
                     }])
             } as S3BucketApi;
         } else {
