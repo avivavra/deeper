@@ -134,7 +134,7 @@ export const IndexRetentionManagement = ({
                                                     resetKey={`hot-${index.name}-${index.hotRetentionDays}`}
                                                     value={[index.hotRetentionDays]}
                                                     min={1}
-                                                    max={90}
+                                                    max={index.initialHotRetentionDays >= 10 ? index.initialHotRetentionDays * 2 : 20}
                                                     onChange={(value) => handleRetentionChange(index.name, value[0], index.coldRetentionDays)}
                                                 />
                                             </div>
@@ -148,7 +148,7 @@ export const IndexRetentionManagement = ({
                                                     resetKey={`cold-${index.name}-${index.coldRetentionDays}`}
                                                     value={[index.coldRetentionDays]}
                                                     min={0}
-                                                    max={180}
+                                                    max={index.initialColdRetentionDays >= 20 ? index.initialColdRetentionDays * 2 : 40}
                                                     onChange={(value) => handleRetentionChange(index.name, index.hotRetentionDays, value[0])}
                                                 />
                                             </div>

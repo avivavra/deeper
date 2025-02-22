@@ -66,6 +66,8 @@ export class ClusterSummarizer {
                 hebrewName: indexTemplate.hebrewName,
                 hotRetentionDays: indexTemplate.hotRetentionDays,
                 coldRetentionDays: indexTemplate.coldRetentionDays,
+                initialHotRetentionDays: indexTemplate.hotRetentionDays,
+                initialColdRetentionDays: indexTemplate.coldRetentionDays,
                 totalRetentionDays: indexTemplate.hotRetentionDays + indexTemplate.coldRetentionDays,
                 elasticStorage: indexTemplate.hotTierStorage + indexTemplate.coldTierStorage,
                 elasticStoragePerHotTierDay: indexTemplate.hotTierStoragePerDay,

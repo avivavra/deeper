@@ -161,7 +161,8 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
             initialColdRetentionDays: newColdDays,
             elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
             S3StoragePerColdTierDay: S3StoragePerColdTierDay,
-            elasticStoragePerColdTierDay: 0
+            elasticStoragePerColdTierDay: 0,
+            indexNamesByTier: { hotTier: [], coldTier: [] }
           };
           setIndices(prevIndices => [newIndexData, ...prevIndices]);
           setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
