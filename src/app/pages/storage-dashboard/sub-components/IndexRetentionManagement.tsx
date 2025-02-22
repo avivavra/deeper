@@ -40,8 +40,8 @@ const IndexRetentionManagement = ({
         const hotDaysDiff = newHotDays - index.hotRetentionDays;
         const coldDaysDiff = newColdDays - index.coldRetentionDays;
 
-        const newElasticStorage = index.elasticStorageGB + (index.elasticStoragePerHotTierDay * hotDaysDiff) + (index.elasticStoragePerColdTierDay * coldDaysDiff);
-        const newS3Storage = index.S3StorageGB + (index.S3StoragePerColdTierDay * coldDaysDiff);
+        const newElasticStorage = index.elasticStorage + (index.elasticStoragePerHotTierDay * hotDaysDiff) + (index.elasticStoragePerColdTierDay * coldDaysDiff);
+        const newS3Storage = index.S3Storage + (index.S3StoragePerColdTierDay * coldDaysDiff);
 
         handleIndexRetentionChange(indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
     };
@@ -70,7 +70,34 @@ const IndexRetentionManagement = ({
                                         {direction === 'ltr' ? index.name : index.hebrewName}
                                         {displayRates && (
                                             <TooltipIcon
-                                                content={index.indices.length > 0 ? index.indices.join('\n') : "No Indices"}
+                                                content={
+                                                    <>
+                                                        <div>
+                                                            <strong>Hot Tier</strong>
+                                                            <div>
+                                                                {index.indexNamesByTier.hotTier.length === 0 && "No Indices"}
+                                                                {index.indexNamesByTier.hotTier.slice(0, 3).join('\n')}
+                                                                {index.indexNamesByTier.hotTier.length > 3 && (
+                                                                    <>
+                                                                        <br />...
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="mt-2">
+                                                            <strong>Cold Tier</strong>
+                                                            <div>
+                                                                {index.indexNamesByTier.coldTier.length === 0 && "No Indices"}
+                                                                {index.indexNamesByTier.coldTier.slice(0, 3).join('\n')}
+                                                                {index.indexNamesByTier.coldTier.length > 3 && (
+                                                                    <>
+                                                                        <br />...
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                }
                                                 alignment={direction === 'rtl' ? 'right' : 'left'}
                                             />
                                         )}
@@ -164,7 +191,7 @@ const IndexRetentionManagement = ({
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.elasticsearchStorage}</span>
                                                 <span className="text-right">
-                                                    <span dir='ltr'>{index.elasticStorageGB.toFixed(2)} GB</span>
+                                                    <span dir='ltr'>{index.elasticStorage.toFixed(2)} GB</span>
                                                     {displayRates && (
                                                         <TooltipIcon
                                                             content={`${t.hotTier}: ${index.elasticStoragePerHotTierDay.toFixed(2)}GB/${t.day}, ${t.coldTier}: ${index.elasticStoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
@@ -176,7 +203,7 @@ const IndexRetentionManagement = ({
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.s3Storage}</span>
                                                 <span className="text-right">
-                                                    <span dir='ltr'>{index.S3StorageGB.toFixed(2)} GB</span>
+                                                    <span dir='ltr'>{index.S3Storage.toFixed(2)} GB</span>
                                                     {displayRates && (
                                                         <TooltipIcon
                                                             content={`${t.coldTier}: ${index.S3StoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
@@ -197,7 +224,7 @@ const IndexRetentionManagement = ({
                                         </div>
                                         <div className="flex justify-between text-sm text-gray-800 mt-4">
                                             <span>{t.storage}</span>
-                                            <span dir={direction}>{(index.elasticStorageGB + index.S3StorageGB).toFixed(2)} GB</span>
+                                            <span dir={direction}>{(index.elasticStorage + index.S3Storage).toFixed(2)} GB</span>
                                         </div>
                                     </>
                                 )}

@@ -16,6 +16,11 @@ export const config = {
             password: 'y6WgXosR',
             indexTemplatesConfig: [
                 {
+                    name: "test-index-1",
+                    hebrewName: "אינדקס 1",
+                    frequency: "daily"
+                },
+                {
                     name: ".fleet-fileds-tohost-meta",
                     hebrewName: "אינדקס 1",
                     frequency: "daily"

@@ -3,6 +3,7 @@ export type IndexData = {
     hebrewName: string;
     hotRetentionDays: number;
     coldRetentionDays: number;
+    totalRetentionDays: number;
     elasticStorage: number;
     S3Storage: number;
     elasticStoragePerHotTierDay: number;

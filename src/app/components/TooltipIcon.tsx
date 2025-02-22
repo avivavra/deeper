@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 type TooltipIconProps = {
-    content: string;
+    content: string | React.ReactNode;
     alignment?: 'left' | 'right';
 };
 

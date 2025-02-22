@@ -54,8 +54,8 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
     handleResetChanges();
   }, [indices]);
 
-  const usedElasticStorage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.elasticStorageGB, 0) : 0;
-  const usedS3Storage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.S3StorageGB, 0) : 0;
+  const usedElasticStorage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.elasticStorage, 0) : 0;
+  const usedS3Storage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.S3Storage, 0) : 0;
   const elasticStoragePercentage = totalElasticStorage ? (usedElasticStorage / totalElasticStorage) * 100 : 0;
   const s3StoragePercentage = totalS3Storage ? (usedS3Storage / totalS3Storage) * 100 : 0;
   const usedCombinedStorage = usedElasticStorage + usedS3Storage;
@@ -78,8 +78,8 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
         current: {
           hotDays: newIndex.hotRetentionDays,
           coldDays: newIndex.coldRetentionDays,
-          elasticStorage: newIndex.elasticStorageGB,
-          s3Storage: newIndex.S3StorageGB,
+          elasticStorage: newIndex.elasticStorage,
+          s3Storage: newIndex.S3Storage,
         }
       }
     }));
@@ -118,14 +118,14 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
           original: {
             hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
             coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-            elasticStorage: originalIndex ? originalIndex.elasticStorageGB : 0,
-            s3Storage: originalIndex ? originalIndex.S3StorageGB : 0,
+            elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
+            s3Storage: originalIndex ? originalIndex.S3Storage : 0,
           },
           current: {
             hotDays: newHotDays,
             coldDays: newColdDays,
-            elasticStorage: updatedIndex.elasticStorageGB,
-            s3Storage: updatedIndex.S3StorageGB,
+            elasticStorage: updatedIndex.elasticStorage,
+            s3Storage: updatedIndex.S3Storage,
           }
         }
       }));
@@ -180,14 +180,14 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
           original: {
             hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
             coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-            elasticStorage: originalIndex ? originalIndex.elasticStorageGB : 0,
-            s3Storage: originalIndex ? originalIndex.S3StorageGB : 0,
+            elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
+            s3Storage: originalIndex ? originalIndex.S3Storage : 0,
           },
           current: {
             hotDays: newIndex?.hotRetentionDays || 0,
             coldDays: newIndex?.coldRetentionDays || 0,
-            elasticStorage: newIndex?.elasticStorageGB || 0,
-            s3Storage: newIndex?.S3StorageGB || 0,
+            elasticStorage: newIndex?.elasticStorage || 0,
+            s3Storage: newIndex?.S3Storage || 0,
           }
         }
       }));
@@ -239,8 +239,8 @@ const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, def
           original: {
             hotDays: indexToRemove.hotRetentionDays,
             coldDays: indexToRemove.coldRetentionDays,
-            elasticStorage: indexToRemove.elasticStorageGB,
-            s3Storage: indexToRemove.S3StorageGB,
+            elasticStorage: indexToRemove.elasticStorage,
+            s3Storage: indexToRemove.S3Storage,
           },
           current: {
             hotDays: 0,

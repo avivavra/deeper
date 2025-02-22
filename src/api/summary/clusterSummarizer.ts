@@ -1,6 +1,7 @@
 import { ClusterData, ClusterMetadata, IndexData } from "@/app/pages/storage-dashboard/models/cluster-models";
 import { ElasticsearchClusterApi, IlmPolicy, Index } from "../elasticsearch/elasticsearchClusterApi";
 import { S3BucketApi } from "../s3/s3BucketApi";
+import { convertToDays } from "@/logic/converts";
 
 type IndexFrequency = 'daily' | 'monthly' | 'yearly';
 
@@ -73,6 +74,7 @@ export class ClusterSummarizer {
                 hebrewName: indexTemplate.hebrewName,
                 hotRetentionDays: indexTemplate.hotRetentionDays,
                 coldRetentionDays: indexTemplate.coldRetentionDays,
+                totalRetentionDays: indexTemplate.hotRetentionDays + indexTemplate.coldRetentionDays,
                 elasticStorage: indexTemplate.hotTierStorage + indexTemplate.coldTierStorage,
                 elasticStoragePerHotTierDay,
                 elasticStoragePerColdTierDay,
@@ -105,8 +107,8 @@ export class ClusterSummarizer {
             const hotTierIndices = [...(indicesByTier.hot || []), ...(indicesByTier.warm || [])];
             const coldTierIndices = [...(indicesByTier.cold || []), ...(indicesByTier.frozen || [])];
 
-            const hotRetentionDays = matchingIlmPolicy.hotTierRetentionPeriod + matchingIlmPolicy.warmTierRetentionPeriod;
-            const coldRetentionDays = matchingIlmPolicy.coldTierRetentionPeriod + matchingIlmPolicy.frozenTierRetentionPeriod;
+            const hotRetentionDays = convertToDays(matchingIlmPolicy.hotTierRetentionPeriod + matchingIlmPolicy.warmTierRetentionPeriod);
+            const coldRetentionDays = convertToDays(matchingIlmPolicy.coldTierRetentionPeriod + matchingIlmPolicy.frozenTierRetentionPeriod);
 
             const hotTierStorage = hotTierIndices.reduce((acc, index) => acc + index.storage, 0);
             const coldTierStorage = coldTierIndices.reduce((acc, index) => acc + index.storage, 0);

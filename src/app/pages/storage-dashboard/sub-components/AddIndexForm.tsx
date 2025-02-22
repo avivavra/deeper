@@ -113,11 +113,12 @@ const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handleAddInd
                 elasticStoragePerColdTierDay: rates.elasticStoragePerColdTierDay,
                 hotRetentionDays,
                 coldRetentionDays,
-                elasticStorageGB: rates.elasticStoragePerHotTierDay * hotRetentionDays + rates.elasticStoragePerColdTierDay * coldRetentionDays,
-                S3StorageGB: rates.S3StoragePerColdTierDay * coldRetentionDays,
+                elasticStorage: rates.elasticStoragePerHotTierDay * hotRetentionDays + rates.elasticStoragePerColdTierDay * coldRetentionDays,
+                S3Storage: rates.S3StoragePerColdTierDay * coldRetentionDays,
                 totalRetentionDays: hotRetentionDays + coldRetentionDays,
                 initialHotRetentionDays: hotRetentionDays,
-                initialColdRetentionDays: coldRetentionDays
+                initialColdRetentionDays: coldRetentionDays,
+                indexNamesByTier: { hotTier: [], coldTier: [] }
             };
 
             handleAddIndex(newIndexData);
