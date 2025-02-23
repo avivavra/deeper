@@ -1,4 +1,4 @@
-import { convertToGB } from '@/app/utils';
+import { convertBytesToGB } from '@/app/utils';
 import axios, { AxiosInstance } from 'axios';
 import { ElasticsearchClusterApi, IlmPolicy, Index, IndexTemplate } from './elasticsearchClusterApi';
 
@@ -76,8 +76,8 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
             } = response.data.nodes.fs;
 
             return {
-                totalStorage: convertToGB(totalStorage),
-                usedStorage: convertToGB(totalStorage - freeStorage)
+                totalStorage: convertBytesToGB(totalStorage),
+                usedStorage: convertBytesToGB(totalStorage - freeStorage)
             };
         } catch (error) {
             if (error instanceof Error) {
@@ -126,7 +126,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                 name: index.index,
                 docsCount: Number(index['docs.count']),
                 creationTime: new Date(Number(index['creation.date'])),
-                storage: convertToGB(Number(index['store.size']))
+                storage: convertBytesToGB(Number(index['store.size']))
             }));
         } catch (error) {
             if (error instanceof Error) {
@@ -137,6 +137,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         }
     }
 
+    /** @returns In milli-seconds */
     async fetchIlmPoliciesWithDeletePhase(): Promise<IlmPolicy[]> {
         try {
             const response = await this.axiosInstance.get<IlmPolicyResponse>('/_ilm/policy', {
@@ -148,11 +149,8 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
             const policies: (IlmPolicy | null)[] = Object.entries(response.data).map(([name, policyData]) => {
                 const phases = policyData.policy.phases;
 
-                if (!phases.delete) {
-                    return null;
-                }
+                if (!phases.delete) return null;
 
-                // TODO: create an order between the measurement units
                 const warmMinAge = phases.warm ? this.parseDurationToEpochMillis(phases.warm.min_age) : null;
                 const coldMinAge = phases.cold ? this.parseDurationToEpochMillis(phases.cold.min_age) : null;
                 const frozenMinAge = phases.frozen ? this.parseDurationToEpochMillis(phases.frozen.min_age) : null;

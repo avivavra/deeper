@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { IndexData, Translation, NewIndexInputType } from '../models';
+import { convertKBToGB } from '@/app/utils';
 import { config } from '@/config';
 
 const DAILY_SECONDS = 86400;
@@ -16,16 +17,37 @@ const emptyNewIndex = (): NewIndex => ({
     importFromIndex: ''
 });
 
-const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: NewIndexInputType) => {
-    const dailyData = inputType === 'frequency'
-        ? (docSize * frequency * DAILY_SECONDS) / GB_TO_BYTES
-        : (docSize * avgDocs) / GB_TO_BYTES;
+/** @param docSize - KB */
+const calculateRatesByFreuqency = (docSize: number, frequency: number) => {
+    const GBPerSecond = convertKBToGB(docSize) * frequency;
+
     return {
-        elasticStoragePerHotTierDay: dailyData,
-        S3StoragePerColdTierDay: dailyData * config.hotTierMultiplier,
-        elasticStoragePerColdTierDay: dailyData * config.coldTierMultiplier
-    };
+        elasticStoragePerHotTierDay: GBPerSecond * DAILY_SECONDS,
+        elasticStoragePerColdTierDay: GBPerSecond * DAILY_SECONDS * config.s3ColdTierMultiplier,
+        S3StoragePerColdTierDay: GBPerSecond * DAILY_SECONDS * config.elasticColdTierMultiplier
+    }
 };
+
+const calculateRatesByAvgDocs = (docSize: number, avgDocs: number) => {
+    const GBPerDay = convertKBToGB(docSize) * avgDocs;
+
+    return {
+        elasticStoragePerHotTierDay: GBPerDay,
+        elasticStoragePerColdTierDay: GBPerDay * config.s3ColdTierMultiplier,
+        S3StoragePerColdTierDay: GBPerDay * config.elasticColdTierMultiplier
+    }
+}
+
+// const calculateRates = (docSize: number, frequency: number, avgDocs: number, inputType: NewIndexInputType) => {
+//     const dailyData = inputType === 'frequency'
+//         ? (docSize * frequency * DAILY_SECONDS) / GB_TO_BYTES
+//         : (docSize * avgDocs) / GB_TO_BYTES;
+//     return {
+//         elasticStoragePerHotTierDay: dailyData,
+//         S3StoragePerColdTierDay: dailyData * config.elasticColdTierMultiplier,
+//         elasticStoragePerColdTierDay: dailyData * config.s3ColdTierMultiplier
+//     };
+// };
 
 type NewIndex = {
     name: string;
@@ -97,8 +119,10 @@ export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handl
                 }
                 const { elasticStoragePerHotTierDay, elasticStoragePerColdTierDay, S3StoragePerColdTierDay } = importedIndex;
                 rates = { elasticStoragePerHotTierDay, elasticStoragePerColdTierDay, S3StoragePerColdTierDay };
+            } else if (newIndex.inputType === 'frequency') {
+                rates = calculateRatesByFreuqency(Number(newIndex.docSize), Number(newIndex.frequency));
             } else {
-                rates = calculateRates(Number(newIndex.docSize), Number(newIndex.frequency), Number(newIndex.avgDocs), newIndex.inputType);
+                rates = calculateRatesByAvgDocs(Number(newIndex.docSize), Number(newIndex.avgDocs));
             }
 
             const hotRetentionDays = Number(newIndex.totalRetention) - Number(newIndex.coldRetention);
@@ -188,7 +212,7 @@ export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handl
                                     value={newIndex.docSize || ''}
                                     onChange={(e) => setNewIndex(prev => ({ ...prev, docSize: e.target.value }))}
                                     className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${errors.docSize ? 'border-red-500' : ''}`}
-                                    placeholder="100"
+                                    placeholder="0.1"
                                 />
                             </div>
                             {newIndex.inputType === 'frequency' ? (

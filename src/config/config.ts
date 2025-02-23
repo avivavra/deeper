@@ -1,6 +1,6 @@
 export const config = {
-    hotTierMultiplier: 0.75,
-    coldTierMultiplier: 0.05,
+    elasticColdTierMultiplier: 0.5,
+    s3ColdTierMultiplier: 0.5 * 0.6,
     storageThresholds: {
         high: 80,
         medium: 70
