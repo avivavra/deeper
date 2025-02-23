@@ -94,12 +94,15 @@ export class ClusterSummarizer {
             if (!matchingIlmPolicy) throw new Error(`Ilm policy ${template.ilmPolicy} does not exist or does not a delete phase`);
 
             const matchingIndices = this.getMatchingIndices(indices, template.patterns); // TODO: add warning for strange index template (no indices, ...)
-            const normalIndices = this.getNormalIndices(matchingIndices);
+            if (matchingIndices.length === 0) console.warn(`No indices found for index template ${template.name}`);
 
-            const normalIndicesByTier = this.mapByTier(normalIndices, matchingIlmPolicy, now);
+            const matchingIndicesByTier = this.mapByTier(matchingIndices, matchingIlmPolicy, now);
 
-            const normalHotTierIndices = [...(normalIndicesByTier.hot || []), ...(normalIndicesByTier.warm || [])];
-            const normalColdTierIndices = [...(normalIndicesByTier.cold || []), ...(normalIndicesByTier.frozen || [])];
+            const matchingHotTierIndices = [...(matchingIndicesByTier.hot || []), ...(matchingIndicesByTier.warm || [])];
+            const matchingColdTierIndices = [...(matchingIndicesByTier.cold || []), ...(matchingIndicesByTier.frozen || [])];
+
+            const normalHotTierIndices = this.getNormalIndices(matchingHotTierIndices);
+            const normalColdTierIndices = this.getNormalIndices(matchingColdTierIndices);
 
             const hotRetentionDays = convertToDays(matchingIlmPolicy.hotTierRetentionPeriod + matchingIlmPolicy.warmTierRetentionPeriod);
             const coldRetentionDays = convertToDays(matchingIlmPolicy.coldTierRetentionPeriod + matchingIlmPolicy.frozenTierRetentionPeriod);
@@ -109,11 +112,6 @@ export class ClusterSummarizer {
 
             const hotTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalHotTierIndices, indexTemplate.frequency, now);
             const coldTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalColdTierIndices, indexTemplate.frequency, now);
-
-            const indicesByTier = this.mapByTier(matchingIndices, matchingIlmPolicy, now);
-
-            const hotTierIndices = [...(indicesByTier.hot || []), ...(indicesByTier.warm || [])];
-            const coldTierIndices = [...(indicesByTier.cold || []), ...(indicesByTier.frozen || [])];
 
             return {
                 name: template.name,
@@ -125,8 +123,8 @@ export class ClusterSummarizer {
                 hotTierStoragePerDay,
                 coldTierStoragePerDay,
                 indexNamesByTier: {
-                    hotTier: hotTierIndices.map(index => index.name),
-                    coldTier: coldTierIndices.map(index => index.name)
+                    hotTier: matchingHotTierIndices.map(index => index.name),
+                    coldTier: matchingColdTierIndices.map(index => index.name)
                 }
             }
         });
