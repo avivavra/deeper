@@ -8,11 +8,10 @@ interface ChangeLogProps {
   direction: Direction;
   displayMethod: DisplayMethod;
   indices: IndexData[];
-  selectedCluster: { indices: IndexData[] };
   handleRevertChange: (indexName: string) => void;
   handleResetChanges: () => void;
   setIndices: React.Dispatch<React.SetStateAction<IndexData[]>>;
-  handleIndexRetentionChange: (indexName: string, newHotDays: number, newColdDays: number) => void;
+  handleIndexRetentionChange: (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
   setSelectedIndices: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   setChangeLog: React.Dispatch<React.SetStateAction<{ [key: string]: ChangeLogEntry }>>;
   t: Translation;
@@ -29,8 +28,8 @@ const formatChangeLog = (changeLog: { [key: string]: ChangeLogEntry }) => {
     return `Index: ${indexName}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
-Elasticsearch Storage: ${change.original.elasticStorage.toFixed(2)} GB → ${change.current.elasticStorage.toFixed(2)} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange.toFixed(2)} GB)
-S3 Storage: ${change.original.s3Storage.toFixed(2)} GB → ${change.current.s3Storage.toFixed(2)} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange.toFixed(2)} GB)
+Elasticsearch Storage: ${change.original.elasticStorage?.toFixed(2) || 0} GB → ${change.current.elasticStorage?.toFixed(2) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange?.toFixed(2) || 0} GB)
+S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.current.s3Storage?.toFixed(2) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange?.toFixed(2) || 0} GB)
 `;
   }).join('\n');
 };
@@ -44,16 +43,17 @@ const parseChangeLog = (text: string) => {
       const indexName = lines[0].replace('Index: ', '');
       const hotDaysMatch = lines[1].match(/Hot Retention Days: \d+ → (\d+) days/);
       const coldDaysMatch = lines[2].match(/Cold Retention Days: \d+ → (\d+) days/);
-      const elasticStorageMatch = lines[3].match(/Elasticsearch Storage: \d+ GB → (\d+(\.\d+)?) GB/);
-      const s3StorageMatch = lines[4].match(/S3 Storage: \d+ GB → (\d+(\.\d+)?) GB/);
+      const elasticStorageMatch = lines[3].match(/Elasticsearch Storage: \d+(\.\d+)? GB → (\d+(\.\d+)?) GB/);
+      const s3StorageMatch = lines[4].match(/S3 Storage: \d+(\.\d+)? GB → (\d+(\.\d+)?) GB/);
+
 
       if (hotDaysMatch && coldDaysMatch && elasticStorageMatch && s3StorageMatch) {
         parsedEntries.push({
           indexName,
           newHotDays: parseInt(hotDaysMatch[1]),
           newColdDays: parseInt(coldDaysMatch[1]),
-          newElasticStorage: parseFloat(elasticStorageMatch[1]),
-          newS3Storage: parseFloat(s3StorageMatch[1]),
+          newElasticStorage: parseFloat(elasticStorageMatch[2]),
+          newS3Storage: parseFloat(s3StorageMatch[2]),
         });
       }
     }
@@ -66,7 +66,6 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
   direction,
   displayMethod,
   indices,
-  selectedCluster,
   handleRevertChange,
   handleResetChanges,
   setIndices,
@@ -113,81 +112,85 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
   };
 
   const processImportedEntries = (parsedEntries: { indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number }[]) => {
-    parsedEntries.forEach(({ indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage }) => {
-      const isRemovedIndex = newHotDays === 0 && newColdDays === 0;
-      if (isRemovedIndex) {
-        setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
-        setSelectedIndices(prev => {
-          const { [indexName]: _, ...rest } = prev;
-          return rest;
-        });
-        setChangeLog(prev => {
-          const originalIndex = selectedCluster.indices.find(i => i.name === indexName);
-          return {
-            ...prev,
-            [indexName]: {
-              original: {
-                hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
-                coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-                elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
-                s3Storage: originalIndex ? originalIndex.S3Storage : 0,
-              },
-              current: {
-                hotDays: 0,
-                coldDays: 0,
-                elasticStorage: 0,
-                s3Storage: 0,
-              }
-            }
-          };
-        });
-      } else {
-        const isExistingIndex = indices.find(index => index.name === indexName);
-        if (isExistingIndex) {
-          handleIndexRetentionChange(indexName, newHotDays, newColdDays);
-        } else {
-          const elasticStoragePerHotTierDay = newHotDays > 0 ? newElasticStorage / newHotDays : 0;
-          const S3StoragePerColdTierDay = newColdDays > 0 ? newS3Storage / newColdDays : 0;
-
-          const newIndexData = {
-            name: indexName,
-            hebrewName: indexName,
-            hotRetentionDays: newHotDays,
-            coldRetentionDays: newColdDays,
-            elasticStorage: newElasticStorage,
-            S3Storage: newS3Storage,
-            totalRetentionDays: newHotDays + newColdDays,
-            initialHotRetentionDays: newHotDays,
-            initialColdRetentionDays: newColdDays,
-            elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
-            S3StoragePerColdTierDay: S3StoragePerColdTierDay,
-            elasticStoragePerColdTierDay: 0,
-            indexNamesByTier: { hotTier: [], coldTier: [] }
-          };
-          setIndices(prevIndices => [newIndexData, ...prevIndices]);
-          setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
+    try {
+      parsedEntries.forEach(({ indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage }) => {
+        const isRemovedIndex = newHotDays === 0 && newColdDays === 0;
+        if (isRemovedIndex) {
+          setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
+          setSelectedIndices(prev => {
+            const { [indexName]: _, ...rest } = prev;
+            return rest;
+          });
           setChangeLog(prev => {
+            const originalIndex = indices.find(i => i.name === indexName);
             return {
               ...prev,
               [indexName]: {
                 original: {
+                  hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
+                  coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
+                  elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
+                  s3Storage: originalIndex ? originalIndex.S3Storage : 0,
+                },
+                current: {
                   hotDays: 0,
                   coldDays: 0,
                   elasticStorage: 0,
                   s3Storage: 0,
-                },
-                current: {
-                  hotDays: newHotDays,
-                  coldDays: newColdDays,
-                  elasticStorage: newElasticStorage,
-                  s3Storage: newS3Storage,
                 }
               }
             };
           });
+        } else {
+          const isExistingIndex = indices.find(index => index.name === indexName);
+          if (isExistingIndex) {
+            handleIndexRetentionChange(indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+          } else {
+            const elasticStoragePerHotTierDay = newHotDays > 0 ? newElasticStorage / newHotDays : 0;
+            const S3StoragePerColdTierDay = newColdDays > 0 ? newS3Storage / newColdDays : 0;
+
+            const newIndexData = {
+              name: indexName,
+              hebrewName: indexName,
+              hotRetentionDays: newHotDays,
+              coldRetentionDays: newColdDays,
+              elasticStorage: newElasticStorage || 0,
+              S3Storage: newS3Storage || 0,
+              totalRetentionDays: newHotDays + newColdDays,
+              initialHotRetentionDays: newHotDays,
+              initialColdRetentionDays: newColdDays,
+              elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
+              S3StoragePerColdTierDay: S3StoragePerColdTierDay,
+              elasticStoragePerColdTierDay: 0,
+              indexNamesByTier: { hotTier: [], coldTier: [] }
+            };
+            setIndices(prevIndices => [newIndexData, ...prevIndices]);
+            setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
+            setChangeLog(prev => {
+              return {
+                ...prev,
+                [indexName]: {
+                  original: {
+                    hotDays: 0,
+                    coldDays: 0,
+                    elasticStorage: 0,
+                    s3Storage: 0,
+                  },
+                  current: {
+                    hotDays: newHotDays,
+                    coldDays: newColdDays,
+                    elasticStorage: newElasticStorage || 0,
+                    s3Storage: newS3Storage || 0,
+                  }
+                }
+              };
+            });
+          }
         }
-      }
-    });
+      });
+    } catch (error) {
+      console.error('Error processing imported entries:', error);
+    }
   };
 
   const handleImportFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {

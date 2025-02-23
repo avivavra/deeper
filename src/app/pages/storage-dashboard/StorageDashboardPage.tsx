@@ -339,7 +339,6 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
               {...displayProps}
               changeLog={changeLog}
               indices={displayIndices}
-              selectedCluster={selectedCluster.data}
               handleRevertChange={handleRevertChange}
               handleResetChanges={handleResetChanges}
               setIndices={setDisplayIndices}
