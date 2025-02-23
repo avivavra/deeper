@@ -1,7 +1,7 @@
-import { ClusterData, ClusterMetadata, IndexData } from "@/app/pages/storage-dashboard/models";
+import { ClusterData, ClusterMetadata, IndexData } from "../../app/pages/storage-dashboard/models";
 import { ElasticsearchClusterApi, IlmPolicy, Index } from "../elasticsearch";
 import { S3BucketApi } from "../s3";
-import { convertToDays } from "@/app/utils";
+import { convertToDays } from "../../app/utils";
 
 type IndexFrequency = 'daily' | 'monthly' | 'yearly';
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IndexData, Translation, NewIndexInputType } from '../models';
-import { convertKBToGB } from '@/app/utils';
-import { config } from '@/config';
+import { convertKBToGB } from '../../../../app/utils';
+import { config } from '../../../../config';
 
 const DAILY_SECONDS = 86400;
 const GB_TO_BYTES = 1024 * 1024 * 1024;

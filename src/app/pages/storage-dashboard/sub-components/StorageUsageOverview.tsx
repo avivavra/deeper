@@ -1,6 +1,6 @@
 import React from 'react';
 import { DisplayMethod, Translation } from '../models';
-import { config } from '@/config';
+import { config } from '../../../../config';
 import { FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
 
 type StorageUsageOverviewProps = {

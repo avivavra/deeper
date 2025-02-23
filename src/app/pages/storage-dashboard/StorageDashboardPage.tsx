@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ClusterMetadata, IndexData, Audience, ChangeLogEntry, Direction, DisplayMethod, Translation } from './models';
 import { ChangeLog, StorageHeader, StorageUsageOverview, IndexRetentionPeriodsChart, IndexRetentionManagement, AddIndexForm } from './sub-components';
 import { GenericModal } from '../../components';
-import { ClusterSummarizerFactory } from '@/api';
+import { ClusterSummarizerFactory } from '../../../api';
 import { StorageDashboardLayout } from './StorageDashboardLayout';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
 import { useAudience, useEditMode, useCluster } from './hooks';

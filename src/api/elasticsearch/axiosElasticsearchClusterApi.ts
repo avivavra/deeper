@@ -1,4 +1,4 @@
-import { convertBytesToGB } from '@/app/utils';
+import { convertBytesToGB } from '../../app/utils';
 import axios, { AxiosInstance } from 'axios';
 import { ElasticsearchClusterApi, IlmPolicy, Index, IndexTemplate } from './elasticsearchClusterApi';
 

@@ -1,9 +1,9 @@
 "use client";
 
 import { StorageDashboardPage as StorageDashboardPageComponent } from '../pages/storage-dashboard';
-import { config, clustersMetadata } from '@/config';
+import { config, clustersMetadata } from '../../config';
 import { Audience } from '../pages/storage-dashboard/models';
-import { MockS3BucketApiFactory, ConfigElasticsearchClusterApiFactory, ConfigClusterSummarizerFactory, ExampleDataClusterSummarizerFactory } from '@/api';
+import { MockS3BucketApiFactory, ConfigElasticsearchClusterApiFactory, ConfigClusterSummarizerFactory, ExampleDataClusterSummarizerFactory } from '../../api';
 
 const elasticsearchClusterApiFactory = new ConfigElasticsearchClusterApiFactory();
 const s3BucketApiFactory = new MockS3BucketApiFactory(); // TODO: implement
