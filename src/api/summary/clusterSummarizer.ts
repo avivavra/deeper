@@ -191,17 +191,23 @@ export class ClusterSummarizer {
                 if (daysSinceCreation > 1) return index.storage;
                 return index.storage / daysSinceCreation;
             case 'monthly':
-                const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                const daysInLastMonth = convertToDays(now.getTime() - lastMonth.getTime());
+                const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                const daysInLastMonth = convertToDays(thisMonthStart.getTime() - lastMonthStart.getTime());
 
-                if (daysSinceCreation > daysInLastMonth) return index.storage;
-                return index.storage / (daysSinceCreation / daysInLastMonth);
+                const aMonthHasPassed = daysSinceCreation > daysInLastMonth;
+                if (aMonthHasPassed) return index.storage / daysInLastMonth;
+                
+                return index.storage / daysSinceCreation;
             case 'yearly':
-                const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-                const daysInLastYear = convertToDays(now.getTime() - lastYear.getTime());
+                const lastYearStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                const thisYearStart = new  Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const daysInLastYear = convertToDays(thisYearStart.getTime() - lastYearStart.getTime());
 
-                if (daysSinceCreation > daysInLastYear) return index.storage;
-                return index.storage / (daysSinceCreation / daysInLastYear);
+                const aYearHasPassed = daysSinceCreation > daysInLastYear;
+                if (aYearHasPassed) return index.storage / daysInLastYear;
+                
+                return index.storage / daysSinceCreation;
             default:
                 throw new Error(`Unknown index frequency: ${indexFrequency}`);
         }
