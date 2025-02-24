@@ -1,4 +1,4 @@
-export * from './AddIndexForm';
+export * from './forms';
 export * from './ChangeLog';
 export * from './IndexRetentionManagement';
 export * from './IndexRetentionPeriodsChart';

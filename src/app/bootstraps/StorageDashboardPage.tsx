@@ -4,6 +4,7 @@ import { StorageDashboardPage as StorageDashboardPageComponent } from '../pages/
 import { config, clustersMetadata } from '../../config';
 import { Audience } from '../pages/storage-dashboard/models';
 import { MockS3BucketApiFactory, ConfigElasticsearchClusterApiFactory, ConfigClusterSummarizerFactory, ExampleDataClusterSummarizerFactory } from '../../api';
+import React from 'react';
 
 const elasticsearchClusterApiFactory = new ConfigElasticsearchClusterApiFactory();
 const s3BucketApiFactory = new MockS3BucketApiFactory(); // TODO: implement

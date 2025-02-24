@@ -65,4 +65,9 @@ export type Translation = {
     importFromFile: string;
     importFromText: string;
     import: string;
+    addSource: string;
+    sourceName: string;
+    sourceNamePlaceholder: string;
+    sourceNameError: string;
+    addSourceButton: string;
 };

@@ -1,7 +1,8 @@
-import React from 'react';
-import { Plus, MoreVertical, Trash2 } from 'lucide-react';
-import { TooltipIcon, CustomSlider, GenericDropdown } from '../../../components';
-import { IndexData, Direction, DisplayMethod, Translation } from '../models';
+import React, { useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+import { TooltipIcon, CustomSlider, GenericModal } from '../../../components';
+import { IndexData, Direction, DisplayMethod, Translation, SourceData } from '../models';
+import { AddSourceForm } from './forms/AddSourceForm';
 
 type IndexRetentionManagementProps = {
     isEditMode: boolean;
@@ -10,11 +11,14 @@ type IndexRetentionManagementProps = {
     displayMethod: DisplayMethod;
     t: Translation;
     displayRates: boolean;
+    translateIndexNames: boolean;
     handleTotalRetentionChange: (indexName: string, newTotalDays: number) => void;
     handleIndexRetentionChange: (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
     handleRemoveIndex: (indexName: string) => void;
     setShowAddIndex: (show: boolean) => void;
     showAddIndex: boolean;
+    sources: SourceData[];
+    setSources: React.Dispatch<React.SetStateAction<SourceData[]>>;
 };
 
 export const IndexRetentionManagement = ({
@@ -22,13 +26,19 @@ export const IndexRetentionManagement = ({
     filteredIndices,
     direction,
     displayMethod,
+    translateIndexNames,
     t,
     displayRates,
     handleTotalRetentionChange,
     handleIndexRetentionChange,
     handleRemoveIndex,
     setShowAddIndex,
+    sources,
+    setSources
 }: IndexRetentionManagementProps) => {
+    const [showAddSource, setShowAddSource] = useState(false);
+    const [relatedIndex, setRelatedIndex] = useState<IndexData | null>(null);
+
     const handleRetentionChange = (indexName: string, newHotDays: number, newColdDays: number) => {
         const index = filteredIndices.find(i => i.name === indexName);
         if (!index) return;
@@ -42,8 +52,30 @@ export const IndexRetentionManagement = ({
         handleIndexRetentionChange(indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
     };
 
+    const handleAddSource = (index: IndexData) => {
+        setRelatedIndex(index);
+        setShowAddSource(true);
+    };
+
+    const handleAddSourceSubmit = (newSourceData: SourceData) => {
+        setSources(prevSources => [...prevSources, newSourceData]);
+        setShowAddSource(false);
+    };
+
     return (
         <div>
+            <GenericModal showModal={showAddSource} setShowModal={setShowAddSource}>
+                {relatedIndex && (
+                    <AddSourceForm
+                        t={t}
+                        setShowAddSource={setShowAddSource}
+                        handleAddSource={handleAddSourceSubmit}
+                        indices={filteredIndices}
+                        relatedIndex={relatedIndex}
+                        translateIndexNames={translateIndexNames}
+                    />
+                )}
+            </GenericModal>
             <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-semibold text-gray-800">{t.indexRetentionManagement}</h2>
@@ -62,7 +94,7 @@ export const IndexRetentionManagement = ({
                         {filteredIndices.map(index => (
                             <div key={index.name} className="bg-gray-50 p-4 rounded-lg border relative">
                                 <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-bold text-gray-800">
+                                    <h3 className="text-lg font-bold text-gray-800 flex items-center">
                                         {direction === 'ltr' ? index.name : index.hebrewName}
                                         {displayRates && (
                                             <TooltipIcon
@@ -97,14 +129,41 @@ export const IndexRetentionManagement = ({
                                                 alignment={direction === 'rtl' ? 'right' : 'left'}
                                             />
                                         )}
+                                        {sources.filter(source => source.relatedIndex === index.name).map(source => (
+                                            <TooltipIcon
+                                                key={source.name}
+                                                alignment={direction === 'rtl' ? 'right' : 'left'}
+                                                content={
+                                                    <>
+                                                        <div>{t.elasticsearchStorage}: {source.elasticStorage.toFixed(2)} GB</div>
+                                                        <div>{t.s3Storage}: {source.S3Storage.toFixed(2)} GB</div>
+                                                    </>
+                                                }
+                                            >
+                                                <span className="ml-2 bg-gray-200 text-gray-800 text-sm font-semibold mr-2 px-3 py-2 rounded-md border border-gray-300 cursor-pointer">
+                                                    {source.name}
+                                                </span>
+                                            </TooltipIcon>
+                                        ))}
+                                        {isEditMode && (
+                                            <button
+                                                onClick={() => handleAddSource(index)}
+                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ml-2 mr-2"
+                                            >
+                                                <Plus className="h-4 w-4 mx-1 text-white" />
+                                                {t.addSource}
+                                            </button>
+                                        )}
                                     </h3>
                                     {isEditMode && (
-                                        <button
-                                            onClick={() => handleRemoveIndex(index.name)}
-                                            className="inline-flex items-center p-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
+                                        <div className={`flex ${direction === 'ltr' ? 'space-x-2' : 'space-x-reverse'} items-center`}>
+                                            <button
+                                                onClick={() => handleRemoveIndex(index.name)}
+                                                className="inline-flex items-center p-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
 

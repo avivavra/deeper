@@ -74,7 +74,7 @@ export class ClusterSummarizer {
                 elasticStoragePerColdTierDay: indexTemplate.coldTierStoragePerDay,
                 S3StoragePerColdTierDay: indexTemplate.coldTierStoragePerDay * 0.6, // TODO: implement
                 S3Storage: matchingFolder.storage,
-                indexNamesByTier: indexTemplate.indexNamesByTier
+                indexNamesByTier: indexTemplate.indexNamesByTier,
             };
         });
     }

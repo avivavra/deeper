@@ -48,6 +48,11 @@ export const translations: {
     importFromText: 'Import from Text',
     importFromFile: 'Import from File',
     import: 'Import',
+    addSource: 'Add Source',
+    sourceName: 'Source Name',
+    sourceNamePlaceholder: 'e.g., source-production',
+    sourceNameError: 'Source name is required',
+    addSourceButton: 'Add Source',
   },
   hebrew: {
     title: 'דאשבורד אחסון',
@@ -93,5 +98,10 @@ export const translations: {
     importFromText: 'ייבא מטקסט',
     importFromFile: 'ייבא מקובץ',
     import: 'ייבא',
+    addSource: 'הוסף מקור',
+    sourceName: 'שם מקור',
+    sourceNamePlaceholder: 'לדוגמה, source-production',
+    sourceNameError: 'שם המקור נדרש',
+    addSourceButton: 'הוסף מקור',
   }
 };

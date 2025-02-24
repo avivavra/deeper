@@ -1,3 +1,13 @@
+export type SourceData = {
+    name: string;
+    relatedIndex: string;
+    elasticStorage: number;
+    S3Storage: number;
+    elasticStoragePerHotTierDay: number;
+    elasticStoragePerColdTierDay: number;
+    S3StoragePerColdTierDay: number;
+};
+
 export type IndexData = {
     name: string;
     hebrewName: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ClusterMetadata, IndexData, Audience, ChangeLogEntry, Direction, DisplayMethod, Translation } from './models';
+import { ClusterMetadata, IndexData, Audience, ChangeLogEntry, Direction, DisplayMethod, Translation, SourceData } from './models';
 import { ChangeLog, StorageHeader, StorageUsageOverview, IndexRetentionPeriodsChart, IndexRetentionManagement, AddIndexForm } from './sub-components';
 import { GenericModal } from '../../components';
 import { ClusterSummarizerFactory } from '../../../api';
@@ -39,6 +39,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
   const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
   const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
   const [showAddIndex, setShowAddIndex] = useState(false);
+  const [sources, setSources] = useState<SourceData[]>([]);
 
   const handleResetChanges = () => {
     if (indices.status === 'succeeded' && indices.data) {
@@ -345,6 +346,8 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
               handleRemoveIndex={handleRemoveIndex}
               setShowAddIndex={setShowAddIndex}
               showAddIndex={showAddIndex}
+              sources={sources}
+              setSources={setSources}
             />
           )
         }
