@@ -11,6 +11,18 @@ import { useAudience, useEditMode, useCluster } from './hooks';
 
 import './StorageDashboardPage.css';
 
+const calculateStorageDiffs = (changeLog: { [key: string]: ChangeLogEntry }) => {
+  let elasticStorageDiff = 0;
+  let s3StorageDiff = 0;
+
+  Object.values(changeLog).forEach(entry => {
+    elasticStorageDiff += (entry.current.elasticStorage - entry.original.elasticStorage);
+    s3StorageDiff += (entry.current.s3Storage - entry.original.s3Storage);
+  });
+
+  return { elasticStorageDiff, s3StorageDiff };
+};
+
 type StorageDashboardPageProps = {
   clustersSummarizerFactory: ClusterSummarizerFactory;
   clustersMetadata: ClusterMetadata[];
@@ -52,8 +64,11 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     }
   }, [isEditMode]);
 
-  const usedElasticStorage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.elasticStorage, 0) : 0;
-  const usedS3Storage = displayIndices ? displayIndices.reduce((acc, curr) => acc + curr.S3Storage, 0) : 0;
+  const { elasticStorageDiff, s3StorageDiff } = calculateStorageDiffs(changeLog);
+
+  const usedElasticStorage = (selectedCluster?.data?.usedElasticStorage || 0) + elasticStorageDiff;
+  const usedS3Storage = (selectedCluster?.data?.usedS3Storage || 0) + s3StorageDiff;
+
   const elasticStoragePercentage = totalElasticStorage ? (usedElasticStorage / totalElasticStorage) * 100 : 0;
   const s3StoragePercentage = totalS3Storage ? (usedS3Storage / totalS3Storage) * 100 : 0;
   const usedCombinedStorage = usedElasticStorage + usedS3Storage;

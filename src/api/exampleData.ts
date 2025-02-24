@@ -15,9 +15,9 @@ export const clusterA: ClusterData = {
   name: 'Cluster A',
   hebrewName: 'אשכול א',
   totalElasticStorage: 500, // GB
-  usedElasticStorage: 342.2, // GB
+  usedElasticStorage: 300, // GB
   totalS3Storage: 1000, // GB
-  usedS3Storage: 757.5 // GB
+  usedS3Storage: 700 // GB
 };
 
 export const clusterB: ClusterData = {
