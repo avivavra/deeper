@@ -36,15 +36,16 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
 
   const [displayIndices, setDisplayIndices] = useState<IndexData[]>([]);
   const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
-  const { changeLog, emptyChangeLog, addChangeLogEntry, updateChangeLogEntry, removeChangeLogEntry } = useChangeLog();
+  const { changeLog, getChangeLogEntry, emptyChangeLog, addChangeLogEntry, updateChangeLogEntry, removeChangeLogEntry } = useChangeLog();
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [sources, setSources] = useState<SourceData[]>([]);
 
   const handleResetChanges = () => {
     if (indices.status === 'succeeded' && indices.data) {
       setDisplayIndices(indices.data);
-      emptyChangeLog();
       setIndicesSelection(indices.data.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+      setSources([]);
+      emptyChangeLog();
     }
   };
 
@@ -165,10 +166,10 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
 
     // Update related sources
     setSources(prevSources => prevSources.map(source => {
-      const newElasticStorage = newHotDays * source.elasticStoragePerHotTierDay + newColdDays * source.elasticStoragePerColdTierDay;
-      const newS3Storage = newColdDays * source.S3StoragePerColdTierDay;
-
       if (source.relatedIndex === indexName) {
+        const newElasticStorage = newHotDays * source.elasticStoragePerHotTierDay + newColdDays * source.elasticStoragePerColdTierDay;
+        const newS3Storage = newColdDays * source.S3StoragePerColdTierDay;
+
         return {
           ...source,
           elasticStorage: newElasticStorage,
@@ -177,6 +178,29 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       }
       return source;
     }));
+
+    sources.forEach(source => {
+      if (source.relatedIndex === indexName) {
+        const newElasticStorage = newHotDays * source.elasticStoragePerHotTierDay + newColdDays * source.elasticStoragePerColdTierDay;
+        const newS3Storage = newColdDays * source.S3StoragePerColdTierDay;
+
+        const change = getChangeLogEntry(source.name);
+
+        updateChangeLogEntry(source.name, {
+          type: 'source',
+          name: source.name,
+          relatedIndex: source.relatedIndex,
+          original: {
+            elasticStorage: change?.original.elasticStorage || 0,
+            s3Storage: change?.original.s3Storage || 0,
+          },
+          current: {
+            elasticStorage: newElasticStorage,
+            s3Storage: newS3Storage,
+          }
+        });
+      }
+    });
   };
 
   const handleRevertIndexChange = (indexName: string) => {
@@ -246,37 +270,44 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
   };
 
   const handleSourceChange = (sourceName: string, newElasticStorage: number, newS3Storage: number) => {
-    setSources(prevSources => {
-      const updatedSources = prevSources.map(source => {
-        if (source.name === sourceName) {
-          return {
-            ...source,
-            elasticStorage: newElasticStorage,
-            S3Storage: newS3Storage
-          };
-        }
-        return source;
+    if (newElasticStorage == 0 || newS3Storage == 0) {
+      setSources(prevSources => (
+        prevSources.filter(source => source.name !== sourceName)
+      ));
+      removeChangeLogEntry(sourceName);
+    } else {
+      setSources(prevSources => {
+        const updatedSources = prevSources.map(source => {
+          if (source.name === sourceName) {
+            return {
+              ...source,
+              elasticStorage: newElasticStorage,
+              S3Storage: newS3Storage
+            };
+          }
+          return source;
+        });
+
+        const updatedSource = updatedSources.find(s => s.name === sourceName) as SourceData;
+        const originalSource = sources.find(s => s.name === sourceName);
+
+        updateChangeLogEntry(sourceName, {
+          type: 'source',
+          name: sourceName,
+          relatedIndex: updatedSource.relatedIndex,
+          original: {
+            elasticStorage: originalSource ? originalSource.elasticStorage : 0,
+            s3Storage: originalSource ? originalSource.S3Storage : 0,
+          },
+          current: {
+            elasticStorage: updatedSource.elasticStorage,
+            s3Storage: updatedSource.S3Storage,
+          }
+        });
+
+        return updatedSources;
       });
-
-      const updatedSource = updatedSources.find(s => s.name === sourceName) as SourceData;
-      const originalSource = sources.find(s => s.name === sourceName);
-
-      updateChangeLogEntry(sourceName, {
-        type: 'source',
-        name: sourceName,
-        relatedIndex: updatedSource.relatedIndex,
-        original: {
-          elasticStorage: originalSource ? originalSource.elasticStorage : 0,
-          s3Storage: originalSource ? originalSource.S3Storage : 0,
-        },
-        current: {
-          elasticStorage: updatedSource.elasticStorage,
-          s3Storage: updatedSource.S3Storage,
-        }
-      });
-
-      return updatedSources;
-    });
+    }
   };
 
   const displayProps: {

@@ -4,6 +4,10 @@ import { ChangeLogEntry } from "../../models";
 export const useChangeLog = () => {
     const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
     
+    const getChangeLogEntry = (name: string) => {
+        return changeLog.find((entry) => entry.name === name);
+    };
+
     const emptyChangeLog = () => {
         setChangeLog([]);
     };
@@ -25,6 +29,7 @@ export const useChangeLog = () => {
 
     return {
         changeLog,
+        getChangeLogEntry,
         emptyChangeLog,
         removeChangeLogEntry,
         updateChangeLogEntry,
