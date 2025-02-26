@@ -1,13 +1,9 @@
 import React from 'react';
-import { DisplayMethod, Translation } from '../models';
+import { Translation } from '../models';
 import { config } from '../../../../config';
 import { FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
 
 type StorageUsageOverviewProps = {
-  displayMethod: DisplayMethod;
-  usedCombinedStorage: number;
-  combinedStorage: number;
-  combinedStoragePercentage: number;
   usedElasticStorage: number;
   totalElasticStorage: number;
   elasticStoragePercentage: number;
@@ -58,10 +54,6 @@ const StorageBar: React.FC<{
 };
 
 export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
-  displayMethod,
-  usedCombinedStorage,
-  combinedStorage,
-  combinedStoragePercentage,
   usedElasticStorage,
   totalElasticStorage,
   elasticStoragePercentage,
@@ -76,29 +68,18 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
         <h2 className="text-lg font-semibold text-gray-800">{t.storageUsageOverview}</h2>
       </div>
       <div className="space-y-6">
-        {displayMethod === 'combined' ? (
-          <StorageBar
-            label={t.storage}
-            usedStorage={usedCombinedStorage}
-            totalStorage={combinedStorage}
-            storagePercentage={combinedStoragePercentage}
-          />
-        ) : (
-          <>
-            <StorageBar
-              label={t.elasticsearchStorage}
-              usedStorage={usedElasticStorage}
-              totalStorage={totalElasticStorage}
-              storagePercentage={elasticStoragePercentage}
-            />
-            <StorageBar
-              label={t.s3Storage}
-              usedStorage={usedS3Storage}
-              totalStorage={totalS3Storage}
-              storagePercentage={s3StoragePercentage}
-            />
-          </>
-        )}
+        <StorageBar
+          label={t.elasticsearchStorage}
+          usedStorage={usedElasticStorage}
+          totalStorage={totalElasticStorage}
+          storagePercentage={elasticStoragePercentage}
+        />
+        <StorageBar
+          label={t.s3Storage}
+          usedStorage={usedS3Storage}
+          totalStorage={totalS3Storage}
+          storagePercentage={s3StoragePercentage}
+        />
       </div>
     </div>
   );

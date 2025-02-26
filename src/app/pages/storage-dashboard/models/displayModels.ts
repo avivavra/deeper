@@ -2,8 +2,6 @@ export type Direction = 'rtl' | 'ltr';
 
 export type Audience = 'developer' | 'user';
 
-export type DisplayMethod = 'combined' | 'separate';
-
 export type NewIndexInputType = 'frequency' | 'avgDocs' | 'import';
 
 export type IndexChange = {

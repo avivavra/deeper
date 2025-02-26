@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ClusterMetadata, IndexData, Audience, ChangeLogEntry, Direction, DisplayMethod, Translation, SourceData } from './models';
-import { ChangeLog, StorageHeader, StorageUsageOverview, IndexRetentionPeriodsChart, IndexRetentionManagement, AddIndexForm } from './sub-components';
+import { ClusterMetadata, IndexData, Audience, ChangeLogEntry, Direction, Translation, SourceData } from './models';
+import { ChangeLog, useChangeLog, StorageHeader, StorageUsageOverview, IndexRetentionPeriodsChart, IndexRetentionManagement, AddIndexForm } from './sub-components';
 import { GenericModal } from '../../components';
 import { ClusterSummarizerFactory } from '../../../api';
 import { StorageDashboardLayout } from './StorageDashboardLayout';
@@ -27,24 +27,23 @@ type StorageDashboardPageProps = {
   clustersSummarizerFactory: ClusterSummarizerFactory;
   clustersMetadata: ClusterMetadata[];
   defaultMode: Audience;
-  combineForUser: boolean;
 };
 
-export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode, combineForUser }: StorageDashboardPageProps) => {
+export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode }: StorageDashboardPageProps) => {
   const { audience, setAudience, direction, t } = useAudience(defaultMode);
   const { isEditMode, handleEditModeToggle } = useEditMode();
-  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, indices, totalElasticStorage, totalS3Storage, combinedStorage } = useCluster(clustersSummarizerFactory, clustersMetadata);
+  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, indices, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata);
 
   const [displayIndices, setDisplayIndices] = useState<IndexData[]>([]);
   const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
-  const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
+  const { changeLog, emptyChangeLog, addChangeLogEntry, updateChangeLogEntry, removeChangeLogEntry } = useChangeLog();
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [sources, setSources] = useState<SourceData[]>([]);
 
   const handleResetChanges = () => {
     if (indices.status === 'succeeded' && indices.data) {
       setDisplayIndices(indices.data);
-      setChangeLog([]);
+      emptyChangeLog();
       setIndicesSelection(indices.data.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
     }
   };
@@ -72,54 +71,50 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
 
   const elasticStoragePercentage = totalElasticStorage ? (usedElasticStorage / totalElasticStorage) * 100 : 0;
   const s3StoragePercentage = totalS3Storage ? (usedS3Storage / totalS3Storage) * 100 : 0;
-  const usedCombinedStorage = usedElasticStorage + usedS3Storage;
-  const combinedStoragePercentage = combinedStorage ? (usedCombinedStorage / combinedStorage) * 100 : 0;
 
   const filteredIndices = displayIndices ? displayIndices.filter(index => indicesSelection[index.name]) : [];
 
   const handleAddIndex = (newIndex: IndexData) => {
     setDisplayIndices([newIndex, ...displayIndices]);
     setIndicesSelection(prev => ({ ...prev, [newIndex.name]: true }));
-    setChangeLog(prev => ([
-      ...prev,
-      {
-        type: 'index',
-        name: newIndex.name,
-        original: {
-          hotDays: 0,
-          coldDays: 0,
-          elasticStorage: 0,
-          s3Storage: 0,
-        },
-        current: {
-          hotDays: newIndex.hotRetentionDays,
-          coldDays: newIndex.coldRetentionDays,
-          elasticStorage: newIndex.elasticStorage,
-          s3Storage: newIndex.S3Storage,
-        }
+    addChangeLogEntry({
+      type: 'index',
+      name: newIndex.name,
+      original: {
+        hotDays: 0,
+        coldDays: 0,
+        elasticStorage: 0,
+        s3Storage: 0,
+      },
+      current: {
+        hotDays: newIndex.hotRetentionDays,
+        coldDays: newIndex.coldRetentionDays,
+        elasticStorage: newIndex.elasticStorage,
+        s3Storage: newIndex.S3Storage,
       }
-    ]));
+    });
+  };
+
+  const handleNewIndexSubmitted = (newIndex: IndexData) => {
+    handleAddIndex(newIndex);
     setShowAddIndex(false);
   };
 
   const handleAddSource = (newSource: SourceData) => {
     setSources(prevSources => [newSource, ...prevSources]);
-    setChangeLog(prev => ([
-      ...prev,
-      {
-        type: 'source',
-        name: newSource.name,
-        relatedIndex: newSource.relatedIndex,
-        original: {
-          elasticStorage: 0,
-          s3Storage: 0,
-        },
-        current: {
-          elasticStorage: newSource.elasticStorage,
-          s3Storage: newSource.S3Storage,
-        }
+    addChangeLogEntry({
+      type: 'source',
+      name: newSource.name,
+      relatedIndex: newSource.relatedIndex,
+      original: {
+        elasticStorage: 0,
+        s3Storage: 0,
+      },
+      current: {
+        elasticStorage: newSource.elasticStorage,
+        s3Storage: newSource.S3Storage,
       }
-    ]));
+    });
   };
 
   const handleIndexToggle = (indexName: string) => {
@@ -148,25 +143,22 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       const updatedIndex = updatedIndices.find(i => i.name === indexName) as IndexData;
       const originalIndex = indices.data?.find(i => i.name === indexName);
 
-      setChangeLog(prev => ([
-        ...prev.filter(entry => entry.name !== indexName),
-        {
-          type: 'index',
-          name: indexName,
-          original: {
-            hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
-            coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-            elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
-            s3Storage: originalIndex ? originalIndex.S3Storage : 0,
-          },
-          current: {
-            hotDays: newHotDays,
-            coldDays: newColdDays,
-            elasticStorage: updatedIndex.elasticStorage,
-            s3Storage: updatedIndex.S3Storage,
-          }
+      updateChangeLogEntry(indexName, {
+        type: 'index',
+        name: indexName,
+        original: {
+          hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
+          coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
+          elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
+          s3Storage: originalIndex ? originalIndex.S3Storage : 0,
+        },
+        current: {
+          hotDays: newHotDays,
+          coldDays: newColdDays,
+          elasticStorage: updatedIndex.elasticStorage,
+          s3Storage: updatedIndex.S3Storage,
         }
-      ]));
+      });
 
       return updatedIndices;
     });
@@ -176,82 +168,6 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       const newElasticStorage = newHotDays * source.elasticStoragePerHotTierDay + newColdDays * source.elasticStoragePerColdTierDay;
       const newS3Storage = newColdDays * source.S3StoragePerColdTierDay;
 
-      if (source.relatedIndex === indexName) {
-        return {
-          ...source,
-          elasticStorage: newElasticStorage,
-          S3Storage: newS3Storage
-        };
-      }
-      return source;
-    }));
-  };
-
-  const handleTotalRetentionChange = (indexName: string, newTotalDays: number) => {
-    setDisplayIndices(prevIndices => {
-      const newIndices = prevIndices.map(index => {
-        if (index.name === indexName) {
-          const originalIndex = indices.data?.find(i => i.name === indexName);
-
-          const originalHotDays = originalIndex ? originalIndex.hotRetentionDays : index.initialHotRetentionDays;
-          const originalColdDays = originalIndex ? originalIndex.coldRetentionDays : index.initialColdRetentionDays;
-
-          let newHotDays = newTotalDays > originalHotDays ? originalHotDays : newTotalDays;
-          let newColdDays = newTotalDays > originalHotDays ? newTotalDays - originalHotDays : 0;
-
-          if (originalColdDays === 0) {
-            newHotDays = newTotalDays;
-            newColdDays = 0;
-          }
-
-          const newElasticStorage = (
-            (index.elasticStoragePerHotTierDay * newHotDays) +
-            (index.elasticStoragePerColdTierDay * newColdDays)
-          );
-          const newS3Storage = (
-            index.S3StoragePerColdTierDay * newColdDays
-          );
-
-          return {
-            ...index,
-            hotRetentionDays: newHotDays,
-            coldRetentionDays: newColdDays,
-            totalRetentionDays: newTotalDays,
-            elasticStorage: newElasticStorage,
-            S3Storage: newS3Storage
-          };
-        }
-        return index;
-      });
-
-      const newIndex = newIndices.find(i => i.name === indexName);
-      const originalIndex = indices.data?.find(i => i.name === indexName);
-
-      setChangeLog(prev => ([
-        ...prev.filter(entry => entry.name !== indexName),
-        {
-          type: 'index',
-          name: indexName,
-          original: {
-            hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
-            coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-            elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
-            s3Storage: originalIndex ? originalIndex.S3Storage : 0,
-          },
-          current: {
-            hotDays: newIndex?.hotRetentionDays || 0,
-            coldDays: newIndex?.coldRetentionDays || 0,
-            elasticStorage: newIndex?.elasticStorage || 0,
-            s3Storage: newIndex?.S3Storage || 0,
-          }
-        }
-      ]));
-
-      return newIndices;
-    });
-
-    // Update related sources
-    setSources(prevSources => prevSources.map(source => {
       if (source.relatedIndex === indexName) {
         return {
           ...source,
@@ -278,44 +194,55 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       setIndicesSelection(prev => ({ ...prev, [indexName]: true }));
     }
 
-    setChangeLog(prev => prev.filter(entry => entry.name !== indexName));
+    removeChangeLogEntry(indexName);
   };
 
   const handleRemoveIndex = (indexName: string) => {
-    const indexToRemove = displayIndices?.find(index => index.name === indexName);
-    if (!indexToRemove) return;
-
+    const originalIndex = indices.data?.find(i => i.name === indexName);
     setDisplayIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
     setIndicesSelection(prev => {
       const { [indexName]: _, ...rest } = prev;
       return rest;
     });
-
-    setChangeLog(prev => {
-      const isNewIndex = !indices.data?.some(index => index.name === indexName);
-      if (isNewIndex) {
-        return prev.filter(entry => entry.name !== indexName);
+    updateChangeLogEntry(indexName, {
+      type: 'index',
+      name: indexName,
+      original: {
+        hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
+        coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
+        elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
+        s3Storage: originalIndex ? originalIndex.S3Storage : 0,
+      },
+      current: {
+        hotDays: 0,
+        coldDays: 0,
+        elasticStorage: 0,
+        s3Storage: 0,
       }
-      return [
-        ...prev.filter(entry => entry.name !== indexName),
-        {
-          type: 'index',
-          name: indexName,
-          original: {
-            hotDays: indexToRemove.hotRetentionDays,
-            coldDays: indexToRemove.coldRetentionDays,
-            elasticStorage: indexToRemove.elasticStorage,
-            s3Storage: indexToRemove.S3Storage,
-          },
-          current: {
-            hotDays: 0,
-            coldDays: 0,
-            elasticStorage: 0,
-            s3Storage: 0,
-          }
-        }
-      ];
     });
+  };
+
+  const handleAddNewIndex = (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => {
+    const elasticStoragePerHotTierDay = newHotDays > 0 ? newElasticStorage / newHotDays : 0;
+    const S3StoragePerColdTierDay = newColdDays > 0 ? newS3Storage / newColdDays : 0;
+
+    const newIndexData = {
+      name: indexName,
+      hebrewName: indexName,
+      hotRetentionDays: newHotDays,
+      coldRetentionDays: newColdDays,
+      elasticStorage: newElasticStorage || 0,
+      S3Storage: newS3Storage || 0,
+      totalRetentionDays: newHotDays + newColdDays,
+      initialHotRetentionDays: newHotDays,
+      initialColdRetentionDays: newColdDays,
+      elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
+      S3StoragePerColdTierDay: S3StoragePerColdTierDay,
+      elasticStoragePerColdTierDay: 0,
+      indexNamesByTier: { hotTier: [], coldTier: [] }
+    };
+
+    handleAddIndex(newIndexData);
   };
 
   const handleSourceChange = (sourceName: string, newElasticStorage: number, newS3Storage: number) => {
@@ -334,22 +261,19 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       const updatedSource = updatedSources.find(s => s.name === sourceName) as SourceData;
       const originalSource = sources.find(s => s.name === sourceName);
 
-      setChangeLog(prev => ([
-        ...prev.filter(entry => entry.name !== sourceName),
-        {
-          type: 'source',
-          name: sourceName,
-          relatedIndex: updatedSource.relatedIndex,
-          original: {
-            elasticStorage: originalSource ? originalSource.elasticStorage : 0,
-            s3Storage: originalSource ? originalSource.S3Storage : 0,
-          },
-          current: {
-            elasticStorage: updatedSource.elasticStorage,
-            s3Storage: updatedSource.S3Storage,
-          }
+      updateChangeLogEntry(sourceName, {
+        type: 'source',
+        name: sourceName,
+        relatedIndex: updatedSource.relatedIndex,
+        original: {
+          elasticStorage: originalSource ? originalSource.elasticStorage : 0,
+          s3Storage: originalSource ? originalSource.S3Storage : 0,
+        },
+        current: {
+          elasticStorage: updatedSource.elasticStorage,
+          s3Storage: updatedSource.S3Storage,
         }
-      ]));
+      });
 
       return updatedSources;
     });
@@ -357,14 +281,12 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
 
   const displayProps: {
     direction: Direction,
-    displayMethod: DisplayMethod,
     translateIndexNames: boolean,
     displayRates: boolean,
     t: Translation
   } = {
     direction,
     t,
-    displayMethod: audience === 'user' && combineForUser ? 'combined' : 'separate',
     translateIndexNames: audience === 'user',
     displayRates: audience === 'developer'
   }
@@ -395,9 +317,6 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           ) : (
             <StorageUsageOverview
               {...displayProps}
-              usedCombinedStorage={usedCombinedStorage}
-              combinedStorage={combinedStorage}
-              combinedStoragePercentage={combinedStoragePercentage}
               usedElasticStorage={usedElasticStorage}
               totalElasticStorage={totalElasticStorage}
               elasticStoragePercentage={elasticStoragePercentage}
@@ -429,14 +348,12 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
               {...displayProps}
               isEditMode={isEditMode}
               filteredIndices={filteredIndices}
-              handleTotalRetentionChange={handleTotalRetentionChange}
               handleIndexRetentionChange={handleIndexRetentionChange}
               handleRemoveIndex={handleRemoveIndex}
               setShowAddIndex={setShowAddIndex}
               showAddIndex={showAddIndex}
               sources={sources}
-              setSources={setSources}
-              handleAddSource={handleAddSource} // Ensure handleAddSource is passed down
+              handleAddSource={handleAddSource}
             />
           )
         }
@@ -448,11 +365,10 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
               indices={displayIndices}
               handleRevertIndexChange={handleRevertIndexChange}
               handleResetChanges={handleResetChanges}
-              setIndices={setDisplayIndices}
               handleIndexRetentionChange={handleIndexRetentionChange}
-              setSelectedIndices={setIndicesSelection}
-              setChangeLog={setChangeLog}
-              handleSourceChange={handleSourceChange} // Pass handleSourceChange to ChangeLog
+              handleSourceChange={handleSourceChange}
+              handleRemoveIndex={handleRemoveIndex}
+              handleAddNewIndex={handleAddNewIndex}
             />
           )
         }
@@ -462,7 +378,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
         <GenericModal showModal={showAddIndex} setShowModal={setShowAddIndex}>
           <AddIndexForm
             {...displayProps}
-            handleAddIndex={handleAddIndex}
+            handleAddIndex={handleNewIndexSubmitted}
             indices={displayIndices}
             setShowAddIndex={setShowAddIndex}
           />

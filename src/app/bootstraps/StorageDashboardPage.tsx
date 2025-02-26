@@ -17,7 +17,6 @@ export const StorageDashboardPage = () => {
       clustersSummarizerFactory={clustersSummarizerFactory}
       clustersMetadata={clustersMetadata}
       defaultMode={config.defaultMode as Audience}
-      combineForUser={config.combineForUser}
     />
   );
 };

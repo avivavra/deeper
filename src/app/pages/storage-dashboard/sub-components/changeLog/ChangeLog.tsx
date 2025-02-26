@@ -1,22 +1,20 @@
 import React, { useState } from 'react';
 import { Trash2, Share2, Upload, RotateCw } from 'lucide-react';
-import { IndexData, ChangeLogEntry, Direction, DisplayMethod, Translation } from '../models';
-import { GenericDropdown, GenericModal } from '../../../components';
+import { IndexData, ChangeLogEntry, Direction, Translation } from '../../models';
+import { GenericDropdown, GenericModal } from '../../../../components';
 
 interface ChangeLogProps {
   changeLog: ChangeLogEntry[];
   direction: Direction;
-  displayMethod: DisplayMethod;
   indices: IndexData[];
   handleRevertIndexChange: (indexName: string) => void;
   handleResetChanges: () => void;
-  setIndices: React.Dispatch<React.SetStateAction<IndexData[]>>;
   handleIndexRetentionChange: (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
-  setSelectedIndices: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
-  setChangeLog: React.Dispatch<React.SetStateAction<ChangeLogEntry[]>>;
   handleSourceChange: (sourceName: string, newElasticStorage: number, newS3Storage: number) => void;
   t: Translation;
   translateIndexNames: boolean;
+  handleRemoveIndex: (indexName: string) => void;
+  handleAddNewIndex: (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
 }
 
 const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
@@ -74,17 +72,15 @@ const parseChangeLog = (text: string) => {
 export const ChangeLog: React.FC<ChangeLogProps> = ({
   changeLog,
   direction,
-  displayMethod,
   indices,
   handleRevertIndexChange,
   handleResetChanges,
-  setIndices,
   handleIndexRetentionChange,
-  setSelectedIndices,
-  setChangeLog,
   handleSourceChange,
   t,
   translateIndexNames,
+  handleRemoveIndex,
+  handleAddNewIndex,
 }) => {
   const arrow = direction === 'ltr' ? '→' : '←';
   const [showImportModal, setShowImportModal] = useState(false);
@@ -127,75 +123,13 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
       parsedEntries.forEach(({ indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage }) => {
         const isRemovedIndex = newHotDays === 0 && newColdDays === 0;
         if (isRemovedIndex) {
-          const originalIndex = indices.find(i => i.name === indexName);
-          setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
-          setSelectedIndices(prev => {
-            const { [indexName]: _, ...rest } = prev;
-            return rest;
-          });
-          setChangeLog(prev => [
-            ...prev.filter(entry => entry.name !== indexName),
-            {
-              type: 'index',
-              name: indexName,
-              original: {
-                hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
-                coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-                elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
-                s3Storage: originalIndex ? originalIndex.S3Storage : 0,
-              },
-              current: {
-                hotDays: 0,
-                coldDays: 0,
-                elasticStorage: 0,
-                s3Storage: 0,
-              }
-            }
-          ]);
+          handleRemoveIndex(indexName);
         } else {
           const isExistingIndex = indices.find(index => index.name === indexName);
           if (isExistingIndex) {
             handleIndexRetentionChange(indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
           } else {
-            const elasticStoragePerHotTierDay = newHotDays > 0 ? newElasticStorage / newHotDays : 0;
-            const S3StoragePerColdTierDay = newColdDays > 0 ? newS3Storage / newColdDays : 0;
-
-            const newIndexData = {
-              name: indexName,
-              hebrewName: indexName,
-              hotRetentionDays: newHotDays,
-              coldRetentionDays: newColdDays,
-              elasticStorage: newElasticStorage || 0,
-              S3Storage: newS3Storage || 0,
-              totalRetentionDays: newHotDays + newColdDays,
-              initialHotRetentionDays: newHotDays,
-              initialColdRetentionDays: newColdDays,
-              elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
-              S3StoragePerColdTierDay: S3StoragePerColdTierDay,
-              elasticStoragePerColdTierDay: 0,
-              indexNamesByTier: { hotTier: [], coldTier: [] }
-            };
-            setIndices(prevIndices => [newIndexData, ...prevIndices]);
-            setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
-            setChangeLog(prev => [
-              ...prev,
-              {
-                type: 'index',
-                name: indexName,
-                original: {
-                  hotDays: 0,
-                  coldDays: 0,
-                  elasticStorage: 0,
-                  s3Storage: 0,
-                },
-                current: {
-                  hotDays: newHotDays,
-                  coldDays: newColdDays,
-                  elasticStorage: newElasticStorage || 0,
-                  s3Storage: newS3Storage || 0,
-                }
-              }
-            ]);
+            handleAddNewIndex(indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
           }
         }
       });
@@ -319,7 +253,6 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
                 </div>
               );
             } else {
-              const totalStorageChange = (change.current.elasticStorage + change.current.s3Storage) - (change.original.elasticStorage + change.original.s3Storage);
               const hebrewIndexName = indices.find(index => index.name === change.name)?.hebrewName || change.name;
 
               return (
@@ -333,33 +266,19 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
                       <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
                     </button>
                   </div>
-                  {displayMethod === 'combined' ? (
-                    <>
-                      <div className="text-gray-600 mt-1">
-                        {t.days}: {change.original.hotDays + change.original.coldDays} {arrow} {change.current.hotDays + change.current.coldDays}
-                      </div>
-                      <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
-                      <div className="text-sm ml-2 text-gray-800">
-                        {t.storage}: {totalStorageChange > 0 ? '+' : ''}{totalStorageChange.toFixed(2)} GB
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-gray-600 mt-1">
-                        {t.hotTier}: {change.original.hotDays} {arrow} {change.current.hotDays} {t.days}
-                      </div>
-                      <div className="text-gray-600">
-                        {t.coldTier}: {change.original.coldDays} {arrow} {change.current.coldDays} {t.days}
-                      </div>
-                      <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
-                      <div className="text-sm ml-2 text-gray-800">
-                        {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{(change.current.elasticStorage - change.original.elasticStorage).toFixed(2)} GB
-                      </div>
-                      <div className="text-sm ml-2 text-gray-800">
-                        {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{(change.current.s3Storage - change.original.s3Storage).toFixed(2)} GB
-                      </div>
-                    </>
-                  )}
+                  <div className="text-gray-600 mt-1">
+                    {t.hotTier}: {change.original.hotDays} {arrow} {change.current.hotDays} {t.days}
+                  </div>
+                  <div className="text-gray-600">
+                    {t.coldTier}: {change.original.coldDays} {arrow} {change.current.coldDays} {t.days}
+                  </div>
+                  <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                  <div className="text-sm ml-2 text-gray-800">
+                    {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{(change.current.elasticStorage - change.original.elasticStorage).toFixed(2)} GB
+                  </div>
+                  <div className="text-sm ml-2 text-gray-800">
+                    {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{(change.current.s3Storage - change.original.s3Storage).toFixed(2)} GB
+                  </div>
                 </div>
               );
             }

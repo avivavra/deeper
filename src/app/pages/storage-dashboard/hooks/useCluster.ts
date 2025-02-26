@@ -45,7 +45,6 @@ export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, 
 
   const totalElasticStorage = selectedCluster.data?.totalElasticStorage || 0;
   const totalS3Storage = selectedCluster.data?.totalS3Storage || 0;
-  const combinedStorage = totalElasticStorage + totalS3Storage;
 
   return {
     selectedClusterMetadata,
@@ -54,6 +53,5 @@ export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, 
     indices,
     totalElasticStorage,
     totalS3Storage,
-    combinedStorage
   };
 };

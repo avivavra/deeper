@@ -6,7 +6,6 @@ export const config = {
         medium: 70
     },
     defaultMode: 'developer',
-    combineForUser: false,
     clustersConnection: {
         'Cluster A': {
             name: 'Cluster A',
@@ -36,11 +35,6 @@ export const config = {
                     frequency: "daily"
                 }
             ]
-        },
-        // 'clusterB': {
-        //     name: 'Cluster B',
-        //     hebrewName: 'אשכול B',
-        //     url: 'https://clusterA.com',
-        // }
+        }
     }
 };

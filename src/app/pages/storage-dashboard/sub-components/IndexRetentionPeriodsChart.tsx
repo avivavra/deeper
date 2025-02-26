@@ -1,10 +1,9 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
-import { IndexData, Direction, DisplayMethod, Translation } from '../models';
+import { IndexData, Direction, Translation } from '../models';
 
 type IndexRetentionPeriodsChartProps = {
   direction: Direction;
-  displayMethod: DisplayMethod;
   translateIndexNames: boolean;
   filteredIndices: IndexData[];
   t: Translation;
@@ -24,7 +23,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   return null;
 };
 
-export const IndexRetentionPeriodsChart = ({ direction, displayMethod, translateIndexNames, filteredIndices, t }: IndexRetentionPeriodsChartProps) => {
+export const IndexRetentionPeriodsChart = ({ direction, translateIndexNames, filteredIndices, t }: IndexRetentionPeriodsChartProps) => {
   return (
     <div>
       <div className="mb-4">
@@ -48,15 +47,8 @@ export const IndexRetentionPeriodsChart = ({ direction, displayMethod, translate
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            {displayMethod === 'separate' && (
-              <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />
-            )}
-            {displayMethod === 'separate' && (
-              <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name={t.coldTier} />
-            )}
-            {displayMethod === 'combined' && (
-              <Bar dataKey="totalRetentionDays" fill="#2563eb" name={t.totalRetentionPeriod} />
-            )}
+            <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />
+            <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name={t.coldTier} />
           </BarChart>
         </ResponsiveContainer>
       </div>
