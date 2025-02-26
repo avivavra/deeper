@@ -11,11 +11,11 @@ import { useAudience, useEditMode, useCluster } from './hooks';
 
 import './StorageDashboardPage.css';
 
-const calculateStorageDiffs = (changeLog: { [key: string]: ChangeLogEntry }) => {
+const calculateStorageDiffs = (changeLog: ChangeLogEntry[]) => {
   let elasticStorageDiff = 0;
   let s3StorageDiff = 0;
 
-  Object.values(changeLog).forEach(entry => {
+  changeLog.forEach(entry => {
     elasticStorageDiff += (entry.current.elasticStorage - entry.original.elasticStorage);
     s3StorageDiff += (entry.current.s3Storage - entry.original.s3Storage);
   });
@@ -37,14 +37,14 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
 
   const [displayIndices, setDisplayIndices] = useState<IndexData[]>([]);
   const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
-  const [changeLog, setChangeLog] = useState<{ [key: string]: ChangeLogEntry }>({});
+  const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
   const [showAddIndex, setShowAddIndex] = useState(false);
   const [sources, setSources] = useState<SourceData[]>([]);
 
   const handleResetChanges = () => {
     if (indices.status === 'succeeded' && indices.data) {
       setDisplayIndices(indices.data);
-      setChangeLog({});
+      setChangeLog([]);
       setIndicesSelection(indices.data.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
     }
   };
@@ -80,9 +80,11 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
   const handleAddIndex = (newIndex: IndexData) => {
     setDisplayIndices([newIndex, ...displayIndices]);
     setIndicesSelection(prev => ({ ...prev, [newIndex.name]: true }));
-    setChangeLog(prev => ({
+    setChangeLog(prev => ([
       ...prev,
-      [newIndex.name]: {
+      {
+        type: 'index',
+        indexName: newIndex.name,
         original: {
           hotDays: 0,
           coldDays: 0,
@@ -96,7 +98,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           s3Storage: newIndex.S3Storage,
         }
       }
-    }));
+    ]));
     setShowAddIndex(false);
   };
 
@@ -126,9 +128,11 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       const updatedIndex = updatedIndices.find(i => i.name === indexName) as IndexData;
       const originalIndex = indices.data?.find(i => i.name === indexName);
 
-      setChangeLog(prev => ({
-        ...prev,
-        [indexName]: {
+      setChangeLog(prev => ([
+        ...prev.filter(entry => entry.indexName !== indexName),
+        {
+          type: 'index',
+          indexName,
           original: {
             hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
             coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
@@ -142,7 +146,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             s3Storage: updatedIndex.S3Storage,
           }
         }
-      }));
+      ]));
 
       return updatedIndices;
     });
@@ -203,9 +207,11 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       const newIndex = newIndices.find(i => i.name === indexName);
       const originalIndex = indices.data?.find(i => i.name === indexName);
 
-      setChangeLog(prev => ({
-        ...prev,
-        [indexName]: {
+      setChangeLog(prev => ([
+        ...prev.filter(entry => entry.indexName !== indexName),
+        {
+          type: 'index',
+          indexName,
           original: {
             hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
             coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
@@ -219,7 +225,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             s3Storage: newIndex?.S3Storage || 0,
           }
         }
-      }));
+      ]));
 
       return newIndices;
     });
@@ -252,10 +258,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       setIndicesSelection(prev => ({ ...prev, [indexName]: true }));
     }
 
-    setChangeLog(prev => {
-      const { [indexName]: _, ...rest } = prev;
-      return rest;
-    });
+    setChangeLog(prev => prev.filter(entry => entry.indexName !== indexName));
   };
 
   const handleRemoveIndex = (indexName: string) => {
@@ -271,12 +274,13 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     setChangeLog(prev => {
       const isNewIndex = !indices.data?.some(index => index.name === indexName);
       if (isNewIndex) {
-        const { [indexName]: _, ...rest } = prev;
-        return rest;
+        return prev.filter(entry => entry.indexName !== indexName);
       }
-      return {
-        ...prev,
-        [indexName]: {
+      return [
+        ...prev.filter(entry => entry.indexName !== indexName),
+        {
+          type: 'index',
+          indexName,
           original: {
             hotDays: indexToRemove.hotRetentionDays,
             coldDays: indexToRemove.coldRetentionDays,
@@ -290,7 +294,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             s3Storage: 0,
           }
         }
-      };
+      ];
     });
   };
 

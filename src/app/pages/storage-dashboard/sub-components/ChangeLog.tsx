@@ -4,7 +4,7 @@ import { IndexData, ChangeLogEntry, Direction, DisplayMethod, Translation } from
 import { GenericDropdown, GenericModal } from '../../../components';
 
 interface ChangeLogProps {
-  changeLog: { [key: string]: ChangeLogEntry };
+  changeLog: ChangeLogEntry[];
   direction: Direction;
   displayMethod: DisplayMethod;
   indices: IndexData[];
@@ -13,19 +13,19 @@ interface ChangeLogProps {
   setIndices: React.Dispatch<React.SetStateAction<IndexData[]>>;
   handleIndexRetentionChange: (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
   setSelectedIndices: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
-  setChangeLog: React.Dispatch<React.SetStateAction<{ [key: string]: ChangeLogEntry }>>;
+  setChangeLog: React.Dispatch<React.SetStateAction<ChangeLogEntry[]>>;
   t: Translation;
   translateIndexNames: boolean;
 }
 
-const formatChangeLog = (changeLog: { [key: string]: ChangeLogEntry }) => {
-  return Object.entries(changeLog).map(([indexName, change]) => {
+const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
+  return changeLog.map(change => {
     const hotDaysChange = change.current.hotDays - change.original.hotDays;
     const coldDaysChange = change.current.coldDays - change.original.coldDays;
     const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
     const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
 
-    return `Index: ${indexName}
+    return `Index: ${change.indexName}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
 Elasticsearch Storage: ${change.original.elasticStorage?.toFixed(2) || 0} GB → ${change.current.elasticStorage?.toFixed(2) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange?.toFixed(2) || 0} GB)
@@ -116,31 +116,31 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
       parsedEntries.forEach(({ indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage }) => {
         const isRemovedIndex = newHotDays === 0 && newColdDays === 0;
         if (isRemovedIndex) {
+          const originalIndex = indices.find(i => i.name === indexName);
           setIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
           setSelectedIndices(prev => {
             const { [indexName]: _, ...rest } = prev;
             return rest;
           });
-          setChangeLog(prev => {
-            const originalIndex = indices.find(i => i.name === indexName);
-            return {
-              ...prev,
-              [indexName]: {
-                original: {
-                  hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
-                  coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-                  elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
-                  s3Storage: originalIndex ? originalIndex.S3Storage : 0,
-                },
-                current: {
-                  hotDays: 0,
-                  coldDays: 0,
-                  elasticStorage: 0,
-                  s3Storage: 0,
-                }
+          setChangeLog(prev => [
+            ...prev.filter(entry => entry.indexName !== indexName),
+            {
+              type: 'index',
+              indexName,
+              original: {
+                hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
+                coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
+                elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
+                s3Storage: originalIndex ? originalIndex.S3Storage : 0,
+              },
+              current: {
+                hotDays: 0,
+                coldDays: 0,
+                elasticStorage: 0,
+                s3Storage: 0,
               }
-            };
-          });
+            }
+          ]);
         } else {
           const isExistingIndex = indices.find(index => index.name === indexName);
           if (isExistingIndex) {
@@ -166,25 +166,25 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
             };
             setIndices(prevIndices => [newIndexData, ...prevIndices]);
             setSelectedIndices(prev => ({ ...prev, [indexName]: true }));
-            setChangeLog(prev => {
-              return {
-                ...prev,
-                [indexName]: {
-                  original: {
-                    hotDays: 0,
-                    coldDays: 0,
-                    elasticStorage: 0,
-                    s3Storage: 0,
-                  },
-                  current: {
-                    hotDays: newHotDays,
-                    coldDays: newColdDays,
-                    elasticStorage: newElasticStorage || 0,
-                    s3Storage: newS3Storage || 0,
-                  }
+            setChangeLog(prev => [
+              ...prev,
+              {
+                type: 'index',
+                indexName,
+                original: {
+                  hotDays: 0,
+                  coldDays: 0,
+                  elasticStorage: 0,
+                  s3Storage: 0,
+                },
+                current: {
+                  hotDays: newHotDays,
+                  coldDays: newColdDays,
+                  elasticStorage: newElasticStorage || 0,
+                  s3Storage: newS3Storage || 0,
                 }
-              };
-            });
+              }
+            ]);
           }
         }
       });
@@ -225,7 +225,7 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-800">{t.changeLog}</h2>
         <div className="flex gap-2">
-          {Object.keys(changeLog).length > 0 ? (
+          {changeLog.length > 0 ? (
             <>
               <button
                 onClick={handleResetChanges}
@@ -282,17 +282,17 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
         </div>
       </div>
       <div className="space-y-4">
-        {Object.keys(changeLog).length > 0 ? (
-          Object.entries(changeLog).map(([indexName, change]) => {
+        {changeLog.length > 0 ? (
+          changeLog.map(change => {
             const totalStorageChange = (change.current.elasticStorage + change.current.s3Storage) - (change.original.elasticStorage + change.original.s3Storage);
-            const hebrewIndexName = indices.find(index => index.name === indexName)?.hebrewName || indexName;
+            const hebrewIndexName = indices.find(index => index.name === change.indexName)?.hebrewName || change.indexName;
 
             return (
-              <div key={indexName} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-blue-500`}>
+              <div key={change.indexName} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-blue-500`}>
                 <div className="flex justify-between items-start">
-                  <div className="font-medium text-gray-800">{translateIndexNames ? hebrewIndexName : indexName}</div>
+                  <div className="font-medium text-gray-800">{translateIndexNames ? hebrewIndexName : change.indexName}</div>
                   <button
-                    onClick={() => handleRevertChange(indexName)}
+                    onClick={() => handleRevertChange(change.indexName)}
                     className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
                   >
                     <Trash2 className="h-4 w-4 mx-2 text-gray-800" />

@@ -7,6 +7,8 @@ export type DisplayMethod = 'combined' | 'separate';
 export type NewIndexInputType = 'frequency' | 'avgDocs' | 'import';
 
 export type ChangeLogEntry = {
+    type: 'index';
+    indexName: string;
     original: {
         hotDays: number;
         coldDays: number;
