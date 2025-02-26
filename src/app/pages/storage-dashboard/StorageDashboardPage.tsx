@@ -146,6 +146,21 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
 
       return updatedIndices;
     });
+
+    // Update related sources
+    setSources(prevSources => prevSources.map(source => {
+      const newElasticStorage = newHotDays * source.elasticStoragePerHotTierDay + newColdDays * source.elasticStoragePerColdTierDay;
+      const newS3Storage = newColdDays * source.S3StoragePerColdTierDay;
+
+      if (source.relatedIndex === indexName) {
+        return {
+          ...source,
+          elasticStorage: newElasticStorage,
+          S3Storage: newS3Storage
+        };
+      }
+      return source;
+    }));
   };
 
   const handleTotalRetentionChange = (indexName: string, newTotalDays: number) => {
@@ -208,6 +223,18 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
 
       return newIndices;
     });
+
+    // Update related sources
+    setSources(prevSources => prevSources.map(source => {
+      if (source.relatedIndex === indexName) {
+        return {
+          ...source,
+          elasticStorage: newElasticStorage,
+          S3Storage: newS3Storage
+        };
+      }
+      return source;
+    }));
   };
 
   const handleRevertChange = (indexName: string) => {
