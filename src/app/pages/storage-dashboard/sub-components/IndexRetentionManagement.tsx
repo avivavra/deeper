@@ -19,6 +19,7 @@ type IndexRetentionManagementProps = {
     showAddIndex: boolean;
     sources: SourceData[];
     setSources: React.Dispatch<React.SetStateAction<SourceData[]>>;
+    handleAddSource: (newSource: SourceData) => void
 };
 
 export const IndexRetentionManagement = ({
@@ -34,7 +35,8 @@ export const IndexRetentionManagement = ({
     handleRemoveIndex,
     setShowAddIndex,
     sources,
-    setSources
+    setSources,
+    handleAddSource: handleAddSourceExternal
 }: IndexRetentionManagementProps) => {
     const [showAddSource, setShowAddSource] = useState(false);
     const [relatedIndex, setRelatedIndex] = useState<IndexData | null>(null);
@@ -58,7 +60,7 @@ export const IndexRetentionManagement = ({
     };
 
     const handleAddSourceSubmit = (newSourceData: SourceData) => {
-        setSources(prevSources => [...prevSources, newSourceData]);
+        handleAddSourceExternal(newSourceData);
         setShowAddSource(false);
     };
 

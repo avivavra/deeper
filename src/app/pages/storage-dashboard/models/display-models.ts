@@ -6,9 +6,9 @@ export type DisplayMethod = 'combined' | 'separate';
 
 export type NewIndexInputType = 'frequency' | 'avgDocs' | 'import';
 
-export type ChangeLogEntry = {
+export type IndexChange = {
     type: 'index';
-    indexName: string;
+    name: string;
     original: {
         hotDays: number;
         coldDays: number;
@@ -22,6 +22,22 @@ export type ChangeLogEntry = {
         s3Storage: number;
     };
 };
+
+export type SourceChange = {
+    type: 'source';
+    name: string;
+    relatedIndex: string;
+    original: {
+        elasticStorage: number;
+        s3Storage: number;
+    };
+    current: {
+        elasticStorage: number;
+        s3Storage: number;
+    };
+};
+
+export type ChangeLogEntry = IndexChange | SourceChange;
 
 export type Translation = {
     title: string;

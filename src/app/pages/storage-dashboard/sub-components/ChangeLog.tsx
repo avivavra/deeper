@@ -8,29 +8,40 @@ interface ChangeLogProps {
   direction: Direction;
   displayMethod: DisplayMethod;
   indices: IndexData[];
-  handleRevertChange: (indexName: string) => void;
+  handleRevertIndexChange: (indexName: string) => void;
   handleResetChanges: () => void;
   setIndices: React.Dispatch<React.SetStateAction<IndexData[]>>;
   handleIndexRetentionChange: (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
   setSelectedIndices: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   setChangeLog: React.Dispatch<React.SetStateAction<ChangeLogEntry[]>>;
+  handleSourceChange: (sourceName: string, newElasticStorage: number, newS3Storage: number) => void;
   t: Translation;
   translateIndexNames: boolean;
 }
 
 const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
   return changeLog.map(change => {
-    const hotDaysChange = change.current.hotDays - change.original.hotDays;
-    const coldDaysChange = change.current.coldDays - change.original.coldDays;
-    const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
-    const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
+    if (change.type === 'source') {
+      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
 
-    return `Index: ${change.indexName}
+      return `Source: ${change.name}
+Elasticsearch Storage: ${change.original.elasticStorage?.toFixed(2) || 0} GB → ${change.current.elasticStorage?.toFixed(2) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange?.toFixed(2) || 0} GB)
+S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.current.s3Storage?.toFixed(2) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange?.toFixed(2) || 0} GB)
+`;
+    } else {
+      const hotDaysChange = change.current.hotDays - change.original.hotDays;
+      const coldDaysChange = change.current.coldDays - change.original.coldDays;
+      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
+
+      return `Index: ${change.name}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
 Elasticsearch Storage: ${change.original.elasticStorage?.toFixed(2) || 0} GB → ${change.current.elasticStorage?.toFixed(2) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange?.toFixed(2) || 0} GB)
 S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.current.s3Storage?.toFixed(2) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange?.toFixed(2) || 0} GB)
 `;
+    }
   }).join('\n');
 };
 
@@ -45,7 +56,6 @@ const parseChangeLog = (text: string) => {
       const coldDaysMatch = lines[2].match(/Cold Retention Days: \d+ → (\d+) days/);
       const elasticStorageMatch = lines[3].match(/Elasticsearch Storage: \d+(\.\d+)? GB → (\d+(\.\d+)?) GB/);
       const s3StorageMatch = lines[4].match(/S3 Storage: \d+(\.\d+)? GB → (\d+(\.\d+)?) GB/);
-
 
       if (hotDaysMatch && coldDaysMatch && elasticStorageMatch && s3StorageMatch) {
         parsedEntries.push({
@@ -66,12 +76,13 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
   direction,
   displayMethod,
   indices,
-  handleRevertChange,
+  handleRevertIndexChange,
   handleResetChanges,
   setIndices,
   handleIndexRetentionChange,
   setSelectedIndices,
   setChangeLog,
+  handleSourceChange,
   t,
   translateIndexNames,
 }) => {
@@ -123,10 +134,10 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
             return rest;
           });
           setChangeLog(prev => [
-            ...prev.filter(entry => entry.indexName !== indexName),
+            ...prev.filter(entry => entry.name !== indexName),
             {
               type: 'index',
-              indexName,
+              name: indexName,
               original: {
                 hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
                 coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
@@ -170,7 +181,7 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
               ...prev,
               {
                 type: 'index',
-                indexName,
+                name: indexName,
                 original: {
                   hotDays: 0,
                   coldDays: 0,
@@ -284,49 +295,74 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
       <div className="space-y-4">
         {changeLog.length > 0 ? (
           changeLog.map(change => {
-            const totalStorageChange = (change.current.elasticStorage + change.current.s3Storage) - (change.original.elasticStorage + change.original.s3Storage);
-            const hebrewIndexName = indices.find(index => index.name === change.indexName)?.hebrewName || change.indexName;
-
-            return (
-              <div key={change.indexName} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-blue-500`}>
-                <div className="flex justify-between items-start">
-                  <div className="font-medium text-gray-800">{translateIndexNames ? hebrewIndexName : change.indexName}</div>
-                  <button
-                    onClick={() => handleRevertChange(change.indexName)}
-                    className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
-                  >
-                    <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
-                  </button>
+            if (change.type === 'source') {
+              const elasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+              const s3StorageChange = change.current.s3Storage - change.original.s3Storage;
+              return (
+                <div key={change.name} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-green-500`}>
+                  <div className="flex justify-between items-start">
+                    <div className="font-medium text-gray-800">{change.name}</div>
+                    <button
+                      onClick={() => handleSourceChange(change.name, change.original.elasticStorage, change.original.s3Storage)}
+                      className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
+                    </button>
+                  </div>
+                  <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                  <div className="text-sm ml-2 text-gray-800">
+                    {t.elasticsearchStorage}: {elasticStorageChange > 0 ? '+' : ''}{elasticStorageChange?.toFixed(2) || 0} GB
+                  </div>
+                  <div className="text-sm ml-2 text-gray-800">
+                    {t.s3Storage}: {s3StorageChange > 0 ? '+' : ''}{s3StorageChange?.toFixed(2) || 0} GB
+                  </div>
                 </div>
-                {displayMethod === 'combined' ? (
-                  <>
-                    <div className="text-gray-600 mt-1">
-                      {t.days}: {change.original.hotDays + change.original.coldDays} {arrow} {change.current.hotDays + change.current.coldDays}
-                    </div>
-                    <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
-                    <div className="text-sm ml-2 text-gray-800">
-                      {t.storage}: {totalStorageChange > 0 ? '+' : ''}{totalStorageChange.toFixed(2)} GB
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-gray-600 mt-1">
-                      {t.hotTier}: {change.original.hotDays} {arrow} {change.current.hotDays} {t.days}
-                    </div>
-                    <div className="text-gray-600">
-                      {t.coldTier}: {change.original.coldDays} {arrow} {change.current.coldDays} {t.days}
-                    </div>
-                    <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
-                    <div className="text-sm ml-2 text-gray-800">
-                      {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{(change.current.elasticStorage - change.original.elasticStorage).toFixed(2)} GB
-                    </div>
-                    <div className="text-sm ml-2 text-gray-800">
-                      {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{(change.current.s3Storage - change.original.s3Storage).toFixed(2)} GB
-                    </div>
-                  </>
-                )}
-              </div>
-            );
+              );
+            } else {
+              const totalStorageChange = (change.current.elasticStorage + change.current.s3Storage) - (change.original.elasticStorage + change.original.s3Storage);
+              const hebrewIndexName = indices.find(index => index.name === change.name)?.hebrewName || change.name;
+
+              return (
+                <div key={change.name} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-blue-500`}>
+                  <div className="flex justify-between items-start">
+                    <div className="font-medium text-gray-800">{translateIndexNames ? hebrewIndexName : change.name}</div>
+                    <button
+                      onClick={() => handleRevertIndexChange(change.name)}
+                      className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
+                    </button>
+                  </div>
+                  {displayMethod === 'combined' ? (
+                    <>
+                      <div className="text-gray-600 mt-1">
+                        {t.days}: {change.original.hotDays + change.original.coldDays} {arrow} {change.current.hotDays + change.current.coldDays}
+                      </div>
+                      <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                      <div className="text-sm ml-2 text-gray-800">
+                        {t.storage}: {totalStorageChange > 0 ? '+' : ''}{totalStorageChange.toFixed(2)} GB
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-gray-600 mt-1">
+                        {t.hotTier}: {change.original.hotDays} {arrow} {change.current.hotDays} {t.days}
+                      </div>
+                      <div className="text-gray-600">
+                        {t.coldTier}: {change.original.coldDays} {arrow} {change.current.coldDays} {t.days}
+                      </div>
+                      <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                      <div className="text-sm ml-2 text-gray-800">
+                        {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{(change.current.elasticStorage - change.original.elasticStorage).toFixed(2)} GB
+                      </div>
+                      <div className="text-sm ml-2 text-gray-800">
+                        {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{(change.current.s3Storage - change.original.s3Storage).toFixed(2)} GB
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            }
           })
         ) : (
           <div className="text-gray-500 text-center py-4">

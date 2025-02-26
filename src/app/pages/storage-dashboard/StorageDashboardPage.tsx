@@ -84,7 +84,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       ...prev,
       {
         type: 'index',
-        indexName: newIndex.name,
+        name: newIndex.name,
         original: {
           hotDays: 0,
           coldDays: 0,
@@ -100,6 +100,26 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       }
     ]));
     setShowAddIndex(false);
+  };
+
+  const handleAddSource = (newSource: SourceData) => {
+    setSources(prevSources => [newSource, ...prevSources]);
+    setChangeLog(prev => ([
+      ...prev,
+      {
+        type: 'source',
+        name: newSource.name,
+        relatedIndex: newSource.relatedIndex,
+        original: {
+          elasticStorage: 0,
+          s3Storage: 0,
+        },
+        current: {
+          elasticStorage: newSource.elasticStorage,
+          s3Storage: newSource.S3Storage,
+        }
+      }
+    ]));
   };
 
   const handleIndexToggle = (indexName: string) => {
@@ -129,10 +149,10 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       const originalIndex = indices.data?.find(i => i.name === indexName);
 
       setChangeLog(prev => ([
-        ...prev.filter(entry => entry.indexName !== indexName),
+        ...prev.filter(entry => entry.name !== indexName),
         {
           type: 'index',
-          indexName,
+          name: indexName,
           original: {
             hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
             coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
@@ -208,10 +228,10 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       const originalIndex = indices.data?.find(i => i.name === indexName);
 
       setChangeLog(prev => ([
-        ...prev.filter(entry => entry.indexName !== indexName),
+        ...prev.filter(entry => entry.name !== indexName),
         {
           type: 'index',
-          indexName,
+          name: indexName,
           original: {
             hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
             coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
@@ -243,7 +263,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     }));
   };
 
-  const handleRevertChange = (indexName: string) => {
+  const handleRevertIndexChange = (indexName: string) => {
     const originalIndex = indices.data?.find(i => i.name === indexName);
     if (!originalIndex) {
       // If the index was newly added, remove it
@@ -258,7 +278,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       setIndicesSelection(prev => ({ ...prev, [indexName]: true }));
     }
 
-    setChangeLog(prev => prev.filter(entry => entry.indexName !== indexName));
+    setChangeLog(prev => prev.filter(entry => entry.name !== indexName));
   };
 
   const handleRemoveIndex = (indexName: string) => {
@@ -274,13 +294,13 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     setChangeLog(prev => {
       const isNewIndex = !indices.data?.some(index => index.name === indexName);
       if (isNewIndex) {
-        return prev.filter(entry => entry.indexName !== indexName);
+        return prev.filter(entry => entry.name !== indexName);
       }
       return [
-        ...prev.filter(entry => entry.indexName !== indexName),
+        ...prev.filter(entry => entry.name !== indexName),
         {
           type: 'index',
-          indexName,
+          name: indexName,
           original: {
             hotDays: indexToRemove.hotRetentionDays,
             coldDays: indexToRemove.coldRetentionDays,
@@ -295,6 +315,43 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           }
         }
       ];
+    });
+  };
+
+  const handleSourceChange = (sourceName: string, newElasticStorage: number, newS3Storage: number) => {
+    setSources(prevSources => {
+      const updatedSources = prevSources.map(source => {
+        if (source.name === sourceName) {
+          return {
+            ...source,
+            elasticStorage: newElasticStorage,
+            S3Storage: newS3Storage
+          };
+        }
+        return source;
+      });
+
+      const updatedSource = updatedSources.find(s => s.name === sourceName) as SourceData;
+      const originalSource = sources.find(s => s.name === sourceName);
+
+      setChangeLog(prev => ([
+        ...prev.filter(entry => entry.name !== sourceName),
+        {
+          type: 'source',
+          name: sourceName,
+          relatedIndex: updatedSource.relatedIndex,
+          original: {
+            elasticStorage: originalSource ? originalSource.elasticStorage : 0,
+            s3Storage: originalSource ? originalSource.S3Storage : 0,
+          },
+          current: {
+            elasticStorage: updatedSource.elasticStorage,
+            s3Storage: updatedSource.S3Storage,
+          }
+        }
+      ]));
+
+      return updatedSources;
     });
   };
 
@@ -379,6 +436,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
               showAddIndex={showAddIndex}
               sources={sources}
               setSources={setSources}
+              handleAddSource={handleAddSource} // Ensure handleAddSource is passed down
             />
           )
         }
@@ -388,12 +446,13 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
               {...displayProps}
               changeLog={changeLog}
               indices={displayIndices}
-              handleRevertChange={handleRevertChange}
+              handleRevertIndexChange={handleRevertIndexChange}
               handleResetChanges={handleResetChanges}
               setIndices={setDisplayIndices}
               handleIndexRetentionChange={handleIndexRetentionChange}
               setSelectedIndices={setIndicesSelection}
               setChangeLog={setChangeLog}
+              handleSourceChange={handleSourceChange} // Pass handleSourceChange to ChangeLog
             />
           )
         }
