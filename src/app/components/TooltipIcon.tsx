@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 type TooltipIconProps = {
     content: string | React.ReactNode;
@@ -11,27 +12,39 @@ export const TooltipIcon = ({ content, alignment = 'left', children }: TooltipIc
     const [position, setPosition] = useState<'top' | 'bottom'>('bottom');
     const [currentAlignment, setAlignment] = useState<'left' | 'right'>(alignment);
     const tooltipRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
 
     useEffect(() => {
-        if (visible && tooltipRef.current) {
-            const { top, bottom, left, right } = tooltipRef.current.getBoundingClientRect();
-            if (bottom > window.innerHeight) {
+        if (visible && tooltipRef.current && triggerRef.current) {
+            const tooltipRect = tooltipRef.current.getBoundingClientRect();
+            const triggerRect = triggerRef.current.getBoundingClientRect();
+            const { innerHeight, innerWidth } = window;
+
+            let newStyle: React.CSSProperties = {};
+
+            if (triggerRect.bottom + tooltipRect.height > innerHeight) {
                 setPosition('top');
-            } else if (top < 0) {
-                setPosition('bottom');
-            }
-            if (right > window.innerWidth) {
-                setAlignment('right');
-            } else if (left < 0) {
-                setAlignment('left');
+                newStyle.top = `${triggerRect.top - tooltipRect.height}px`;
             } else {
-                setAlignment(alignment);
+                setPosition('bottom');
+                newStyle.top = `${triggerRect.bottom}px`;
             }
+
+            if (triggerRect.left + tooltipRect.width > innerWidth) {
+                setAlignment('right');
+                newStyle.left = `${triggerRect.right - tooltipRect.width}px`;
+            } else {
+                setAlignment('left');
+                newStyle.left = `${triggerRect.left}px`;
+            }
+
+            setTooltipStyle(newStyle);
         }
-    }, [visible, alignment]);
+    }, [visible, currentAlignment]);
 
     return (
-        <div className="relative inline-block">
+        <div className="relative inline-block" ref={triggerRef}>
             <div
                 onMouseEnter={() => setVisible(true)}
                 onMouseLeave={() => setVisible(false)}
@@ -45,15 +58,17 @@ export const TooltipIcon = ({ content, alignment = 'left', children }: TooltipIc
                     </span>
                 )}
             </div>
-            {visible && (
+            {visible && createPortal(
                 <div
                     ref={tooltipRef}
-                    className={`absolute z-10 w-48 p-3 text-sm text-white bg-gray-900 rounded-lg shadow-md transition-opacity duration-300 text-${alignment} ${
-                        position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+                    style={tooltipStyle}
+                    className={`fixed z-10 w-48 p-3 text-sm text-white bg-gray-900 rounded-lg shadow-md transition-opacity duration-300 ${
+                        position === 'top' ? 'mb-2' : ' mt-2'
                     } ${currentAlignment === 'right' ? 'right-0' : 'left-0'}`}
                 >
                     {content}
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
