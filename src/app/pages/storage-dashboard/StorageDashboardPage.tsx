@@ -310,6 +310,11 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     }
   };
 
+  const handleRemoveSource = (sourceName: string) => {
+    setSources(prevSources => prevSources.filter(source => source.name !== sourceName));
+    removeChangeLogEntry(sourceName);
+  };
+
   const displayProps: {
     direction: Direction,
     translateNames: boolean,
@@ -384,6 +389,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
               setShowAddSourceGroup={setShowAddSourceGroup}
               sources={sources}
               handleAddSource={handleAddSource}
+              handleRemoveSource={handleRemoveSource}
             />
           )
         }

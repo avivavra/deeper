@@ -15,7 +15,8 @@ type RetentionManagementProps = {
     handleRemoveSourceGroup: (name: string) => void;
     setShowAddSourceGroup: (show: boolean) => void;
     sources: Source[];
-    handleAddSource: (newSource: Source) => void
+    handleAddSource: (newSource: Source) => void;
+    handleRemoveSource: (sourceName: string) => void;
 };
 
 export const RetentionManagement = ({
@@ -29,7 +30,8 @@ export const RetentionManagement = ({
     handleRemoveSourceGroup,
     setShowAddSourceGroup,
     sources,
-    handleAddSource: handleAddSourceExternal
+    handleAddSource: handleAddSourceExternal,
+    handleRemoveSource
 }: RetentionManagementProps) => {
     const [showAddSource, setShowAddSource] = useState(false);
     const [relatedSourceGroup, setRelatedSourceGroup] = useState<SourceGroup | null>(null);
@@ -141,8 +143,14 @@ export const RetentionManagement = ({
                                                     </>
                                                 }
                                             >
-                                                <span className="ml-2 bg-gray-200 text-gray-800 text-sm font-semibold mr-2 px-3 py-2 rounded-md border border-gray-300 cursor-pointer">
+                                                <span className="ml-2 bg-gray-200 text-gray-800 text-sm font-semibold mr-2 px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center">
                                                     {source.name}
+                                                    <button
+                                                        onClick={() => handleRemoveSource(source.name)}
+                                                        className="ml-2 text-gray-500 hover:text-gray-800"
+                                                    >
+                                                        &times;
+                                                    </button>
                                                 </span>
                                             </TooltipIcon>
                                         ))}
