@@ -86,4 +86,8 @@ export type Translation = {
     sourceNamePlaceholder: string;
     sourceNameError: string;
     addSourceButton: string;
+    addSourceGroupExplanation: string;
+    addSourceExplanation: string;
+    elasticsearchStorageExplanation: string;
+    s3StorageExplanation: string;
 };
