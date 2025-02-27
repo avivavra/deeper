@@ -2,6 +2,7 @@ import React from 'react';
 import { Translation } from '../models';
 import { config } from '../../../../config';
 import { FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
+import { TooltipIcon } from '../../../components/TooltipIcon';
 
 type StorageUsageOverviewProps = {
   usedElasticStorage: number;
@@ -69,13 +70,23 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
       </div>
       <div className="space-y-6">
         <StorageBar
-          label={t.elasticsearchStorage}
+          label={
+            <>
+              {t.elasticsearchStorage}
+              <TooltipIcon content={t.elasticsearchStorageExplanation} />
+            </>
+          }
           usedStorage={usedElasticStorage}
           totalStorage={totalElasticStorage}
           storagePercentage={elasticStoragePercentage}
         />
         <StorageBar
-          label={t.s3Storage}
+          label={
+            <>
+              {t.s3Storage}
+              <TooltipIcon content={t.s3StorageExplanation} />
+            </>
+          }
           usedStorage={usedS3Storage}
           totalStorage={totalS3Storage}
           storagePercentage={s3StoragePercentage}
