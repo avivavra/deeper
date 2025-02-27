@@ -35,6 +35,10 @@ export const RetentionManagement = ({
 }: RetentionManagementProps) => {
     const [showAddSource, setShowAddSource] = useState(false);
     const [relatedSourceGroup, setRelatedSourceGroup] = useState<SourceGroup | null>(null);
+    const [editingHotRetention, setEditingHotRetention] = useState<string | null>(null);
+    const [editingColdRetention, setEditingColdRetention] = useState<string | null>(null);
+    const [hotRetentionValue, setHotRetentionValue] = useState<number | null>(null);
+    const [coldRetentionValue, setColdRetentionValue] = useState<number | null>(null);
 
     const handleRetentionChange = (sourceGroupName: string, newHotDays: number, newColdDays: number) => {
         const sourceGroup = filteredSourceGroups.find(i => i.name === sourceGroupName);
@@ -47,6 +51,49 @@ export const RetentionManagement = ({
         const newS3Storage = sourceGroup.S3Storage + (sourceGroup.S3StoragePerColdTierDay * coldDaysDiff);
 
         handleSourceGroupRetentionChange(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+    };
+
+    const handleHotRetentionDoubleClick = (sourceGroupName: string, currentHotDays: number) => {
+        setEditingHotRetention(sourceGroupName);
+        setHotRetentionValue(currentHotDays);
+    };
+
+    const handleColdRetentionDoubleClick = (sourceGroupName: string, currentColdDays: number) => {
+        setEditingColdRetention(sourceGroupName);
+        setColdRetentionValue(currentColdDays);
+    };
+
+    const handleHotRetentionBlur = (sourceGroupName: string) => {
+        if (hotRetentionValue !== null) {
+            const newHotDays = hotRetentionValue < 1 ? 1 : hotRetentionValue;
+            setEditingHotRetention(null);
+            const sourceGroup = filteredSourceGroups.find(i => i.name === sourceGroupName);
+            if (sourceGroup) {
+                handleRetentionChange(sourceGroupName, newHotDays, sourceGroup.coldRetentionDays);
+            }
+        }
+    };
+
+    const handleColdRetentionBlur = (sourceGroupName: string) => {
+        if (coldRetentionValue !== null) {
+            setEditingColdRetention(null);
+            const sourceGroup = filteredSourceGroups.find(i => i.name === sourceGroupName);
+            if (sourceGroup) {
+                handleRetentionChange(sourceGroupName, sourceGroup.hotRetentionDays, coldRetentionValue);
+            }
+        }
+    };
+
+    const handleHotRetentionKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, sourceGroupName: string) => {
+        if (e.key === 'Enter') {
+            handleHotRetentionBlur(sourceGroupName);
+        }
+    };
+
+    const handleColdRetentionKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, sourceGroupName: string) => {
+        if (e.key === 'Enter') {
+            handleColdRetentionBlur(sourceGroupName);
+        }
     };
 
     const handleAddSource = (sourceGroup: SourceGroup) => {
@@ -187,7 +234,20 @@ export const RetentionManagement = ({
                                         <div className="space-y-2 mt-4">
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span>{t.hotTierRetention}</span>
-                                                <span>{sourceGroup.hotRetentionDays}</span>
+                                                {editingHotRetention === sourceGroup.name ? (
+                                                    <input
+                                                        type="number"
+                                                        value={hotRetentionValue !== null ? hotRetentionValue : sourceGroup.hotRetentionDays}
+                                                        onChange={(e) => setHotRetentionValue(parseInt(e.target.value))}
+                                                        onBlur={() => handleHotRetentionBlur(sourceGroup.name)}
+                                                        onKeyPress={(e) => handleHotRetentionKeyPress(e, sourceGroup.name)}
+                                                        className="border rounded p-1 w-16"
+                                                    />
+                                                ) : (
+                                                    <span onDoubleClick={() => handleHotRetentionDoubleClick(sourceGroup.name, sourceGroup.hotRetentionDays)}>
+                                                        {sourceGroup.hotRetentionDays}
+                                                    </span>
+                                                )}
                                             </div>
                                             <CustomSlider
                                                 resetKey={`hot-${sourceGroup.name}-${sourceGroup.hotRetentionDays}`}
@@ -201,7 +261,20 @@ export const RetentionManagement = ({
                                         <div className="space-y-2 mt-4">
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span>{t.coldTierRetention}</span>
-                                                <span>{sourceGroup.coldRetentionDays}</span>
+                                                {editingColdRetention === sourceGroup.name ? (
+                                                    <input
+                                                        type="number"
+                                                        value={coldRetentionValue !== null ? coldRetentionValue : sourceGroup.coldRetentionDays}
+                                                        onChange={(e) => setColdRetentionValue(parseInt(e.target.value))}
+                                                        onBlur={() => handleColdRetentionBlur(sourceGroup.name)}
+                                                        onKeyPress={(e) => handleColdRetentionKeyPress(e, sourceGroup.name)}
+                                                        className="border rounded p-1 w-16"
+                                                    />
+                                                ) : (
+                                                    <span onDoubleClick={() => handleColdRetentionDoubleClick(sourceGroup.name, sourceGroup.coldRetentionDays)}>
+                                                        {sourceGroup.coldRetentionDays}
+                                                    </span>
+                                                )}
                                             </div>
                                             <CustomSlider
                                                 resetKey={`cold-${sourceGroup.name}-${sourceGroup.coldRetentionDays}`}
