@@ -57,6 +57,7 @@ export const GenericDropdown: React.FC<GenericDropdownProps> = ({ buttonLabel, o
       ref={dropdownMenuRef}
       className={`absolute ${width} rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50`}
       style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+      onMouseDown={(event) => event.stopPropagation()} // Prevent dropdown from closing
     >
       <div className="py-1">
         {options.map(option => (
