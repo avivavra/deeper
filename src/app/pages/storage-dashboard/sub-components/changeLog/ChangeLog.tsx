@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { Trash2, Share2, Upload, RotateCw } from 'lucide-react';
-import { IndexData, ChangeLogEntry, Direction, Translation } from '../../models';
+import { SourceGroup, ChangeLogEntry, Direction, Translation } from '../../models';
 import { GenericDropdown, GenericModal } from '../../../../components';
 
 interface ChangeLogProps {
   changeLog: ChangeLogEntry[];
   direction: Direction;
-  indices: IndexData[];
-  handleRevertIndexChange: (indexName: string) => void;
+  sourceGroups: SourceGroup[];
+  handleRevertSourceGroupChange: (name: string) => void;
   handleResetChanges: () => void;
-  handleIndexRetentionChange: (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
+  handleSourceGroupRetentionChange: (name: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
   handleSourceChange: (sourceName: string, newElasticStorage: number, newS3Storage: number) => void;
   t: Translation;
-  translateIndexNames: boolean;
-  handleRemoveIndex: (indexName: string) => void;
-  handleAddNewIndex: (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
+  translateNames: boolean;
+  handleRemoveSourceGroup: (name: string) => void;
+  handleAddNewSourceGroup: (name: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
 }
 
 const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
@@ -33,7 +33,7 @@ S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.curren
       const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
       const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
 
-      return `Index: ${change.name}
+      return `Source Group: ${change.name}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
 Elasticsearch Storage: ${change.original.elasticStorage?.toFixed(2) || 0} GB → ${change.current.elasticStorage?.toFixed(2) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange?.toFixed(2) || 0} GB)
@@ -44,12 +44,12 @@ S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.curren
 };
 
 const parseChangeLog = (text: string) => {
-  const parsedEntries: { indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number }[] = [];
+  const parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number }[] = [];
   const entries = text.split('\n\n');
   entries.forEach(entry => {
     const lines = entry.trim().split('\n');
     if (lines.length >= 5) {
-      const indexName = lines[0].replace('Index: ', '');
+      const sourceGroupName = lines[0].replace('Source Group: ', '');
       const hotDaysMatch = lines[1].match(/Hot Retention Days: \d+ → (\d+) days/);
       const coldDaysMatch = lines[2].match(/Cold Retention Days: \d+ → (\d+) days/);
       const elasticStorageMatch = lines[3].match(/Elasticsearch Storage: \d+(\.\d+)? GB → (\d+(\.\d+)?) GB/);
@@ -57,7 +57,7 @@ const parseChangeLog = (text: string) => {
 
       if (hotDaysMatch && coldDaysMatch && elasticStorageMatch && s3StorageMatch) {
         parsedEntries.push({
-          indexName,
+          sourceGroupName: sourceGroupName,
           newHotDays: parseInt(hotDaysMatch[1]),
           newColdDays: parseInt(coldDaysMatch[1]),
           newElasticStorage: parseFloat(elasticStorageMatch[2]),
@@ -72,15 +72,15 @@ const parseChangeLog = (text: string) => {
 export const ChangeLog: React.FC<ChangeLogProps> = ({
   changeLog,
   direction,
-  indices,
-  handleRevertIndexChange,
+  sourceGroups,
+  handleRevertSourceGroupChange,
   handleResetChanges,
-  handleIndexRetentionChange,
+  handleSourceGroupRetentionChange,
   handleSourceChange,
   t,
-  translateIndexNames,
-  handleRemoveIndex,
-  handleAddNewIndex,
+  translateNames,
+  handleRemoveSourceGroup,
+  handleAddNewSourceGroup,
 }) => {
   const arrow = direction === 'ltr' ? '→' : '←';
   const [showImportModal, setShowImportModal] = useState(false);
@@ -103,7 +103,7 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
   const handleExportToEmail = () => {
     const text = formatChangeLog(changeLog);
 
-    const subject = 'Elasticsearch Index Changes';
+    const subject = 'Elasticsearch Changes';
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
     window.location.href = mailtoLink;
   };
@@ -118,18 +118,18 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
     });
   };
 
-  const processImportedEntries = (parsedEntries: { indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number }[]) => {
+  const processImportedEntries = (parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number }[]) => {
     try {
-      parsedEntries.forEach(({ indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage }) => {
-        const isRemovedIndex = newHotDays === 0 && newColdDays === 0;
-        if (isRemovedIndex) {
-          handleRemoveIndex(indexName);
+      parsedEntries.forEach(({ sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage }) => {
+        const isRemovedSourceGroup = newHotDays === 0 && newColdDays === 0;
+        if (isRemovedSourceGroup) {
+          handleRemoveSourceGroup(sourceGroupName);
         } else {
-          const isExistingIndex = indices.find(index => index.name === indexName);
-          if (isExistingIndex) {
-            handleIndexRetentionChange(indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+          const isExistingSourceGroup = sourceGroups.find(sourceGroup => sourceGroup.name === sourceGroupName);
+          if (isExistingSourceGroup) {
+            handleSourceGroupRetentionChange(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
           } else {
-            handleAddNewIndex(indexName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+            handleAddNewSourceGroup(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
           }
         }
       });
@@ -253,14 +253,14 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
                 </div>
               );
             } else {
-              const hebrewIndexName = indices.find(index => index.name === change.name)?.hebrewName || change.name;
+              const hebrewName = sourceGroups.find(sourceGroup => sourceGroup.name === change.name)?.hebrewName || change.name;
 
               return (
                 <div key={change.name} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-blue-500`}>
                   <div className="flex justify-between items-start">
-                    <div className="font-medium text-gray-800">{translateIndexNames ? hebrewIndexName : change.name}</div>
+                    <div className="font-medium text-gray-800">{translateNames ? hebrewName : change.name}</div>
                     <button
-                      onClick={() => handleRevertIndexChange(change.name)}
+                      onClick={() => handleRevertSourceGroupChange(change.name)}
                       className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
                     >
                       <Trash2 className="h-4 w-4 mx-2 text-gray-800" />

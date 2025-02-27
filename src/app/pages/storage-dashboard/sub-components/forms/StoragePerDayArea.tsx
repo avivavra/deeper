@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { IndexData, Translation, NewIndexInputType } from '../../models';
+import { SourceGroup, Translation, StoragePerDayInputType } from '../../models';
 import { convertKBToGB } from '../../../../utils';
 import { config } from '../../../../../config';
 
@@ -8,24 +8,24 @@ const DAILY_SECONDS = 86400;
 interface StoragePerDayAreaProps {
     t: Translation;
     errors: { [key: string]: boolean };
-    indices: IndexData[];
-    translateIndexNames: boolean;
+    sourceGroups: SourceGroup[];
+    translateNames: boolean;
     onStorageRatesChange: (rates: { elasticStoragePerHotTierDay: number; elasticStoragePerColdTierDay: number; S3StoragePerColdTierDay: number }) => void;
 }
 
-export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors, indices, translateIndexNames, onStorageRatesChange }) => {
+export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors, sourceGroups, translateNames, onStorageRatesChange }) => {
     const [storageValues, setStorageValues] = useState({
         docSize: '',
         frequency: '',
         avgDocs: '',
-        inputType: 'frequency' as NewIndexInputType,
-        importFromIndex: ''
+        inputType: 'frequency' as StoragePerDayInputType,
+        importFromSourceGroup: ''
     });
 
     const inputTypes = [
         { value: 'frequency', label: t.docFrequency },
         { value: 'avgDocs', label: t.avgDocs },
-        { value: 'import', label: t.importFromIndex }
+        { value: 'import', label: t.importFromSourceGroup }
     ];
 
     const handleChange = (values: Partial<typeof storageValues>) => {
@@ -37,12 +37,12 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
     useEffect(() => {
         let rates;
         if (storageValues.inputType === 'import') {
-            const importedIndex = indices.find(index => index.name === storageValues.importFromIndex);
-            if (importedIndex) {
+            const importedSourceGroup = sourceGroups.find(sourceGroup => sourceGroup.name === storageValues.importFromSourceGroup);
+            if (importedSourceGroup) {
                 rates = {
-                    elasticStoragePerHotTierDay: importedIndex.elasticStoragePerHotTierDay,
-                    elasticStoragePerColdTierDay: importedIndex.elasticStoragePerColdTierDay,
-                    S3StoragePerColdTierDay: importedIndex.S3StoragePerColdTierDay
+                    elasticStoragePerHotTierDay: importedSourceGroup.elasticStoragePerHotTierDay,
+                    elasticStoragePerColdTierDay: importedSourceGroup.elasticStoragePerColdTierDay,
+                    S3StoragePerColdTierDay: importedSourceGroup.S3StoragePerColdTierDay
                 };
             }
         } else if (storageValues.inputType === 'frequency') {
@@ -63,14 +63,14 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
         if (rates) {
             memoizedOnStorageRatesChange(rates);
         }
-    }, [storageValues, indices, memoizedOnStorageRatesChange]);
+    }, [storageValues, sourceGroups, memoizedOnStorageRatesChange]);
 
     return (
         <div className="bg-gray-50 p-4 rounded-lg space-y-4">
             <div className="mb-3">
                 <select
                     value={storageValues.inputType}
-                    onChange={(e) => handleChange({ inputType: e.target.value as NewIndexInputType })}
+                    onChange={(e) => handleChange({ inputType: e.target.value as StoragePerDayInputType })}
                     className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
                     {inputTypes.map(type => (
@@ -82,16 +82,16 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
             </div>
             {storageValues.inputType === 'import' && (
                 <div>
-                    <label className="text-sm font-medium text-gray-800">{t.importFromIndex}</label>
+                    <label className="text-sm font-medium text-gray-800">{t.importFromSourceGroup}</label>
                     <select
-                        onChange={(e) => handleChange({ importFromIndex: e.target.value })}
-                        className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${errors.importFromIndex ? 'border-red-500' : ''}`}
-                        aria-placeholder={t.importFromIndexPlaceholder}
+                        onChange={(e) => handleChange({ importFromSourceGroup: e.target.value })}
+                        className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${errors.importFromSourceGroup ? 'border-red-500' : ''}`}
+                        aria-placeholder={t.importFromSourceGroupPlaceholder}
                     >
-                        <option value="">{t.importFromIndexPlaceholder}</option>
-                        {indices.map(index => (
-                            <option key={index.name} value={index.name}>
-                                {translateIndexNames ? index.hebrewName : index.name}
+                        <option value="">{t.importFromSourceGroupPlaceholder}</option>
+                        {sourceGroups.map(sourceGroup => (
+                            <option key={sourceGroup.name} value={sourceGroup.name}>
+                                {translateNames ? sourceGroup.hebrewName : sourceGroup.name}
                             </option>
                         ))}
                     </select>

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ClusterMetadata, IndexData, Audience, ChangeLogEntry, Direction, Translation, SourceData } from './models';
-import { ChangeLog, useChangeLog, StorageHeader, StorageUsageOverview, IndexRetentionPeriodsChart, IndexRetentionManagement, AddIndexForm } from './sub-components';
+import { ClusterMetadata, SourceGroup, Audience, ChangeLogEntry, Direction, Translation, Source } from './models';
+import { ChangeLog, useChangeLog, StorageHeader, StorageUsageOverview, RetentionPeriodsChart, RetentionManagement, AddSourceGroupForm } from './sub-components';
 import { GenericModal } from '../../components';
 import { ClusterSummarizerFactory } from '../../../api';
 import { StorageDashboardLayout } from './StorageDashboardLayout';
@@ -32,32 +32,32 @@ type StorageDashboardPageProps = {
 export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode }: StorageDashboardPageProps) => {
   const { audience, setAudience, direction, t } = useAudience(defaultMode);
   const { isEditMode, handleEditModeToggle } = useEditMode();
-  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, indices, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata);
+  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, sourceGroups, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata);
 
-  const [displayIndices, setDisplayIndices] = useState<IndexData[]>([]);
-  const [indicesSelection, setIndicesSelection] = useState<{ [key: string]: boolean }>({});
+  const [displaySourceGroups, setDisplaySourceGroups] = useState<SourceGroup[]>([]);
+  const [sourceGroupsSelection, setSourceGroupsSelection] = useState<{ [key: string]: boolean }>({});
   const { changeLog, getChangeLogEntry, emptyChangeLog, addChangeLogEntry, updateChangeLogEntry, removeChangeLogEntry } = useChangeLog();
-  const [showAddIndex, setShowAddIndex] = useState(false);
-  const [sources, setSources] = useState<SourceData[]>([]);
+  const [showAddSourceGroup, setShowAddSourceGroup] = useState(false);
+  const [sources, setSources] = useState<Source[]>([]);
 
   const handleResetChanges = () => {
-    if (indices.status === 'succeeded' && indices.data) {
-      setDisplayIndices(indices.data);
-      setIndicesSelection(indices.data.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+    if (sourceGroups.status === 'succeeded' && sourceGroups.data) {
+      setDisplaySourceGroups(sourceGroups.data);
+      setSourceGroupsSelection(sourceGroups.data.reduce((acc, sourceGroup) => ({ ...acc, [sourceGroup.name]: true }), {}));
       setSources([]);
       emptyChangeLog();
     }
   };
 
   useEffect(() => {
-    if (indices.status === 'succeeded') {
-      const indicesData = indices.data;
-      setDisplayIndices(indicesData);
-      setIndicesSelection(indicesData.reduce((acc, index) => ({ ...acc, [index.name]: true }), {}));
+    if (sourceGroups.status === 'succeeded') {
+      const sourceGroupsData = sourceGroups.data;
+      setDisplaySourceGroups(sourceGroupsData);
+      setSourceGroupsSelection(sourceGroupsData.reduce((acc, sourceGroup) => ({ ...acc, [sourceGroup.name]: true }), {}));
     }
 
     handleResetChanges();
-  }, [indices]);
+  }, [sourceGroups]);
 
   useEffect(() => {
     if (!isEditMode) {
@@ -73,14 +73,14 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
   const elasticStoragePercentage = totalElasticStorage ? (usedElasticStorage / totalElasticStorage) * 100 : 0;
   const s3StoragePercentage = totalS3Storage ? (usedS3Storage / totalS3Storage) * 100 : 0;
 
-  const filteredIndices = displayIndices ? displayIndices.filter(index => indicesSelection[index.name]) : [];
+  const filteredSourceGroups = displaySourceGroups ? displaySourceGroups.filter(sourceGroup => sourceGroupsSelection[sourceGroup.name]) : [];
 
-  const handleAddIndex = (newIndex: IndexData) => {
-    setDisplayIndices([newIndex, ...displayIndices]);
-    setIndicesSelection(prev => ({ ...prev, [newIndex.name]: true }));
+  const handleAddSourceGroup = (newSourceGroup: SourceGroup) => {
+    setDisplaySourceGroups([newSourceGroup, ...displaySourceGroups]);
+    setSourceGroupsSelection(prev => ({ ...prev, [newSourceGroup.name]: true }));
     addChangeLogEntry({
-      type: 'index',
-      name: newIndex.name,
+      type: 'sourceGroup',
+      name: newSourceGroup.name,
       original: {
         hotDays: 0,
         coldDays: 0,
@@ -88,25 +88,25 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
         s3Storage: 0,
       },
       current: {
-        hotDays: newIndex.hotRetentionDays,
-        coldDays: newIndex.coldRetentionDays,
-        elasticStorage: newIndex.elasticStorage,
-        s3Storage: newIndex.S3Storage,
+        hotDays: newSourceGroup.hotRetentionDays,
+        coldDays: newSourceGroup.coldRetentionDays,
+        elasticStorage: newSourceGroup.elasticStorage,
+        s3Storage: newSourceGroup.S3Storage,
       }
     });
   };
 
-  const handleNewIndexSubmitted = (newIndex: IndexData) => {
-    handleAddIndex(newIndex);
-    setShowAddIndex(false);
+  const handleNewSourceGroupSubmitted = (newSourceGroup: SourceGroup) => {
+    handleAddSourceGroup(newSourceGroup);
+    setShowAddSourceGroup(false);
   };
 
-  const handleAddSource = (newSource: SourceData) => {
+  const handleAddSource = (newSource: Source) => {
     setSources(prevSources => [newSource, ...prevSources]);
     addChangeLogEntry({
       type: 'source',
       name: newSource.name,
-      relatedIndex: newSource.relatedIndex,
+      relatedSourceGroup: newSource.relatedSourceGroup,
       original: {
         elasticStorage: 0,
         s3Storage: 0,
@@ -118,19 +118,19 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     });
   };
 
-  const handleIndexToggle = (indexName: string) => {
-    setIndicesSelection(prev => ({
+  const handleSourceGroupToggle = (sourceGroupName: string) => {
+    setSourceGroupsSelection(prev => ({
       ...prev,
-      [indexName]: !prev[indexName]
+      [sourceGroupName]: !prev[sourceGroupName]
     }));
   };
 
-  const handleIndexRetentionChange = (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => {
-    setDisplayIndices(prevIndices => {
-      const updatedIndices = prevIndices.map(index => {
-        if (index.name === indexName) {
+  const handleSourceGroupRetentionChange = (name: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => {
+    setDisplaySourceGroups(prevSourceGroups => {
+      const updatedSourceGroups = prevSourceGroups.map(sourceGroup => {
+        if (sourceGroup.name === name) {
           return {
-            ...index,
+            ...sourceGroup,
             hotRetentionDays: newHotDays,
             coldRetentionDays: newColdDays,
             totalRetentionDays: newHotDays + newColdDays,
@@ -138,35 +138,35 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             S3Storage: newS3Storage
           };
         }
-        return index;
+        return sourceGroup;
       });
 
-      const updatedIndex = updatedIndices.find(i => i.name === indexName) as IndexData;
-      const originalIndex = indices.data?.find(i => i.name === indexName);
+      const updatedSourceGroup = updatedSourceGroups.find(i => i.name === name) as SourceGroup;
+      const originalSourceGroup = sourceGroups.data?.find(i => i.name === name);
 
-      updateChangeLogEntry(indexName, {
-        type: 'index',
-        name: indexName,
+      updateChangeLogEntry(name, {
+        type: 'sourceGroup',
+        name: name,
         original: {
-          hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
-          coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-          elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
-          s3Storage: originalIndex ? originalIndex.S3Storage : 0,
+          hotDays: originalSourceGroup ? originalSourceGroup.hotRetentionDays : 0,
+          coldDays: originalSourceGroup ? originalSourceGroup.coldRetentionDays : 0,
+          elasticStorage: originalSourceGroup ? originalSourceGroup.elasticStorage : 0,
+          s3Storage: originalSourceGroup ? originalSourceGroup.S3Storage : 0,
         },
         current: {
           hotDays: newHotDays,
           coldDays: newColdDays,
-          elasticStorage: updatedIndex.elasticStorage,
-          s3Storage: updatedIndex.S3Storage,
+          elasticStorage: updatedSourceGroup.elasticStorage,
+          s3Storage: updatedSourceGroup.S3Storage,
         }
       });
 
-      return updatedIndices;
+      return updatedSourceGroups;
     });
 
     // Update related sources
     setSources(prevSources => prevSources.map(source => {
-      if (source.relatedIndex === indexName) {
+      if (source.relatedSourceGroup === name) {
         const newElasticStorage = newHotDays * source.elasticStoragePerHotTierDay + newColdDays * source.elasticStoragePerColdTierDay;
         const newS3Storage = newColdDays * source.S3StoragePerColdTierDay;
 
@@ -180,7 +180,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     }));
 
     sources.forEach(source => {
-      if (source.relatedIndex === indexName) {
+      if (source.relatedSourceGroup === name) {
         const newElasticStorage = newHotDays * source.elasticStoragePerHotTierDay + newColdDays * source.elasticStoragePerColdTierDay;
         const newS3Storage = newColdDays * source.S3StoragePerColdTierDay;
 
@@ -189,7 +189,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
         updateChangeLogEntry(source.name, {
           type: 'source',
           name: source.name,
-          relatedIndex: source.relatedIndex,
+          relatedSourceGroup: source.relatedSourceGroup,
           original: {
             elasticStorage: change?.original.elasticStorage || 0,
             s3Storage: change?.original.s3Storage || 0,
@@ -203,39 +203,39 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     });
   };
 
-  const handleRevertIndexChange = (indexName: string) => {
-    const originalIndex = indices.data?.find(i => i.name === indexName);
-    if (!originalIndex) {
-      // If the index was newly added, remove it
-      setDisplayIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
-      setIndicesSelection(prev => {
-        const { [indexName]: _, ...rest } = prev;
+  const handleRevertSourceGroupChange = (name: string) => {
+    const originalSourceGroup = sourceGroups.data?.find(i => i.name === name);
+    if (!originalSourceGroup) {
+      // If the source group was newly added, remove it
+      setDisplaySourceGroups(prevSourceGroups => prevSourceGroups.filter(sourceGroup => sourceGroup.name !== name));
+      setSourceGroupsSelection(prev => {
+        const { [name]: _, ...rest } = prev;
         return rest;
       });
     } else {
-      // If the index was modified, revert to the original
-      setDisplayIndices(prevIndices => [originalIndex, ...prevIndices.filter(index => index.name !== indexName)]);
-      setIndicesSelection(prev => ({ ...prev, [indexName]: true }));
+      // If the source group was modified, revert to the original
+      setDisplaySourceGroups(prevSourceGroups => [originalSourceGroup, ...prevSourceGroups.filter(sourceGroup => sourceGroup.name !== name)]);
+      setSourceGroupsSelection(prev => ({ ...prev, [name]: true }));
     }
 
-    removeChangeLogEntry(indexName);
+    removeChangeLogEntry(name);
   };
 
-  const handleRemoveIndex = (indexName: string) => {
-    const originalIndex = indices.data?.find(i => i.name === indexName);
-    setDisplayIndices(prevIndices => prevIndices.filter(index => index.name !== indexName));
-    setIndicesSelection(prev => {
-      const { [indexName]: _, ...rest } = prev;
+  const handleRemoveSourceGroup = (name: string) => {
+    const originalSourceGroup = sourceGroups.data?.find(i => i.name === name);
+    setDisplaySourceGroups(prevSourceGroups => prevSourceGroups.filter(sourceGroup => sourceGroup.name !== name));
+    setSourceGroupsSelection(prev => {
+      const { [name]: _, ...rest } = prev;
       return rest;
     });
-    updateChangeLogEntry(indexName, {
-      type: 'index',
-      name: indexName,
+    updateChangeLogEntry(name, {
+      type: 'sourceGroup',
+      name: name,
       original: {
-        hotDays: originalIndex ? originalIndex.hotRetentionDays : 0,
-        coldDays: originalIndex ? originalIndex.coldRetentionDays : 0,
-        elasticStorage: originalIndex ? originalIndex.elasticStorage : 0,
-        s3Storage: originalIndex ? originalIndex.S3Storage : 0,
+        hotDays: originalSourceGroup ? originalSourceGroup.hotRetentionDays : 0,
+        coldDays: originalSourceGroup ? originalSourceGroup.coldRetentionDays : 0,
+        elasticStorage: originalSourceGroup ? originalSourceGroup.elasticStorage : 0,
+        s3Storage: originalSourceGroup ? originalSourceGroup.S3Storage : 0,
       },
       current: {
         hotDays: 0,
@@ -246,13 +246,13 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     });
   };
 
-  const handleAddNewIndex = (indexName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => {
+  const handleAddNewSourceGroup = (name: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => {
     const elasticStoragePerHotTierDay = newHotDays > 0 ? newElasticStorage / newHotDays : 0;
     const S3StoragePerColdTierDay = newColdDays > 0 ? newS3Storage / newColdDays : 0;
 
-    const newIndexData = {
-      name: indexName,
-      hebrewName: indexName,
+    const newSourceGroupData = {
+      name: name,
+      hebrewName: name,
       hotRetentionDays: newHotDays,
       coldRetentionDays: newColdDays,
       elasticStorage: newElasticStorage || 0,
@@ -266,7 +266,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       indexNamesByTier: { hotTier: [], coldTier: [] }
     };
 
-    handleAddIndex(newIndexData);
+    handleAddSourceGroup(newSourceGroupData);
   };
 
   const handleSourceChange = (sourceName: string, newElasticStorage: number, newS3Storage: number) => {
@@ -288,13 +288,13 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           return source;
         });
 
-        const updatedSource = updatedSources.find(s => s.name === sourceName) as SourceData;
+        const updatedSource = updatedSources.find(s => s.name === sourceName) as Source;
         const originalSource = sources.find(s => s.name === sourceName);
 
         updateChangeLogEntry(sourceName, {
           type: 'source',
           name: sourceName,
-          relatedIndex: updatedSource.relatedIndex,
+          relatedSourceGroup: updatedSource.relatedSourceGroup,
           original: {
             elasticStorage: originalSource ? originalSource.elasticStorage : 0,
             s3Storage: originalSource ? originalSource.S3Storage : 0,
@@ -312,13 +312,13 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
 
   const displayProps: {
     direction: Direction,
-    translateIndexNames: boolean,
+    translateNames: boolean,
     displayRates: boolean,
     t: Translation
   } = {
     direction,
     t,
-    translateIndexNames: audience === 'user',
+    translateNames: audience === 'user',
     displayRates: audience === 'developer'
   }
 
@@ -333,17 +333,17 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             clustersMetadata={clustersMetadata}
             selectedClusterMetadata={selectedClusterMetadata}
             setSelectedCluster={handleSetSelectedCluster}
-            indices={displayIndices}
-            selectedIndices={indicesSelection}
-            handleIndexToggle={handleIndexToggle}
+            sourceGroups={displaySourceGroups}
+            selectedSourceGroups={sourceGroupsSelection}
+            handleSourceGroupToggle={handleSourceGroupToggle}
             isEditMode={isEditMode}
             handleModeToggle={handleEditModeToggle}
           />
         }
         storageUsage={
-          selectedCluster.status === 'loading' || indices.status === 'loading' ? (
+          selectedCluster.status === 'loading' || sourceGroups.status === 'loading' ? (
             <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
-          ) : selectedCluster.status === 'error' || indices.status === 'error' ? (
+          ) : selectedCluster.status === 'error' || sourceGroups.status === 'error' ? (
             <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
           ) : (
             <StorageUsageOverview
@@ -358,31 +358,30 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           )
         }
         chart={
-          selectedCluster.status === 'loading' || indices.status === 'loading' ? (
+          selectedCluster.status === 'loading' || sourceGroups.status === 'loading' ? (
             <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
-          ) : selectedCluster.status === 'error' || indices.status === 'error' ? (
+          ) : selectedCluster.status === 'error' || sourceGroups.status === 'error' ? (
             <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
           ) : (
-            <IndexRetentionPeriodsChart
+            <RetentionPeriodsChart
               {...displayProps}
-              filteredIndices={filteredIndices}
+              filteredSourceGroups={filteredSourceGroups}
             />
           )
         }
         retentionManagement={
-          selectedCluster.status === 'loading' || indices.status === 'loading' ? (
+          selectedCluster.status === 'loading' || sourceGroups.status === 'loading' ? (
             <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
-          ) : selectedCluster.status === 'error' || indices.status === 'error' ? (
+          ) : selectedCluster.status === 'error' || sourceGroups.status === 'error' ? (
             <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
           ) : (
-            <IndexRetentionManagement
+            <RetentionManagement
               {...displayProps}
               isEditMode={isEditMode}
-              filteredIndices={filteredIndices}
-              handleIndexRetentionChange={handleIndexRetentionChange}
-              handleRemoveIndex={handleRemoveIndex}
-              setShowAddIndex={setShowAddIndex}
-              showAddIndex={showAddIndex}
+              filteredSourceGroups={filteredSourceGroups}
+              handleSourceGroupRetentionChange={handleSourceGroupRetentionChange}
+              handleRemoveSourceGroup={handleRemoveSourceGroup}
+              setShowAddSourceGroup={setShowAddSourceGroup}
               sources={sources}
               handleAddSource={handleAddSource}
             />
@@ -393,25 +392,25 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             <ChangeLog
               {...displayProps}
               changeLog={changeLog}
-              indices={displayIndices}
-              handleRevertIndexChange={handleRevertIndexChange}
+              sourceGroups={displaySourceGroups}
+              handleRevertSourceGroupChange={handleRevertSourceGroupChange}
               handleResetChanges={handleResetChanges}
-              handleIndexRetentionChange={handleIndexRetentionChange}
+              handleSourceGroupRetentionChange={handleSourceGroupRetentionChange}
               handleSourceChange={handleSourceChange}
-              handleRemoveIndex={handleRemoveIndex}
-              handleAddNewIndex={handleAddNewIndex}
+              handleRemoveSourceGroup={handleRemoveSourceGroup}
+              handleAddNewSourceGroup={handleAddNewSourceGroup}
             />
           )
         }
         isEditMode={isEditMode}
       />
-      {showAddIndex && (
-        <GenericModal showModal={showAddIndex} setShowModal={setShowAddIndex}>
-          <AddIndexForm
+      {showAddSourceGroup && (
+        <GenericModal showModal={showAddSourceGroup} setShowModal={setShowAddSourceGroup}>
+          <AddSourceGroupForm
             {...displayProps}
-            handleAddIndex={handleNewIndexSubmitted}
-            indices={displayIndices}
-            setShowAddIndex={setShowAddIndex}
+            handleAddSourceGroup={handleNewSourceGroupSubmitted}
+            sourceGroups={displaySourceGroups}
+            setShowAddSourceGroup={setShowAddSourceGroup}
           />
         </GenericModal>
       )}

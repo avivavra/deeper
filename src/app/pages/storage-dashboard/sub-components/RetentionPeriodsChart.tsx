@@ -1,11 +1,11 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
-import { IndexData, Direction, Translation } from '../models';
+import { SourceGroup, Direction, Translation } from '../models';
 
-type IndexRetentionPeriodsChartProps = {
+type RetentionPeriodsChartProps = {
   direction: Direction;
-  translateIndexNames: boolean;
-  filteredIndices: IndexData[];
+  translateNames: boolean;
+  filteredSourceGroups: SourceGroup[];
   t: Translation;
 };
 
@@ -23,21 +23,21 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   return null;
 };
 
-export const IndexRetentionPeriodsChart = ({ direction, translateIndexNames, filteredIndices, t }: IndexRetentionPeriodsChartProps) => {
+export const RetentionPeriodsChart = ({ direction, translateNames, filteredSourceGroups: filteredSourceGroups, t }: RetentionPeriodsChartProps) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-gray-800">{t.indexRetentionPeriods}</h2>
+        <h2 className="text-lg font-semibold text-gray-800">{t.retentionPeriods}</h2>
       </div>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={filteredIndices}
+            data={filteredSourceGroups}
             margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
             <XAxis
-              dataKey={translateIndexNames ? "hebrewName" : "name"}
+              dataKey={translateNames ? "hebrewName" : "name"}
               reversed={direction === 'rtl'}
             />
             <YAxis

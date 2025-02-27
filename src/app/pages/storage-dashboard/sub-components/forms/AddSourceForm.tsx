@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { IndexData, SourceData, Translation } from '../../models';
+import { SourceGroup, Source, Translation } from '../../models';
 import { StoragePerDayArea } from './StoragePerDayArea';
-import { IndexNameArea } from './IndexNameArea';
+import { NameArea } from './NameArea';
 
 const emptyNewSource = (): NewSource => ({
     name: '',
@@ -9,7 +9,7 @@ const emptyNewSource = (): NewSource => ({
     frequency: '',
     avgDocs: '',
     inputType: 'frequency',
-    importFromIndex: ''
+    importFromSourceGroup: ''
 });
 
 export type NewSource = {
@@ -18,19 +18,19 @@ export type NewSource = {
     frequency: string;
     avgDocs: string;
     inputType: string;
-    importFromIndex: string;
+    importFromSourceGroup: string;
 };
 
 interface AddSourceForm {
     t: Translation;
     setShowAddSource: React.Dispatch<React.SetStateAction<boolean>>;
-    handleAddSource: (newSourceData: SourceData) => void;
-    indices: IndexData[];
-    relatedIndex: IndexData;
-    translateIndexNames: boolean;
+    handleAddSource: (newSourceData: Source) => void;
+    sourceGroups: SourceGroup[];
+    relatedSourceGroup: SourceGroup;
+    translateNames: boolean;
 }
 
-export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, handleAddSource, indices, relatedIndex, translateIndexNames }) => {
+export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, handleAddSource, sourceGroups, relatedSourceGroup, translateNames }) => {
     const [newSource, setNewSource] = useState<NewSource>(emptyNewSource());
     const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
     const [storageRates, setStorageRates] = useState({
@@ -52,19 +52,19 @@ export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, ha
 
     const handleSubmit = () => {
         if (validateForm()) {
-            const elasticStorage = storageRates.elasticStoragePerHotTierDay * relatedIndex.hotRetentionDays +
-                storageRates.elasticStoragePerColdTierDay * relatedIndex.coldRetentionDays;
+            const elasticStorage = storageRates.elasticStoragePerHotTierDay * relatedSourceGroup.hotRetentionDays +
+                storageRates.elasticStoragePerColdTierDay * relatedSourceGroup.coldRetentionDays;
 
-            const S3Storage = storageRates.S3StoragePerColdTierDay * relatedIndex.coldRetentionDays;
+            const S3Storage = storageRates.S3StoragePerColdTierDay * relatedSourceGroup.coldRetentionDays;
 
-            const newSourceData: SourceData = {
+            const newSourceData: Source = {
                 name: newSource.name,
                 elasticStoragePerHotTierDay: storageRates.elasticStoragePerHotTierDay,
                 S3StoragePerColdTierDay: storageRates.S3StoragePerColdTierDay,
                 elasticStoragePerColdTierDay: storageRates.elasticStoragePerColdTierDay,
                 elasticStorage,
                 S3Storage,
-                relatedIndex: relatedIndex.name
+                relatedSourceGroup: relatedSourceGroup.name
             };
 
             handleAddSource(newSourceData);
@@ -75,7 +75,7 @@ export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, ha
         <div className="p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.addSource}</h2>
             <div className="space-y-4">
-                <IndexNameArea
+                <NameArea
                     label={t.sourceName}
                     value={newSource.name}
                     onChange={(e) => setNewSource(prev => ({ ...prev, name: e.target.value }))}
@@ -86,8 +86,8 @@ export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, ha
                 <StoragePerDayArea
                     t={t}
                     errors={errors}
-                    indices={indices}
-                    translateIndexNames={translateIndexNames}
+                    sourceGroups={sourceGroups}
+                    translateNames={translateNames}
                     onStorageRatesChange={handleStorageRatesChange}
                 />
                 <div className="flex justify-end gap-2 mt-6">

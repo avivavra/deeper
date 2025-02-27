@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface IndexNameAreaProps {
+interface NameAreaProps {
     label: string;
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -8,7 +8,7 @@ interface IndexNameAreaProps {
     error: boolean;
 }
 
-export const IndexNameArea: React.FC<IndexNameAreaProps> = ({ label, value, onChange, placeholder, error }) => (
+export const NameArea: React.FC<NameAreaProps> = ({ label, value, onChange, placeholder, error }) => (
     <div>
         <label className="text-sm font-medium text-gray-800">{label}</label>
         <input

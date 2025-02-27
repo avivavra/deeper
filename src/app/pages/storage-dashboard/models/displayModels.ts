@@ -2,10 +2,10 @@ export type Direction = 'rtl' | 'ltr';
 
 export type Audience = 'developer' | 'user';
 
-export type NewIndexInputType = 'frequency' | 'avgDocs' | 'import';
+export type StoragePerDayInputType = 'frequency' | 'avgDocs' | 'import';
 
-export type IndexChange = {
-    type: 'index';
+export type SourceGroupChange = {
+    type: 'sourceGroup';
     name: string;
     original: {
         hotDays: number;
@@ -24,7 +24,7 @@ export type IndexChange = {
 export type SourceChange = {
     type: 'source';
     name: string;
-    relatedIndex: string;
+    relatedSourceGroup: string;
     original: {
         elasticStorage: number;
         s3Storage: number;
@@ -35,14 +35,14 @@ export type SourceChange = {
     };
 };
 
-export type ChangeLogEntry = IndexChange | SourceChange;
+export type ChangeLogEntry = SourceGroupChange | SourceChange;
 
 export type Translation = {
     title: string;
     developerMode: string;
     userMode: string;
     selectCluster: string;
-    filterIndices: string;
+    filterSourceGroups: string;
     viewMode: string;
     editMode: string;
     changeLog: string;
@@ -51,9 +51,9 @@ export type Translation = {
     storageUsageOverview: string;
     elasticsearchStorage: string;
     s3Storage: string;
-    indexRetentionPeriods: string;
-    indexRetentionManagement: string;
-    addIndex: string;
+    retentionPeriods: string;
+    retentionManagement: string;
+    addSourceGroup: string;
     hotTierRetention: string;
     coldTierRetention: string;
     coldTierRetentionQuestion: string;
@@ -62,21 +62,21 @@ export type Translation = {
     coldTier: string;
     impact: string;
     noChanges: string;
-    indexName: string;
+    sourceGroupName: string;
     avgDocSize: string;
     inputType: string;
     docFrequency: string;
     avgDocs: string;
     cancel: string;
-    addIndexButton: string;
+    addSourceGroupButton: string;
     day: string;
     days: string;
     storage: string;
-    indexNamePlaceholder: string;
-    removeIndex: string;
+    sourceGroupNamePlaceholder: string;
+    removeSourceGroup: string;
     perSecond: string;
-    importFromIndex: string;
-    importFromIndexPlaceholder: string;
+    importFromSourceGroup: string;
+    importFromSourceGroupPlaceholder: string;
     copyToClipboard: string;
     importFromFile: string;
     importFromText: string;

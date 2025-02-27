@@ -1,4 +1,4 @@
-import { ClusterData, ClusterMetadata, IndexData } from "../app/pages/storage-dashboard/models";
+import { ClusterData, ClusterMetadata, SourceGroup } from "../app/pages/storage-dashboard/models";
 
 export const clustersMetadata: ClusterMetadata[] = [
   {
@@ -29,7 +29,7 @@ export const clusterB: ClusterData = {
   usedS3Storage: 627.5 // GB
 };
 
-export const clusterAIndices: IndexData[] = [
+export const clusterAIndices: SourceGroup[] = [
   {
     name: 'logs-production',
     hebrewName: 'לוגים-ייצור',
@@ -122,7 +122,7 @@ export const clusterAIndices: IndexData[] = [
   }
 ];
 
-export const clusterBIndices: IndexData[] = [
+export const clusterBIndices: SourceGroup[] = [
   {
     name: 'metrics-app1',
     hebrewName: 'מדדים-אפליקציה1',

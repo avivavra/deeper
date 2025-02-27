@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pencil, Eye } from 'lucide-react';
 import { GenericDropdown } from '../../../components';
-import { ClusterMetadata, IndexData, Audience, Translation } from '../models';
+import { ClusterMetadata, SourceGroup, Audience, Translation } from '../models';
 
 interface StorageHeaderProps {
   audience: Audience;
@@ -9,12 +9,12 @@ interface StorageHeaderProps {
   clustersMetadata: ClusterMetadata[];
   selectedClusterMetadata: ClusterMetadata;
   setSelectedCluster: (clusterName: string) => void;
-  indices: IndexData[];
-  selectedIndices: { [key: string]: boolean };
-  handleIndexToggle: (indexName: string) => void;
+  sourceGroups: SourceGroup[];
+  selectedSourceGroups: { [key: string]: boolean };
+  handleSourceGroupToggle: (name: string) => void;
   isEditMode: boolean;
   handleModeToggle: () => void;
-  translateIndexNames: boolean;
+  translateNames: boolean;
   t: Translation;
 }
 
@@ -24,12 +24,12 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
   clustersMetadata: clusters,
   selectedClusterMetadata,
   setSelectedCluster,
-  indices,
-  selectedIndices,
-  handleIndexToggle,
+  sourceGroups,
+  selectedSourceGroups,
+  handleSourceGroupToggle,
   isEditMode,
   handleModeToggle,
-  translateIndexNames,
+  translateNames,
   t
 }) => {
   return (
@@ -49,9 +49,9 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
         </div>
         <div className="flex gap-4">
           <GenericDropdown
-            buttonLabel={translateIndexNames ? selectedClusterMetadata.hebrewName : selectedClusterMetadata.name}
+            buttonLabel={translateNames ? selectedClusterMetadata.hebrewName : selectedClusterMetadata.name}
             options={clusters.map(cluster => ({
-              label: translateIndexNames ? cluster.hebrewName : cluster.name,
+              label: translateNames ? cluster.hebrewName : cluster.name,
               value: cluster.name,
               checked: selectedClusterMetadata?.name === cluster.name
             }))}
@@ -60,13 +60,13 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
             type="radio"
           />
           <GenericDropdown
-            buttonLabel={t.filterIndices}
-            options={indices.map(index => ({
-              label: translateIndexNames ? index.hebrewName : index.name,
-              value: index.name,
-              checked: selectedIndices[index.name]
+            buttonLabel={t.filterSourceGroups}
+            options={sourceGroups.map(sourceGroup => ({
+              label: translateNames ? sourceGroup.hebrewName : sourceGroup.name,
+              value: sourceGroup.name,
+              checked: selectedSourceGroups[sourceGroup.name]
             }))}
-            onSelect={(value) => handleIndexToggle(value)}
+            onSelect={(value) => handleSourceGroupToggle(value)}
             width="w-56"
             type="checkbox"
           />

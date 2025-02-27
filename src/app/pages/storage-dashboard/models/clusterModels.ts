@@ -1,6 +1,6 @@
-export type SourceData = {
+export type Source = {
     name: string;
-    relatedIndex: string;
+    relatedSourceGroup: string;
     elasticStorage: number;
     S3Storage: number;
     elasticStoragePerHotTierDay: number;
@@ -8,7 +8,7 @@ export type SourceData = {
     S3StoragePerColdTierDay: number;
 };
 
-export type IndexData = {
+export type SourceGroup = {
     name: string;
     hebrewName: string;
     hotRetentionDays: number;

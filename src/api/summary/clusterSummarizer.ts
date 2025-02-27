@@ -1,4 +1,4 @@
-import { ClusterData, ClusterMetadata, IndexData } from "../../app/pages/storage-dashboard/models";
+import { ClusterData, ClusterMetadata, SourceGroup } from "../../app/pages/storage-dashboard/models";
 import { ElasticsearchClusterApi, IlmPolicy, Index } from "../elasticsearch";
 import { S3BucketApi } from "../s3";
 import { convertToDays } from "../../app/utils";
@@ -51,7 +51,7 @@ export class ClusterSummarizer {
         };
     }
 
-    async summarizeIndices(): Promise<IndexData[]> {
+    async summarizeSourceGroups(): Promise<SourceGroup[]> {
         const [elasticIndexTemplates, s3Folders] = await Promise.all([
             this.getIndexTemplates(),
             this.s3BucketApi.getFolders()

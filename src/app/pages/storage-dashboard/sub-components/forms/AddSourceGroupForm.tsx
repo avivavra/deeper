@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { IndexData, Translation, NewIndexInputType } from '../../models';
-import { IndexNameArea } from './IndexNameArea';
+import { SourceGroup, Translation, StoragePerDayInputType } from '../../models';
+import { NameArea } from './NameArea';
 import { StoragePerDayArea } from './StoragePerDayArea';
 import { RetentionPeriodsArea } from './RetentionPeriodsArea';
 
-const emptyNewIndex = (): NewIndex => ({
+const emptyNewSourceGroup = (): NewSourceGroup => ({
     name: '',
     docSize: '',
     frequency: '',
@@ -12,30 +12,30 @@ const emptyNewIndex = (): NewIndex => ({
     inputType: 'frequency',
     totalRetention: '',
     coldRetention: '',
-    importFromIndex: ''
+    importFromSourceGroup: ''
 });
 
-export type NewIndex = {
+export type NewSourceGroup = {
     name: string;
     docSize: string;
     frequency: string;
     avgDocs: string;
-    inputType: NewIndexInputType;
+    inputType: StoragePerDayInputType;
     totalRetention: string;
     coldRetention: string;
-    importFromIndex: string;
+    importFromSourceGroup: string;
 };
 
-interface AddIndexForm {
+interface AddSourceGroupForm {
     t: Translation;
-    setShowAddIndex: React.Dispatch<React.SetStateAction<boolean>>;
-    handleAddIndex: (newIndexData: IndexData) => void;
-    indices: IndexData[];
-    translateIndexNames: boolean;
+    setShowAddSourceGroup: React.Dispatch<React.SetStateAction<boolean>>;
+    handleAddSourceGroup: (newSourceGroupData: SourceGroup) => void;
+    sourceGroups: SourceGroup[];
+    translateNames: boolean;
 }
 
-export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handleAddIndex, indices, translateIndexNames }) => {
-    const [newIndex, setNewIndex] = useState<NewIndex>(emptyNewIndex());
+export const AddSourceGroupForm: React.FC<AddSourceGroupForm> = ({ t, setShowAddSourceGroup, handleAddSourceGroup: handleAddSourceGroup, sourceGroups, translateNames }) => {
+    const [newSourceGroup, setNewSourceGroup] = useState<NewSourceGroup>(emptyNewSourceGroup());
     const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
     const [storageRates, setStorageRates] = useState({
         elasticStoragePerHotTierDay: 0,
@@ -44,10 +44,10 @@ export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handl
     });
 
     const handleColdRetentionChange = (value: string) => {
-        if (parseInt(value) > parseInt(newIndex.totalRetention)) {
-            setNewIndex(prev => ({ ...prev, coldRetention: newIndex.totalRetention }));
+        if (parseInt(value) > parseInt(newSourceGroup.totalRetention)) {
+            setNewSourceGroup(prev => ({ ...prev, coldRetention: newSourceGroup.totalRetention }));
         } else {
-            setNewIndex(prev => ({ ...prev, coldRetention: value }));
+            setNewSourceGroup(prev => ({ ...prev, coldRetention: value }));
         }
     };
 
@@ -57,22 +57,22 @@ export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handl
 
     const validateForm = () => {
         const newErrors: { [key: string]: boolean } = {};
-        if (!newIndex.name) newErrors.name = true;
-        if (!newIndex.totalRetention) newErrors.totalRetention = true;
-        if (!newIndex.coldRetention) newErrors.coldRetention = true;
-        if (parseInt(newIndex.coldRetention) > parseInt(newIndex.totalRetention)) newErrors.coldRetention = true;
+        if (!newSourceGroup.name) newErrors.name = true;
+        if (!newSourceGroup.totalRetention) newErrors.totalRetention = true;
+        if (!newSourceGroup.coldRetention) newErrors.coldRetention = true;
+        if (parseInt(newSourceGroup.coldRetention) > parseInt(newSourceGroup.totalRetention)) newErrors.coldRetention = true;
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = () => {
         if (validateForm()) {
-            const hotRetentionDays = Number(newIndex.totalRetention) - Number(newIndex.coldRetention);
-            const coldRetentionDays = Number(newIndex.coldRetention);
+            const hotRetentionDays = Number(newSourceGroup.totalRetention) - Number(newSourceGroup.coldRetention);
+            const coldRetentionDays = Number(newSourceGroup.coldRetention);
 
-            const newIndexData = {
-                name: newIndex.name,
-                hebrewName: newIndex.name,
+            const newSourceGroupData = {
+                name: newSourceGroup.name,
+                hebrewName: newSourceGroup.name,
                 elasticStoragePerHotTierDay: storageRates.elasticStoragePerHotTierDay,
                 S3StoragePerColdTierDay: storageRates.S3StoragePerColdTierDay,
                 elasticStoragePerColdTierDay: storageRates.elasticStoragePerColdTierDay,
@@ -86,34 +86,34 @@ export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handl
                 indexNamesByTier: { hotTier: [], coldTier: [] },
             };
 
-            handleAddIndex(newIndexData);
+            handleAddSourceGroup(newSourceGroupData);
         }
     };
 
     return (
         <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.addIndex}</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.addSourceGroup}</h2>
             <div className="space-y-4">
-                <IndexNameArea
-                    label={t.indexName}
-                    value={newIndex.name}
-                    onChange={(e) => setNewIndex(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder={t.indexNamePlaceholder}
+                <NameArea
+                    label={t.sourceGroupName}
+                    value={newSourceGroup.name}
+                    onChange={(e) => setNewSourceGroup(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder={t.sourceGroupNamePlaceholder}
                     error={errors.name}
                 />
                 <div className="pb-4 border-b"></div>
                 <StoragePerDayArea
                     t={t}
                     errors={errors}
-                    indices={indices}
-                    translateIndexNames={translateIndexNames}
+                    sourceGroups={sourceGroups}
+                    translateNames={translateNames}
                     onStorageRatesChange={handleStorageRatesChange}
                 />
                 <div className="pb-4 border-b"></div>
-                <RetentionPeriodsArea t={t} newIndex={newIndex} setNewIndex={setNewIndex} errors={errors} handleColdRetentionChange={handleColdRetentionChange} />
+                <RetentionPeriodsArea t={t} newSourceGroup={newSourceGroup} setNewSourceGroup={setNewSourceGroup} errors={errors} handleColdRetentionChange={handleColdRetentionChange} />
                 <div className="flex justify-end gap-2 mt-6">
                     <button
-                        onClick={() => setShowAddIndex(false)}
+                        onClick={() => setShowAddSourceGroup(false)}
                         className="px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                         {t.cancel}
@@ -122,7 +122,7 @@ export const AddIndexForm: React.FC<AddIndexForm> = ({ t, setShowAddIndex, handl
                         onClick={handleSubmit}
                         className="px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 bg-blue-600 hover:bg-blue-700"
                     >
-                        {t.addIndexButton}
+                        {t.addSourceGroupButton}
                     </button>
                 </div>
             </div>

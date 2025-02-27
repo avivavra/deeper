@@ -1,6 +1,6 @@
 import { ClusterSummarizerFactory } from "../../../../api";
 import { useCallback, useEffect, useState } from "react";
-import { ClusterData, ClusterMetadata, IndexData } from "../models";
+import { ClusterData, ClusterMetadata, SourceGroup } from "../models";
 import { useAsyncState } from "../../../../app/utils";
 
 export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, clustersMetadata: ClusterMetadata[]) => {
@@ -34,14 +34,14 @@ export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, 
     }
   }, [clustersSummarizerFactory, clustersMetadata, setSelectedCluster]);
 
-  const { state: indices, fetchData: setIndices } = useAsyncState<IndexData[]>([]);
+  const { state: sourceGroups, fetchData: setSourceGroups } = useAsyncState<SourceGroup[]>([]);
 
   useEffect(() => {
-    setIndices(async () => {
+    setSourceGroups(async () => {
       const summarizer = clustersSummarizerFactory.createSummarizer(selectedClusterMetadata.name);
-      return summarizer.summarizeIndices();
+      return summarizer.summarizeSourceGroups();
     });
-  }, [setIndices, clustersSummarizerFactory, selectedClusterMetadata.name]);
+  }, [setSourceGroups, clustersSummarizerFactory, selectedClusterMetadata.name]);
 
   const totalElasticStorage = selectedCluster.data?.totalElasticStorage || 0;
   const totalS3Storage = selectedCluster.data?.totalS3Storage || 0;
@@ -50,7 +50,7 @@ export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, 
     selectedClusterMetadata,
     selectedCluster,
     handleSetSelectedCluster,
-    indices,
+    sourceGroups,
     totalElasticStorage,
     totalS3Storage,
   };
