@@ -57,6 +57,7 @@ export const translations: {
     sourceNamePlaceholder: 'e.g., source-production',
     sourceNameError: 'Source name is required',
     addSourceButton: 'Add Source',
+    storage: 'Storage',
   },
   hebrew: {
     title: 'דאשבורד אחסון',
@@ -111,5 +112,6 @@ export const translations: {
     sourceNamePlaceholder: 'לדוגמה, source-production',
     sourceNameError: 'שם המקור נדרש',
     addSourceButton: 'הוסף מקור',
+    storage: 'אחסון',
   }
 };
