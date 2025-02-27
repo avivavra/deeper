@@ -20,7 +20,8 @@ const StorageBar: React.FC<{
   usedStorage: number;
   totalStorage: number;
   storagePercentage: number;
-}> = ({ label, usedStorage, totalStorage, storagePercentage }) => {
+  direction: Direction;
+}> = ({ label, usedStorage, totalStorage, storagePercentage, direction }) => {
   const getStorageBarColor = (percentage: number) => {
     if (percentage > config.storageThresholds.high) return 'bg-red-500';
     if (percentage > config.storageThresholds.medium) return 'bg-orange-500';
@@ -35,14 +36,16 @@ const StorageBar: React.FC<{
     return percentage > config.storageThresholds.high;
   };
 
+  const marginClassName = direction === 'ltr' ? 'ml-' : 'mr-';
+
   return (
     <div>
       <div className="flex justify-between mb-2">
         <span className="font-medium text-gray-800">{label}</span>
         <span className={usedStorage > totalStorage ? "text-red-500 font-medium" : "text-gray-800"}>
           <span dir='ltr'>{usedStorage.toFixed(2)}/{totalStorage.toFixed(2)} GB ({Number(storagePercentage).toFixed(1)}%)</span>
-          {isWarningZone(storagePercentage) && <FaExclamationTriangle className="text-orange-500 inline ml-1 mr-1" />}
-          {isErrorZone(storagePercentage) && <FaExclamationCircle className="text-red-500 inline ml-1 mr-1" />}
+          {isWarningZone(storagePercentage) && <FaExclamationTriangle className={`text-orange-500 inline ${marginClassName}1`} />}
+          {isErrorZone(storagePercentage) && <FaExclamationCircle className={`text-red-500 inline ${marginClassName}1`} />}
         </span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
@@ -72,6 +75,7 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
       </div>
       <div className="space-y-6">
         <StorageBar
+          direction={direction}
           label={
             <>
               {t.elasticsearchStorage}
@@ -83,6 +87,7 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
           storagePercentage={elasticStoragePercentage}
         />
         <StorageBar
+          direction={direction}
           label={
             <>
               {t.s3Storage}

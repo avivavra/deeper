@@ -106,6 +106,8 @@ export const RetentionManagement = ({
         setShowAddSource(false);
     };
 
+    const marginClassName = direction === 'ltr' ? 'ml-' : 'mr-';
+
     return (
         <div>
             <GenericModal showModal={showAddSource} setShowModal={setShowAddSource}>
@@ -134,7 +136,7 @@ export const RetentionManagement = ({
                                 content={t.addSourceGroupExplanation}
                                 alignment={direction === 'rtl' ? 'right' : 'left'}
                             >
-                                <span className="ml-2 mr-2 text-gray-200 cursor-pointer">?</span>
+                                <span className={`${marginClassName}2 text-gray-200 cursor-pointer`}>?</span>
                             </TooltipIcon>
                         </button>
                     )}
@@ -190,11 +192,11 @@ export const RetentionManagement = ({
                                                     </>
                                                 }
                                             >
-                                                <span className="ml-2 bg-gray-200 text-gray-800 text-sm font-semibold mr-2 px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center">
+                                                <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center`}>
                                                     {source.name}
                                                     <button
                                                         onClick={() => handleRemoveSource(source.name)}
-                                                        className="ml-2 text-gray-500 hover:text-gray-800"
+                                                        className={`${marginClassName}2 text-gray-500 hover:text-gray-800`}
                                                     >
                                                         &times;
                                                     </button>
@@ -204,7 +206,7 @@ export const RetentionManagement = ({
                                         {isEditMode && (
                                             <button
                                                 onClick={() => handleAddSource(sourceGroup)}
-                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ml-2 mr-2"
+                                                className={`${marginClassName}2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                                             >
                                                 <Plus className="h-4 w-4 mx-1 text-white" />
                                                 {t.addSource}
@@ -212,7 +214,7 @@ export const RetentionManagement = ({
                                                     content={t.addSourceExplanation}
                                                     alignment={direction === 'rtl' ? 'right' : 'left'}
                                                 >
-                                                    <span className="ml-2 mr-2 text-gray-200 cursor-pointer">?</span>
+                                                    <span className={`${marginClassName}2 text-gray-200 cursor-pointer`}>?</span>
                                                 </TooltipIcon>
                                             </button>
                                         )}
