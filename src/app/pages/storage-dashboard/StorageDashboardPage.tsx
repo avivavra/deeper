@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ClusterMetadata, SourceGroup, Audience, ChangeLogEntry, Direction, Translation, Source } from './models';
-import { ChangeLog, useChangeLog, StorageHeader, StorageUsageOverview, RetentionPeriodsChart, RetentionManagement, AddSourceGroupForm } from './sub-components';
+import { ChangeLog, useChangeLog, StorageHeader, StorageUsageOverview, ComparisonChart, RetentionManagement, AddSourceGroupForm } from './sub-components';
 import { GenericModal } from '../../components';
 import { ClusterSummarizerFactory } from '../../../api';
 import { StorageDashboardLayout } from './StorageDashboardLayout';
@@ -368,7 +368,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           ) : selectedCluster.status === 'error' || sourceGroups.status === 'error' ? (
             <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
           ) : (
-            <RetentionPeriodsChart
+            <ComparisonChart
               {...displayProps}
               filteredSourceGroups={filteredSourceGroups}
             />

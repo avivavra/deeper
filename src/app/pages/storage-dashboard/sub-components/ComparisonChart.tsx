@@ -5,7 +5,7 @@ import { GenericDropdown } from '../../../components';
 
 type ChartMode = 'retention' | 'storage';
 
-type RetentionPeriodsChartProps = {
+type ComparisonChartProps = {
   direction: Direction;
   translateNames: boolean;
   filteredSourceGroups: SourceGroup[];
@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   return null;
 };
 
-export const RetentionPeriodsChart = ({ direction, translateNames, filteredSourceGroups, t }: RetentionPeriodsChartProps) => {
+export const ComparisonChart = ({ direction, translateNames, filteredSourceGroups, t }: ComparisonChartProps) => {
   const [chartMode, setChartMode] = useState<ChartMode>('storage');
 
   const chartData = chartMode === 'retention' ? filteredSourceGroups : filteredSourceGroups.map(group => ({

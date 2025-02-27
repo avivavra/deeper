@@ -1,5 +1,5 @@
 import React from 'react';
-import { Translation } from '../models';
+import { Direction, Translation } from '../models';
 import { config } from '../../../../config';
 import { FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
 import { TooltipIcon } from '../../../components/TooltipIcon';
@@ -12,10 +12,11 @@ type StorageUsageOverviewProps = {
   totalS3Storage: number;
   s3StoragePercentage: number;
   t: Translation;
+  direction: Direction;
 };
 
 const StorageBar: React.FC<{
-  label: string;
+  label: string | React.ReactNode;
   usedStorage: number;
   totalStorage: number;
   storagePercentage: number;
@@ -62,6 +63,7 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
   totalS3Storage,
   s3StoragePercentage,
   t,
+  direction,
 }) => {
   return (
     <div>
@@ -73,7 +75,7 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
           label={
             <>
               {t.elasticsearchStorage}
-              <TooltipIcon content={t.elasticsearchStorageExplanation} />
+              <TooltipIcon content={t.elasticsearchStorageExplanation} alignment={direction === 'rtl' ? 'right' : 'left'} />
             </>
           }
           usedStorage={usedElasticStorage}
@@ -84,7 +86,7 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
           label={
             <>
               {t.s3Storage}
-              <TooltipIcon content={t.s3StorageExplanation} />
+              <TooltipIcon content={t.s3StorageExplanation} alignment={direction === 'rtl' ? 'right' : 'left'} />
             </>
           }
           usedStorage={usedS3Storage}
