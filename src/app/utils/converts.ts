@@ -1,11 +1,8 @@
-export const convertBytesToGB = (bytes: number): number => {
-    return bytes / 1024 / 1024 / 1024;
-};
-
-export const convertKBToGB = (kb: number): number => {
-    return kb / 1024 / 1024;
-};
-
-export const convertToDays = (milliseconds: number): number => {
-    return milliseconds / 1000 / 60 / 60 / 24;
-};
+export const convert = {
+    bytesToGB: (bytes: number) => bytes / 1024 / 1024 / 1024,
+    kbToGB: (kb: number) => kb / 1024 / 1024,
+    millisToDays: (milliseconds: number) => milliseconds / 1000 / 60 / 60 / 24,
+    minutesToMillis: (minutes: number) => minutes * 60 * 1000,
+    hoursToMillis: (hours: number) => 60 * 60 * 1000,
+    daysToMillis: (days: number) => days * 24 * 60 * 60 * 1000
+}

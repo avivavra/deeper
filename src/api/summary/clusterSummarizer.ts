@@ -1,7 +1,8 @@
 import { ClusterData, ClusterMetadata, SourceGroup } from "../../app/pages/storage-dashboard/models";
 import { ElasticsearchClusterApi, IlmPolicy, Index } from "../elasticsearch";
 import { S3BucketApi } from "../s3";
-import { convertToDays } from "../../app/utils";
+import { convert } from "../../app/utils";
+import { config } from "../../config/config";
 
 type IndexFrequency = 'daily' | 'monthly' | 'yearly';
 
@@ -104,8 +105,8 @@ export class ClusterSummarizer {
             const normalHotTierIndices = this.getNormalIndices(matchingHotTierIndices);
             const normalColdTierIndices = this.getNormalIndices(matchingColdTierIndices);
 
-            const hotRetentionDays = convertToDays(matchingIlmPolicy.hotTierRetentionPeriod + matchingIlmPolicy.warmTierRetentionPeriod);
-            const coldRetentionDays = convertToDays(matchingIlmPolicy.coldTierRetentionPeriod + matchingIlmPolicy.frozenTierRetentionPeriod);
+            const hotRetentionDays = convert.millisToDays(matchingIlmPolicy.hotTierRetentionPeriod + matchingIlmPolicy.warmTierRetentionPeriod);
+            const coldRetentionDays = convert.millisToDays(matchingIlmPolicy.coldTierRetentionPeriod + matchingIlmPolicy.frozenTierRetentionPeriod);
 
             const hotTierStorage = normalHotTierIndices.reduce((acc, index) => acc + index.storage, 0);
             const coldTierStorage = normalColdTierIndices.reduce((acc, index) => acc + index.storage, 0);
@@ -144,8 +145,8 @@ export class ClusterSummarizer {
     }
 
     private getNormalIndices(indices: Index[]): Index[] {
-        const averageDocsCount = indices.reduce((acc, index) => acc + index.docsCount, 0) / indices.length;
-        const threshold = averageDocsCount / 2;
+        const averageDocsCount = indices.reduce((acc, index) => acc + index.storage, 0) / indices.length;
+        const threshold = averageDocsCount * config.normalIndicesThreshold;
 
         return indices.filter(index => index.docsCount >= threshold);
     }
@@ -184,7 +185,7 @@ export class ClusterSummarizer {
     }
 
     private getAverageStoragePerDay(index: Index, indexFrequency: IndexFrequency, now: Date): number {
-        const daysSinceCreation = convertToDays(now.getTime() - index.creationTime.getTime());
+        const daysSinceCreation = convert.millisToDays(now.getTime() - index.creationTime.getTime());
 
         switch (indexFrequency) {
             case 'daily':
@@ -193,7 +194,7 @@ export class ClusterSummarizer {
             case 'monthly':
                 const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                 const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-                const daysInLastMonth = convertToDays(thisMonthStart.getTime() - lastMonthStart.getTime());
+                const daysInLastMonth = convert.millisToDays(thisMonthStart.getTime() - lastMonthStart.getTime());
 
                 const aMonthHasPassed = daysSinceCreation > daysInLastMonth;
                 if (aMonthHasPassed) return index.storage / daysInLastMonth;
@@ -202,7 +203,7 @@ export class ClusterSummarizer {
             case 'yearly':
                 const lastYearStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
                 const thisYearStart = new  Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const daysInLastYear = convertToDays(thisYearStart.getTime() - lastYearStart.getTime());
+                const daysInLastYear = convert.millisToDays(thisYearStart.getTime() - lastYearStart.getTime());
 
                 const aYearHasPassed = daysSinceCreation > daysInLastYear;
                 if (aYearHasPassed) return index.storage / daysInLastYear;

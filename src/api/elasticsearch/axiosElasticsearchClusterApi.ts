@@ -1,4 +1,4 @@
-import { convertBytesToGB } from '../../app/utils';
+import { convert } from '../../app/utils';
 import axios, { AxiosInstance } from 'axios';
 import { ElasticsearchClusterApi, IlmPolicy, Index, IndexTemplate } from './elasticsearchClusterApi';
 
@@ -76,8 +76,8 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
             } = response.data.nodes.fs;
 
             return {
-                totalStorage: convertBytesToGB(totalStorage),
-                usedStorage: convertBytesToGB(totalStorage - freeStorage)
+                totalStorage: convert.bytesToGB(totalStorage),
+                usedStorage: convert.bytesToGB(totalStorage - freeStorage)
             };
         } catch (error) {
             if (error instanceof Error) {
@@ -126,7 +126,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                 name: index.index,
                 docsCount: Number(index['docs.count']),
                 creationTime: new Date(Number(index['creation.date'])),
-                storage: convertBytesToGB(Number(index['store.size']))
+                storage: convert.bytesToGB(Number(index['store.size']))
             }));
         } catch (error) {
             if (error instanceof Error) {
@@ -202,11 +202,11 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
 
         switch (unit) {
             case 'm':
-                return value * 60 * 1000;
+                return convert.minutesToMillis(value);
             case 'h':
-                return value * 3600 * 1000;
+                return convert.hoursToMillis(value);
             case 'd':
-                return value * 86400 * 1000;
+                return convert.daysToMillis(value);
             default:
                 throw new Error(`Unknown duration unit: ${unit}`);
         }

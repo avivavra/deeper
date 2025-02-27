@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SourceGroup, Translation, StoragePerDayInputType } from '../../models';
-import { convertKBToGB } from '../../../../utils';
+import { convert } from '../../../../utils';
 import { config } from '../../../../../config';
 
 const DAILY_SECONDS = 86400;
@@ -46,14 +46,14 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                 };
             }
         } else if (storageValues.inputType === 'frequency') {
-            const GBPerSecond = convertKBToGB(Number(storageValues.docSize)) * Number(storageValues.frequency);
+            const GBPerSecond = convert.kbToGB(Number(storageValues.docSize)) * Number(storageValues.frequency);
             rates = {
                 elasticStoragePerHotTierDay: GBPerSecond * DAILY_SECONDS,
                 elasticStoragePerColdTierDay: GBPerSecond * DAILY_SECONDS * config.s3ColdTierMultiplier,
                 S3StoragePerColdTierDay: GBPerSecond * DAILY_SECONDS * config.elasticColdTierMultiplier
             };
         } else {
-            const GBPerDay = convertKBToGB(Number(storageValues.docSize)) * Number(storageValues.avgDocs);
+            const GBPerDay = convert.kbToGB(Number(storageValues.docSize)) * Number(storageValues.avgDocs);
             rates = {
                 elasticStoragePerHotTierDay: GBPerDay,
                 elasticStoragePerColdTierDay: GBPerDay * config.s3ColdTierMultiplier,

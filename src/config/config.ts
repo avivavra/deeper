@@ -6,6 +6,7 @@ export const config = {
         medium: 70
     },
     defaultMode: 'developer',
+    normalIndicesThreshold: 0.5,
     clustersConnection: {
         'Cluster A': {
             name: 'Cluster A',
