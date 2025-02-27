@@ -11,7 +11,7 @@ interface StorageHeaderProps {
   sourceGroups: SourceGroup[];
   selectedSourceGroups: { [key: string]: boolean };
   handleSourceGroupToggle: (name: string) => void;
-  isEditMode: boolean;
+  isInSimulation: boolean;
   handleModeToggle: () => void;
   translateNames: boolean;
   t: Translation;
@@ -27,7 +27,7 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
   sourceGroups,
   selectedSourceGroups,
   handleSourceGroupToggle,
-  isEditMode,
+  isInSimulation,
   handleModeToggle,
   translateNames,
   t,
@@ -72,11 +72,11 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
             type="checkbox"
           />
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">{t.editMode}</span>
+            <span className="text-sm font-medium text-gray-700">{t.simulation}</span>
             <ToggleSwitch
-              checked={isEditMode}
+              checked={isInSimulation}
               onChange={handleModeToggle}
-              className={`w-16 h-8 rounded-full relative inline-flex items-center ${isEditMode ? 'bg-red-500' : 'bg-gray-300'}`}
+              className={`w-16 h-8 rounded-full relative inline-flex items-center ${isInSimulation ? 'bg-red-500' : 'bg-gray-300'}`}
               direction={direction} // Pass direction prop
             />
           </div>

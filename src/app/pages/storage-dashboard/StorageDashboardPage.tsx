@@ -1,27 +1,13 @@
-"use client";
-
 import React, { useState, useEffect } from 'react';
-import { ClusterMetadata, SourceGroup, Audience, ChangeLogEntry, Direction, Translation, Source } from './models';
+import { ClusterMetadata, SourceGroup, Audience, Direction, Translation, Source } from './models';
 import { ChangeLog, useChangeLog, StorageHeader, StorageUsageOverview, ComparisonChart, RetentionManagement, AddSourceGroupForm } from './sub-components';
 import { GenericModal } from '../../components';
 import { ClusterSummarizerFactory } from '../../../api';
 import { StorageDashboardLayout } from './StorageDashboardLayout';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
-import { useAudience, useEditMode, useCluster } from './hooks';
+import { useAudience, useSimulation, useCluster } from './hooks';
 
 import './StorageDashboardPage.css';
-
-const calculateStorageDiffs = (changeLog: ChangeLogEntry[]) => {
-  let elasticStorageDiff = 0;
-  let s3StorageDiff = 0;
-
-  changeLog.forEach(entry => {
-    elasticStorageDiff += (entry.current.elasticStorage - entry.original.elasticStorage);
-    s3StorageDiff += (entry.current.s3Storage - entry.original.s3Storage);
-  });
-
-  return { elasticStorageDiff, s3StorageDiff };
-};
 
 type StorageDashboardPageProps = {
   clustersSummarizerFactory: ClusterSummarizerFactory;
@@ -31,12 +17,12 @@ type StorageDashboardPageProps = {
 
 export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode }: StorageDashboardPageProps) => {
   const { audience, setAudience, direction, t } = useAudience(defaultMode);
-  const { isEditMode, handleEditModeToggle } = useEditMode();
+  const { isInSimulation: isInSimulation, handleSimulationToggle } = useSimulation();
   const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, sourceGroups, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata);
 
   const [displaySourceGroups, setDisplaySourceGroups] = useState<SourceGroup[]>([]);
   const [sourceGroupsSelection, setSourceGroupsSelection] = useState<{ [key: string]: boolean }>({});
-  const { changeLog, getChangeLogEntry, emptyChangeLog, addChangeLogEntry, updateChangeLogEntry, removeChangeLogEntry } = useChangeLog();
+  const { changeLog, getChangeLogEntry, emptyChangeLog, addChangeLogEntry, updateChangeLogEntry, removeChangeLogEntry, elasticStorageDiff, s3StorageDiff } = useChangeLog();
   const [showAddSourceGroup, setShowAddSourceGroup] = useState(false);
   const [sources, setSources] = useState<Source[]>([]);
 
@@ -60,12 +46,10 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
   }, [sourceGroups]);
 
   useEffect(() => {
-    if (!isEditMode) {
+    if (!isInSimulation) {
       handleResetChanges();
     }
-  }, [isEditMode]);
-
-  const { elasticStorageDiff, s3StorageDiff } = calculateStorageDiffs(changeLog);
+  }, [isInSimulation]);
 
   const usedElasticStorage = (selectedCluster?.data?.usedElasticStorage || 0) + elasticStorageDiff;
   const usedS3Storage = (selectedCluster?.data?.usedS3Storage || 0) + s3StorageDiff;
@@ -118,10 +102,10 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     });
   };
 
-  const handleSourceGroupToggle = (sourceGroupName: string) => {
+  const handleSourceGroupToggle = (name: string) => {
     setSourceGroupsSelection(prev => ({
       ...prev,
-      [sourceGroupName]: !prev[sourceGroupName]
+      [name]: !prev[name]
     }));
   };
 
@@ -141,8 +125,8 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
         return sourceGroup;
       });
 
-      const updatedSourceGroup = updatedSourceGroups.find(i => i.name === name) as SourceGroup;
-      const originalSourceGroup = sourceGroups.data?.find(i => i.name === name);
+      const updatedSourceGroup = updatedSourceGroups.find(sourceGroup => sourceGroup.name === name) as SourceGroup;
+      const originalSourceGroup = sourceGroups.data?.find(sourceGroup => sourceGroup.name === name);
 
       updateChangeLogEntry(name, {
         type: 'sourceGroup',
@@ -341,8 +325,8 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             sourceGroups={displaySourceGroups}
             selectedSourceGroups={sourceGroupsSelection}
             handleSourceGroupToggle={handleSourceGroupToggle}
-            isEditMode={isEditMode}
-            handleModeToggle={handleEditModeToggle}
+            isInSimulation={isInSimulation}
+            handleModeToggle={handleSimulationToggle}
           />
         }
         storageUsage={
@@ -382,7 +366,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           ) : (
             <RetentionManagement
               {...displayProps}
-              isEditMode={isEditMode}
+              isInSimulation={isInSimulation}
               filteredSourceGroups={filteredSourceGroups}
               handleSourceGroupRetentionChange={handleSourceGroupRetentionChange}
               handleRemoveSourceGroup={handleRemoveSourceGroup}
@@ -394,7 +378,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           )
         }
         changeLog={
-          isEditMode && (
+          isInSimulation && (
             <ChangeLog
               {...displayProps}
               changeLog={changeLog}
@@ -408,7 +392,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             />
           )
         }
-        isEditMode={isEditMode}
+        isInSimulation={isInSimulation}
       />
       {showAddSourceGroup && (
         <GenericModal showModal={showAddSourceGroup} setShowModal={setShowAddSourceGroup}>

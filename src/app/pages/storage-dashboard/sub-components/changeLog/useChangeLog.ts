@@ -26,6 +26,14 @@ export const useChangeLog = () => {
     const addChangeLogEntry = (entry: ChangeLogEntry) => {
         setChangeLog(prev => [...prev, entry]);
     };
+    
+    let elasticStorageDiff = 0;
+    let s3StorageDiff = 0;
+  
+    changeLog.forEach(entry => {
+      elasticStorageDiff += (entry.current.elasticStorage - entry.original.elasticStorage);
+      s3StorageDiff += (entry.current.s3Storage - entry.original.s3Storage);
+    });
 
     return {
         changeLog,
@@ -33,6 +41,8 @@ export const useChangeLog = () => {
         emptyChangeLog,
         removeChangeLogEntry,
         updateChangeLogEntry,
-        addChangeLogEntry
+        addChangeLogEntry,
+        elasticStorageDiff,
+        s3StorageDiff
     };
 };

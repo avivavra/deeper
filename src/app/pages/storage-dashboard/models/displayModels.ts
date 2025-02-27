@@ -44,7 +44,7 @@ export type Translation = {
     selectCluster: string;
     filterSourceGroups: string;
     viewMode: string;
-    editMode: string;
+    simulation: string;
     changeLog: string;
     exportToFile: string;
     exportToEmail: string;

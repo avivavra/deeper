@@ -5,7 +5,7 @@ import { SourceGroup, Direction, Translation, Source } from '../models';
 import { AddSourceForm } from './forms/AddSourceForm';
 
 type RetentionManagementProps = {
-    isEditMode: boolean;
+    isInSimulation: boolean;
     filteredSourceGroups: SourceGroup[];
     direction: Direction;
     t: Translation;
@@ -20,7 +20,7 @@ type RetentionManagementProps = {
 };
 
 export const RetentionManagement = ({
-    isEditMode,
+    isInSimulation,
     filteredSourceGroups,
     direction,
     translateNames,
@@ -125,7 +125,7 @@ export const RetentionManagement = ({
             <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-semibold text-gray-800">{t.retentionManagement}</h2>
-                    {isEditMode && (
+                    {isInSimulation && (
                         <button
                             onClick={() => setShowAddSourceGroup(true)}
                             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -203,7 +203,7 @@ export const RetentionManagement = ({
                                                 </span>
                                             </TooltipIcon>
                                         ))}
-                                        {isEditMode && (
+                                        {isInSimulation && (
                                             <button
                                                 onClick={() => handleAddSource(sourceGroup)}
                                                 className={`${marginClassName}2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
@@ -219,7 +219,7 @@ export const RetentionManagement = ({
                                             </button>
                                         )}
                                     </h3>
-                                    {isEditMode && (
+                                    {isInSimulation && (
                                         <div className={`flex ${direction === 'ltr' ? 'space-x-2' : 'space-x-reverse'} items-center`}>
                                             <button
                                                 onClick={() => handleRemoveSourceGroup(sourceGroup.name)}
@@ -231,7 +231,7 @@ export const RetentionManagement = ({
                                     )}
                                 </div>
 
-                                {isEditMode ? (
+                                {isInSimulation ? (
                                     <>
                                         <div className="space-y-2 mt-4">
                                             <div className="flex justify-between text-sm text-gray-800">

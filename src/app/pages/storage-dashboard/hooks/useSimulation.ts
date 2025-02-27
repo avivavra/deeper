@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
 
-export const useEditMode = () => {
-    const [isEditMode, setIsEditMode] = useState(false);
+export const useSimulation = () => {
+    const [isInSimulation, setisInSimulation] = useState(false);
 
-    const handleEditModeToggle = useCallback(() => {
-        setIsEditMode(prev => !prev);
+    const handleSimulationToggle = useCallback(() => {
+        setisInSimulation(prev => !prev);
     }, []);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.ctrlKey && event.key === 'e') {
                 event.preventDefault();
-                handleEditModeToggle();
+                handleSimulationToggle();
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleEditModeToggle]);
+    }, [handleSimulationToggle]);
 
-    return { isEditMode, handleEditModeToggle };
+    return { isInSimulation, handleSimulationToggle };
 };

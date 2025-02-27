@@ -11,7 +11,7 @@ export const translations: {
     selectCluster: 'Select Cluster',
     filterSourceGroups: 'Filter Source Groups',
     viewMode: 'View Mode',
-    editMode: 'Simulation Mode',
+    simulation: 'Simulation',
     changeLog: 'Change Log',
     exportToFile: 'Export to File',
     exportToEmail: 'Export to Email',
@@ -57,7 +57,6 @@ export const translations: {
     sourceNamePlaceholder: 'e.g., source-production',
     sourceNameError: 'Source name is required',
     addSourceButton: 'Add Source',
-    storage: 'Storage',
   },
   hebrew: {
     title: 'דאשבורד אחסון',
@@ -66,7 +65,7 @@ export const translations: {
     selectCluster: 'בחר קלאסטר',
     filterSourceGroups: 'סנן קבוצות מקורות',
     viewMode: 'מצב צפייה',
-    editMode: 'מצב סימולציה',
+    simulation: 'סימולציה',
     changeLog: 'יומן שינויים',
     exportToFile: 'ייצא לקובץ',
     exportToEmail: 'יצא למייל',
@@ -112,6 +111,5 @@ export const translations: {
     sourceNamePlaceholder: 'לדוגמה, source-production',
     sourceNameError: 'שם המקור נדרש',
     addSourceButton: 'הוסף מקור',
-    storage: 'אחסון',
   }
 };
