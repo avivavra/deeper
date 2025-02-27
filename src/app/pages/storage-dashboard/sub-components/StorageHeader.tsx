@@ -1,6 +1,5 @@
 import React from 'react';
-import { Pencil, Eye } from 'lucide-react';
-import { GenericDropdown } from '../../../components';
+import { GenericDropdown, ToggleSwitch } from '../../../components';
 import { ClusterMetadata, SourceGroup, Audience, Translation } from '../models';
 
 interface StorageHeaderProps {
@@ -16,6 +15,7 @@ interface StorageHeaderProps {
   handleModeToggle: () => void;
   translateNames: boolean;
   t: Translation;
+  direction: 'ltr' | 'rtl'; // Add direction prop
 }
 
 export const StorageHeader: React.FC<StorageHeaderProps> = ({
@@ -30,7 +30,8 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
   isEditMode,
   handleModeToggle,
   translateNames,
-  t
+  t,
+  direction // Add direction prop
 }) => {
   return (
     <div>
@@ -70,25 +71,15 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
             width="w-56"
             type="checkbox"
           />
-          <button
-            onClick={handleModeToggle}
-            className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEditMode
-              ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100 focus:ring-red-500'
-              : 'border-gray-300 text-gray-800 bg-white hover:bg-gray-50 focus:ring-blue-500'
-              }`}
-          >
-            {isEditMode ? (
-              <>
-                <Eye className="h-4 w-4 mx-2 text-gray-800" />
-                {t.viewMode}
-              </>
-            ) : (
-              <>
-                <Pencil className="h-4 w-4 mx-2 text-gray-800" />
-                {t.editMode}
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">{t.editMode}</span>
+            <ToggleSwitch
+              checked={isEditMode}
+              onChange={handleModeToggle}
+              className={`w-16 h-8 rounded-full relative inline-flex items-center ${isEditMode ? 'bg-red-500' : 'bg-gray-300'}`}
+              direction={direction} // Pass direction prop
+            />
+          </div>
         </div>
       </div>
     </div>
