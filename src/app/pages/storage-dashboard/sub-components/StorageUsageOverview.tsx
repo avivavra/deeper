@@ -25,7 +25,7 @@ const StorageBar: React.FC<{
   const getStorageBarColor = (percentage: number) => {
     if (percentage > config.storageThresholds.high) return 'bg-red-500';
     if (percentage > config.storageThresholds.medium) return 'bg-orange-500';
-    return 'bg-teal-600';
+    return 'bg-blue-600';
   };
 
   const isWarningZone = (percentage: number) => {

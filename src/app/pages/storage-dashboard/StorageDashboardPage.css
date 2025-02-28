@@ -10,7 +10,7 @@
 }
 
 .loading-icon {
-  color: teal; /* Replace with your desired primary color */
+  color: #007bff; /* Replace with your desired primary color */
   animation: spin 1s linear infinite;
 }
 

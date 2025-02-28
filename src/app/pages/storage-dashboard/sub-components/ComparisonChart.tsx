@@ -66,10 +66,10 @@ export const ComparisonChart = ({ direction, translateNames, filteredSourceGroup
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            {chartMode === 'storage' && <Bar dataKey="elasticStorage" stackId="a" fill="#14b8a6" name={t.elasticsearchStorage} />}
-            {chartMode === 'storage' && <Bar dataKey="s3Storage" stackId="a" fill="#5eead4" name={t.s3Storage} />}
-            {chartMode === 'retention' && <Bar dataKey="hotRetentionDays" stackId="a" fill="#14b8a6" name={t.hotTier} />}
-            {chartMode === 'retention' && <Bar dataKey="coldRetentionDays" stackId="a" fill="#5eead4" name={t.coldTier} />}
+            {chartMode === 'storage' && <Bar dataKey="elasticStorage" stackId="a" fill="#2563eb" name={t.elasticsearchStorage} />}
+            {chartMode === 'storage' && <Bar dataKey="s3Storage" stackId="a" fill="#60a5fa" name={t.s3Storage} />}
+            {chartMode === 'retention' && <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />}
+            {chartMode === 'retention' && <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name={t.coldTier} />}
           </BarChart>
         </ResponsiveContainer>
       </div>
