@@ -151,7 +151,6 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       return updatedSourceGroups;
     });
 
-    // Update related sources
     setSources(prevSources => prevSources.map(source => {
       if (source.relatedSourceGroup === name) {
         const newElasticStorage = newHotDays * source.elasticStoragePerHotTierDay + newColdDays * source.elasticStoragePerColdTierDay;

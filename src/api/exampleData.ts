@@ -14,19 +14,19 @@ export const clustersMetadata: ClusterMetadata[] = [
 export const clusterA: ClusterData = {
   name: 'Cluster A',
   hebrewName: 'אשכול א',
-  totalElasticStorage: 500, // GB
-  usedElasticStorage: 300, // GB
-  totalS3Storage: 1000, // GB
-  usedS3Storage: 700 // GB
+  totalElasticStorage: 500,
+  usedElasticStorage: 300,
+  totalS3Storage: 1000,
+  usedS3Storage: 700
 };
 
 export const clusterB: ClusterData = {
   name: 'Cluster B',
   hebrewName: 'אשכול ב',
-  totalElasticStorage: 300, // GB
-  usedElasticStorage: 214.7, // GB
-  totalS3Storage: 900, // GB
-  usedS3Storage: 627.5 // GB
+  totalElasticStorage: 300,
+  usedElasticStorage: 214.7,
+  totalS3Storage: 900,
+  usedS3Storage: 627.5
 };
 
 export const clusterAIndices: SourceGroup[] = [

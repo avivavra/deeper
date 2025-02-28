@@ -157,12 +157,7 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
     try {
       parsedEntries.forEach(({ sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage, relatedSourceGroup, elasticStoragePerHotTierDay, elasticStoragePerColdTierDay, S3StoragePerColdTierDay }) => {
         if (relatedSourceGroup) {
-          const existingSource = changeLog.find(change => change.name === sourceGroupName && change.type === 'source');
-          if (existingSource) {
-            handleSourceChange(sourceGroupName, newElasticStorage, newS3Storage);
-          } else {
-            handleNewSource(sourceGroupName, relatedSourceGroup, elasticStoragePerHotTierDay!, elasticStoragePerColdTierDay!, S3StoragePerColdTierDay!);
-          }
+          handleNewSource(sourceGroupName, relatedSourceGroup, elasticStoragePerHotTierDay!, elasticStoragePerColdTierDay!, S3StoragePerColdTierDay!);
         } else {
           const isRemovedSourceGroup = newHotDays === 0 && newColdDays === 0;
           if (isRemovedSourceGroup) {

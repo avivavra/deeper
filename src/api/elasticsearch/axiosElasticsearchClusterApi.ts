@@ -6,8 +6,10 @@ type ClusterStats = {
     nodes: {
         fs: {
             total_in_bytes: number;
-            free_in_bytes: number; // total amount of free disk space on the fs. includes space that is reserved for system use.
-            available_in_bytes: number; // amount of disk space that is actually available for use. excludes space that is reserved by the OS.
+            /** total amount of free disk space on the fs. includes space that is reserved for system use. */
+            free_in_bytes: number;
+            /** amount of disk space that is actually available for use. excludes space that is reserved by the OS. */
+            available_in_bytes: number;
         }
     }
 }

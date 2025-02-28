@@ -13,8 +13,6 @@ export default defineConfig({
         configure: (proxy, options) => {
           // Add any needed auth headers here
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            // If you need basic auth:
-            proxyReq.setHeader('Authorization', 'Basic ' + Buffer.from('elastic:y6WgXosR').toString('base64'))
           })
           proxy.on('proxyRes', (proxyRes, req, res) => {
             // Prevent caching for this endpoint

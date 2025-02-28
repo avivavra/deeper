@@ -8,6 +8,7 @@ export type Index = {
     name: string;
     creationTime: Date;
     docsCount: number;
+    /** GB */
     storage: number;
 };
 
@@ -20,7 +21,12 @@ export type IlmPolicy = {
 };
 
 export interface ElasticsearchClusterApi {
-    fetchClusterStorage: () => Promise<{ totalStorage: number; usedStorage: number }>;
+    fetchClusterStorage: () => Promise<{
+        /** GB */
+        totalStorage: number;
+        /** GB */
+        usedStorage: number
+    }>;
     fetchIndexTemplates: () => Promise<IndexTemplate[]>;
     fetchIndices: () => Promise<Index[]>;
     fetchIlmPoliciesWithDeletePhase: () => Promise<IlmPolicy[]>;

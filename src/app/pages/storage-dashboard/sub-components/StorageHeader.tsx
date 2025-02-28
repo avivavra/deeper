@@ -15,7 +15,7 @@ interface StorageHeaderProps {
   handleModeToggle: () => void;
   translateNames: boolean;
   t: Translation;
-  direction: 'ltr' | 'rtl'; // Add direction prop
+  direction: 'ltr' | 'rtl';
 }
 
 export const StorageHeader: React.FC<StorageHeaderProps> = ({
@@ -31,7 +31,7 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
   handleModeToggle,
   translateNames,
   t,
-  direction // Add direction prop
+  direction
 }) => {
   return (
     <div>
@@ -77,7 +77,7 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
               checked={isInSimulation}
               onChange={handleModeToggle}
               className={`w-16 h-8 rounded-full relative inline-flex items-center ${isInSimulation ? 'bg-red-500' : 'bg-gray-300'}`}
-              direction={direction} // Pass direction prop
+              direction={direction}
             />
           </div>
         </div>

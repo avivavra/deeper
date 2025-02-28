@@ -92,10 +92,13 @@ export class ClusterSummarizer {
             const matchingIlmPolicy = ilmPolicies.find(policy => policy.name === template.ilmPolicy);
             if (!matchingIlmPolicy) throw new Error(`Ilm policy ${template.ilmPolicy} does not exist or does not a delete phase`);
 
-            const matchingHotTierIndices = this.getMatchingHotTierIndices(indices, template.patterns); // TODO: add warning for strange index template (no indices, ...)
+            const matchingHotTierIndices = this.getMatchingHotTierIndices(indices, template.patterns);
             if (matchingHotTierIndices.length === 0) console.warn(`No hot tier indices found for index template ${template.name}`);
 
             const matchingColdTierIndices = this.getMatchingColdTierIndices(indices, template.patterns);
+            if (matchingIlmPolicy.coldTierRetentionPeriod > 0 && matchingColdTierIndices.length === 0) {
+                console.warn(`No cold tier indices found for index template ${template.name}, although cold tier retention period is ${matchingIlmPolicy.coldTierRetentionPeriod}`);
+            }
 
             const normalHotTierIndices = this.getNormalIndices(matchingHotTierIndices);
             const normalColdTierIndices = this.getNormalIndices(matchingColdTierIndices);
@@ -166,16 +169,16 @@ export class ClusterSummarizer {
 
                 const aMonthHasPassed = daysSinceCreation > daysInLastMonth;
                 if (aMonthHasPassed) return index.storage / daysInLastMonth;
-                
+
                 return index.storage / daysSinceCreation;
             case 'yearly':
                 const lastYearStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-                const thisYearStart = new  Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const thisYearStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 const daysInLastYear = convert.millisToDays(thisYearStart.getTime() - lastYearStart.getTime());
 
                 const aYearHasPassed = daysSinceCreation > daysInLastYear;
                 if (aYearHasPassed) return index.storage / daysInLastYear;
-                
+
                 return index.storage / daysSinceCreation;
             default:
                 throw new Error(`Unknown index frequency: ${indexFrequency}`);

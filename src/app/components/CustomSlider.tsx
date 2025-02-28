@@ -19,7 +19,7 @@ export const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSlid
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = parseInt(e.target.value);
         setSliderValue(newValue);
-        onChange([newValue]); // Call onChange as the user slides
+        onChange([newValue]);
     };
 
     const handleMouseDown = () => {
