@@ -181,28 +181,30 @@ export const RetentionManagement = ({
                                                 alignment={direction === 'rtl' ? 'right' : 'left'}
                                             />
                                         )}
-                                        {sources.filter(source => source.relatedSourceGroup === sourceGroup.name).map(source => (
-                                            <TooltipIcon
-                                                key={source.name}
-                                                alignment={direction === 'rtl' ? 'right' : 'left'}
-                                                content={
-                                                    <>
-                                                        <div>{t.elasticsearchStorage}: {source.elasticStorage.toFixed(2)} GB</div>
-                                                        <div>{t.s3Storage}: {source.S3Storage.toFixed(2)} GB</div>
-                                                    </>
-                                                }
-                                            >
-                                                <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center`}>
-                                                    {source.name}
-                                                    <button
-                                                        onClick={() => handleRemoveSource(source.name)}
-                                                        className={`${marginClassName}2 text-gray-500 hover:text-gray-800`}
-                                                    >
-                                                        &times;
-                                                    </button>
-                                                </span>
-                                            </TooltipIcon>
-                                        ))}
+                                        <div className="flex overflow-x-auto space-x-2" style={{ maxWidth: '15rem' }}>
+                                            {sources.filter(source => source.relatedSourceGroup === sourceGroup.name).map(source => (
+                                                <TooltipIcon
+                                                    key={source.name}
+                                                    alignment={direction === 'rtl' ? 'right' : 'left'}
+                                                    content={
+                                                        <>
+                                                            <div>{t.elasticsearchStorage}: {source.elasticStorage.toFixed(2)} GB</div>
+                                                            <div>{t.s3Storage}: {source.S3Storage.toFixed(2)} GB</div>
+                                                        </>
+                                                    }
+                                                >
+                                                    <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
+                                                        {source.name}
+                                                        <button
+                                                            onClick={() => handleRemoveSource(source.name)}
+                                                            className={`${marginClassName}2 text-gray-500 hover:text-gray-800`}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </span>
+                                                </TooltipIcon>
+                                            ))}
+                                        </div>
                                         {isInSimulation && (
                                             <button
                                                 onClick={() => handleAddSource(sourceGroup)}

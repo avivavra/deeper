@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Trash2, Share2, Upload, RotateCw } from 'lucide-react';
 import { SourceGroup, ChangeLogEntry, Direction, Translation } from '../../models';
 import { GenericDropdown, GenericModal } from '../../../../components';
@@ -85,6 +85,13 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
   const arrow = direction === 'ltr' ? '→' : '←';
   const [showImportModal, setShowImportModal] = useState(false);
   const [importText, setImportText] = useState('');
+  const importTextAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (showImportModal && importTextAreaRef.current) {
+      importTextAreaRef.current.focus();
+    }
+  }, [showImportModal]);
 
   const handleExportToFile = () => {
     const text = formatChangeLog(changeLog);
@@ -295,6 +302,7 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
             <div className="p-4">
               <h2 className="text-lg font-semibold text-gray-800">{t.importFromText}</h2>
               <textarea
+                ref={importTextAreaRef}
                 className="w-full h-40 p-2 mt-2 border border-gray-300 rounded-md text-gray-900"
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
