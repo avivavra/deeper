@@ -98,6 +98,9 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
       current: {
         elasticStorage: newSource.elasticStorage,
         s3Storage: newSource.S3Storage,
+        elasticStoragePerHotTierDay: newSource.elasticStoragePerHotTierDay,
+        elasticStoragePerColdTierDay: newSource.elasticStoragePerColdTierDay,
+        S3StoragePerColdTierDay: newSource.S3StoragePerColdTierDay
       }
     });
   };
@@ -181,6 +184,9 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           current: {
             elasticStorage: newElasticStorage,
             s3Storage: newS3Storage,
+            elasticStoragePerHotTierDay: source.elasticStoragePerHotTierDay,
+            elasticStoragePerColdTierDay: source.elasticStoragePerColdTierDay,
+            S3StoragePerColdTierDay: source.S3StoragePerColdTierDay,
           }
         });
       }
@@ -286,6 +292,9 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           current: {
             elasticStorage: updatedSource.elasticStorage,
             s3Storage: updatedSource.S3Storage,
+            elasticStoragePerHotTierDay: updatedSource.elasticStoragePerHotTierDay,
+            elasticStoragePerColdTierDay: updatedSource.elasticStoragePerColdTierDay,
+            S3StoragePerColdTierDay: updatedSource.S3StoragePerColdTierDay,
           }
         });
 
@@ -297,6 +306,22 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
   const handleRemoveSource = (sourceName: string) => {
     setSources(prevSources => prevSources.filter(source => source.name !== sourceName));
     removeChangeLogEntry(sourceName);
+  };
+
+  const handleNewSource = (sourceName: string, relatedSourceGroup: string, elasticStoragePerHotTierDay: number, elasticStoragePerColdTierDay: number, S3StoragePerColdTierDay: number) => {
+    const relatedSourceGroupObject = sourceGroups.data?.find(sourceGroup => sourceGroup.name === relatedSourceGroup);
+    if (!relatedSourceGroupObject) throw new Error(`Related source group not found: ${relatedSourceGroup}`);
+
+    const newSource: Source = {
+      name: sourceName,
+      relatedSourceGroup: relatedSourceGroup,
+      elasticStorage: elasticStoragePerHotTierDay * relatedSourceGroupObject.hotRetentionDays + elasticStoragePerColdTierDay * relatedSourceGroupObject.coldRetentionDays,
+      S3Storage: S3StoragePerColdTierDay * relatedSourceGroupObject.coldRetentionDays,
+      elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
+      elasticStoragePerColdTierDay: elasticStoragePerColdTierDay,
+      S3StoragePerColdTierDay: S3StoragePerColdTierDay,
+    };
+    handleAddSource(newSource);
   };
 
   const displayProps: {
@@ -389,6 +414,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
               handleSourceChange={handleSourceChange}
               handleRemoveSourceGroup={handleRemoveSourceGroup}
               handleAddNewSourceGroup={handleAddNewSourceGroup}
+              handleNewSource={handleNewSource}
             />
           )
         }

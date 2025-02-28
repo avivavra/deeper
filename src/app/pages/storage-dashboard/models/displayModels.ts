@@ -32,6 +32,9 @@ export type SourceChange = {
     current: {
         elasticStorage: number;
         s3Storage: number;
+        elasticStoragePerHotTierDay: number;
+        elasticStoragePerColdTierDay: number;
+        S3StoragePerColdTierDay: number;
     };
 };
 
@@ -90,5 +93,4 @@ export type Translation = {
     addSourceExplanation: string;
     elasticsearchStorageExplanation: string;
     s3StorageExplanation: string;
-    storage: string;
 };

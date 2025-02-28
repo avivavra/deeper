@@ -15,6 +15,7 @@ interface ChangeLogProps {
   translateNames: boolean;
   handleRemoveSourceGroup: (name: string) => void;
   handleAddNewSourceGroup: (name: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
+  handleNewSource: (sourceName: string, relatedSourceGroup: string, elasticStoragePerHotTierDay: number, elasticStoragePerColdTierDay: number, S3StoragePerColdTierDay: number) => void;
 }
 
 const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
@@ -24,8 +25,12 @@ const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
       const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
 
       return `Source: ${change.name}
+Related Source Group: ${change.relatedSourceGroup}
 Elasticsearch Storage: ${change.original.elasticStorage?.toFixed(2) || 0} GB → ${change.current.elasticStorage?.toFixed(2) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange?.toFixed(2) || 0} GB)
 S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.current.s3Storage?.toFixed(2) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange?.toFixed(2) || 0} GB)
+Elastic Storage Per Hot Tier Day: ${change.current.elasticStoragePerHotTierDay?.toFixed(2) || 0} GB
+Elastic Storage Per Cold Tier Day: ${change.current.elasticStoragePerColdTierDay?.toFixed(2) || 0} GB
+S3 Storage Per Cold Tier Day: ${change.current.S3StoragePerColdTierDay?.toFixed(2) || 0} GB
 `;
     } else {
       const hotDaysChange = change.current.hotDays - change.original.hotDays;
@@ -44,11 +49,33 @@ S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.curren
 };
 
 const parseChangeLog = (text: string) => {
-  const parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number }[] = [];
+  const parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number, relatedSourceGroup?: string, elasticStoragePerHotTierDay?: number, elasticStoragePerColdTierDay?: number, S3StoragePerColdTierDay?: number }[] = [];
   const entries = text.split('\n\n');
   entries.forEach(entry => {
     const lines = entry.trim().split('\n');
-    if (lines.length >= 5) {
+    if (lines.length === 7 && lines[0].startsWith('Source: ')) {
+      const sourceName = lines[0].replace('Source: ', '');
+      const relatedSourceGroup = lines[1].replace('Related Source Group: ', '');
+      const elasticStorageMatch = lines[2].match(/Elasticsearch Storage: \d+(\.\d+)? GB → (\d+(\.\d+)?) GB/);
+      const s3StorageMatch = lines[3].match(/S3 Storage: \d+(\.\d+)? GB → (\d+(\.\d+)?) GB/);
+      const elasticStoragePerHotTierDayMatch = lines[4].match(/Elastic Storage Per Hot Tier Day: (\d+(\.\d+)?) GB/);
+      const elasticStoragePerColdTierDayMatch = lines[5].match(/Elastic Storage Per Cold Tier Day: (\d+(\.\d+)?) GB/);
+      const S3StoragePerColdTierDayMatch = lines[6].match(/S3 Storage Per Cold Tier Day: (\d+(\.\d+)?) GB/);
+
+      if (elasticStorageMatch && s3StorageMatch && elasticStoragePerHotTierDayMatch && elasticStoragePerColdTierDayMatch && S3StoragePerColdTierDayMatch) {
+        parsedEntries.push({
+          sourceGroupName: sourceName,
+          newHotDays: 0,
+          newColdDays: 0,
+          newElasticStorage: parseFloat(elasticStorageMatch[2]),
+          newS3Storage: parseFloat(s3StorageMatch[2]),
+          relatedSourceGroup: relatedSourceGroup,
+          elasticStoragePerHotTierDay: parseFloat(elasticStoragePerHotTierDayMatch[1]),
+          elasticStoragePerColdTierDay: parseFloat(elasticStoragePerColdTierDayMatch[1]),
+          S3StoragePerColdTierDay: parseFloat(S3StoragePerColdTierDayMatch[1])
+        });
+      }
+    } else if (lines.length >= 5) {
       const sourceGroupName = lines[0].replace('Source Group: ', '');
       const hotDaysMatch = lines[1].match(/Hot Retention Days: \d+ → (\d+) days/);
       const coldDaysMatch = lines[2].match(/Cold Retention Days: \d+ → (\d+) days/);
@@ -81,6 +108,7 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
   translateNames,
   handleRemoveSourceGroup,
   handleAddNewSourceGroup,
+  handleNewSource,
 }) => {
   const arrow = direction === 'ltr' ? '→' : '←';
   const [showImportModal, setShowImportModal] = useState(false);
@@ -125,18 +153,27 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
     });
   };
 
-  const processImportedEntries = (parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number }[]) => {
+  const processImportedEntries = (parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number, relatedSourceGroup?: string, elasticStoragePerHotTierDay?: number, elasticStoragePerColdTierDay?: number, S3StoragePerColdTierDay?: number }[]) => {
     try {
-      parsedEntries.forEach(({ sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage }) => {
-        const isRemovedSourceGroup = newHotDays === 0 && newColdDays === 0;
-        if (isRemovedSourceGroup) {
-          handleRemoveSourceGroup(sourceGroupName);
-        } else {
-          const isExistingSourceGroup = sourceGroups.find(sourceGroup => sourceGroup.name === sourceGroupName);
-          if (isExistingSourceGroup) {
-            handleSourceGroupRetentionChange(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+      parsedEntries.forEach(({ sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage, relatedSourceGroup, elasticStoragePerHotTierDay, elasticStoragePerColdTierDay, S3StoragePerColdTierDay }) => {
+        if (relatedSourceGroup) {
+          const existingSource = changeLog.find(change => change.name === sourceGroupName && change.type === 'source');
+          if (existingSource) {
+            handleSourceChange(sourceGroupName, newElasticStorage, newS3Storage);
           } else {
-            handleAddNewSourceGroup(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+            handleNewSource(sourceGroupName, relatedSourceGroup, elasticStoragePerHotTierDay!, elasticStoragePerColdTierDay!, S3StoragePerColdTierDay!);
+          }
+        } else {
+          const isRemovedSourceGroup = newHotDays === 0 && newColdDays === 0;
+          if (isRemovedSourceGroup) {
+            handleRemoveSourceGroup(sourceGroupName);
+          } else {
+            const isExistingSourceGroup = sourceGroups.find(sourceGroup => sourceGroup.name === sourceGroupName);
+            if (isExistingSourceGroup) {
+              handleSourceGroupRetentionChange(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+            } else {
+              handleAddNewSourceGroup(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+            }
           }
         }
       });
