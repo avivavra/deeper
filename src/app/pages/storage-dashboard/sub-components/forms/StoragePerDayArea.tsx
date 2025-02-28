@@ -71,7 +71,7 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                 <select
                     value={storageValues.inputType}
                     onChange={(e) => handleChange({ inputType: e.target.value as StoragePerDayInputType })}
-                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
                 >
                     {inputTypes.map(type => (
                         <option key={type.value} value={type.value}>
@@ -85,7 +85,7 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                     <label className="text-sm font-medium text-gray-800">{t.importFromSourceGroup}</label>
                     <select
                         onChange={(e) => handleChange({ importFromSourceGroup: e.target.value })}
-                        className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${errors.importFromSourceGroup ? 'border-red-500' : ''}`}
+                        className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 ${errors.importFromSourceGroup ? 'border-red-500' : ''}`}
                         aria-placeholder={t.importFromSourceGroupPlaceholder}
                     >
                         <option value="">{t.importFromSourceGroupPlaceholder}</option>
@@ -105,7 +105,7 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                             type="number"
                             value={storageValues.docSize || ''}
                             onChange={(e) => handleChange({ docSize: e.target.value })}
-                            className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${errors.docSize ? 'border-red-500' : ''}`}
+                            className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 ${errors.docSize ? 'border-red-500' : ''}`}
                             placeholder="0.1"
                         />
                     </div>
@@ -116,7 +116,7 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                                 type="number"
                                 value={storageValues.frequency || ''}
                                 onChange={(e) => handleChange({ frequency: e.target.value })}
-                                className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${errors.frequency ? 'border-red-500' : ''}`}
+                                className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 ${errors.frequency ? 'border-red-500' : ''}`}
                                 placeholder="100"
                             />
                         </div>
@@ -127,7 +127,7 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                                 type="number"
                                 value={storageValues.avgDocs || ''}
                                 onChange={(e) => handleChange({ avgDocs: e.target.value })}
-                                className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${errors.avgDocs ? 'border-red-500' : ''}`}
+                                className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 ${errors.avgDocs ? 'border-red-500' : ''}`}
                                 placeholder="1000000"
                             />
                         </div>

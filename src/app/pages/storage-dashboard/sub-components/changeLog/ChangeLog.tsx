@@ -256,7 +256,7 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
               const hebrewName = sourceGroups.find(sourceGroup => sourceGroup.name === change.name)?.hebrewName || change.name;
 
               return (
-                <div key={change.name} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-blue-500`}>
+                <div key={change.name} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-teal-500`}>
                   <div className="flex justify-between items-start">
                     <div className="font-medium text-gray-800">{translateNames ? hebrewName : change.name}</div>
                     <button
@@ -302,13 +302,13 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => setShowImportModal(false)}
-                  className="px-4 py-2 mr-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="px-4 py-2 mr-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                 >
                   {t.cancel}
                 </button>
                 <button
                   onClick={handleImportFromText}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                 >
                   {t.import}
                 </button>

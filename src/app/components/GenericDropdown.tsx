@@ -70,12 +70,17 @@ export const GenericDropdown: React.FC<GenericDropdownProps> = ({ buttonLabel, o
             }}
           >
             {!hideInputs && (
-              <input
-                type={type}
-                checked={option.checked}
-                onChange={() => {}}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
+              <div className={`h-4 w-4 border-2 ${type === 'radio' ? 'flex rounded-full' : 'rounded'} ${option.checked ? 'bg-teal-600 border-teal-600' : 'border-gray-300'}`}>
+                {option.checked && (
+                  type === 'radio' ? (
+                    <div className="h-2 w-2 bg-white rounded-full m-auto flex items-center justify-center"></div>
+                  ) : (
+                    <svg className="h-full w-full text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )
+                )}
+              </div>
             )}
             <span className="mx-2">{option.label}</span>
           </div>
@@ -88,7 +93,7 @@ export const GenericDropdown: React.FC<GenericDropdownProps> = ({ buttonLabel, o
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
       >
         {buttonLabel}
         {showChevron && <ChevronDown className="mx-2 h-4 w-4 text-gray-800" />}

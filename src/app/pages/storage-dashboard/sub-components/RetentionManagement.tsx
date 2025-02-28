@@ -128,7 +128,7 @@ export const RetentionManagement = ({
                     {isInSimulation && (
                         <button
                             onClick={() => setShowAddSourceGroup(true)}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                         >
                             <Plus className="h-4 w-4 mx-2 text-white" />
                             {t.addSourceGroup}
@@ -206,7 +206,7 @@ export const RetentionManagement = ({
                                         {isInSimulation && (
                                             <button
                                                 onClick={() => handleAddSource(sourceGroup)}
-                                                className={`${marginClassName}2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                                                className={`${marginClassName}2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500`}
                                             >
                                                 <Plus className="h-4 w-4 mx-1 text-white" />
                                                 {t.addSource}

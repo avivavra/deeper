@@ -50,6 +50,7 @@ export const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSlid
             onChange={handleChange}
             onMouseDown={handleMouseDown}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            style={{ accentColor: 'teal' }}
         />
     );
 };
