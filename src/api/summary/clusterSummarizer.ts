@@ -1,5 +1,5 @@
 import { ClusterData, ClusterMetadata, SourceGroup } from "../../app/pages/storage-dashboard/models";
-import { ElasticsearchClusterApi, IlmPolicy, Index } from "../elasticsearch";
+import { ElasticsearchClusterApi, Index } from "../elasticsearch";
 import { S3BucketApi } from "../s3";
 import { convert } from "../../app/utils";
 import { config } from "../../config/config";
@@ -26,8 +26,6 @@ type IndexTemplate = {
         coldTier: string[];
     }
 };
-
-type Tier = 'hot' | 'warm' | 'cold' | 'frozen' | 'delete';
 
 export class ClusterSummarizer {
     constructor(
@@ -94,13 +92,10 @@ export class ClusterSummarizer {
             const matchingIlmPolicy = ilmPolicies.find(policy => policy.name === template.ilmPolicy);
             if (!matchingIlmPolicy) throw new Error(`Ilm policy ${template.ilmPolicy} does not exist or does not a delete phase`);
 
-            const matchingIndices = this.getMatchingIndices(indices, template.patterns); // TODO: add warning for strange index template (no indices, ...)
-            if (matchingIndices.length === 0) console.warn(`No indices found for index template ${template.name}`);
+            const matchingHotTierIndices = this.getMatchingHotTierIndices(indices, template.patterns); // TODO: add warning for strange index template (no indices, ...)
+            if (matchingHotTierIndices.length === 0) console.warn(`No hot tier indices found for index template ${template.name}`);
 
-            const matchingIndicesByTier = this.mapByTier(matchingIndices, matchingIlmPolicy, now);
-
-            const matchingHotTierIndices = [...(matchingIndicesByTier.hot || []), ...(matchingIndicesByTier.warm || [])];
-            const matchingColdTierIndices = [...(matchingIndicesByTier.cold || []), ...(matchingIndicesByTier.frozen || [])];
+            const matchingColdTierIndices = this.getMatchingColdTierIndices(indices, template.patterns);
 
             const normalHotTierIndices = this.getNormalIndices(matchingHotTierIndices);
             const normalColdTierIndices = this.getNormalIndices(matchingColdTierIndices);
@@ -133,9 +128,15 @@ export class ClusterSummarizer {
         return indexTemplates;
     }
 
-    private getMatchingIndices(indices: Index[], patterns: string[]): Index[] {
+    private getMatchingHotTierIndices(indices: Index[], patterns: string[]): Index[] {
         return indices.filter(index =>
             patterns.some(pattern => this.matchesPattern(index.name, pattern))
+        );
+    }
+
+    private getMatchingColdTierIndices(indices: Index[], patterns: string[]): Index[] {
+        return indices.filter(index =>
+            patterns.some(pattern => this.matchesPattern(index.name, 'restored-' + pattern))
         );
     }
 
@@ -149,39 +150,6 @@ export class ClusterSummarizer {
         const threshold = averageDocsCount * config.normalIndicesThreshold;
 
         return indices.filter(index => index.docsCount >= threshold);
-    }
-
-    private calculateTier(index: Index, ilmPolicy: IlmPolicy, now: Date): Tier {
-        const creationTime = new Date(index.creationTime).getTime();
-        const nowTime = now.getTime();
-
-        const hotTierEnd = creationTime + ilmPolicy.hotTierRetentionPeriod;
-        const warmTierEnd = hotTierEnd + ilmPolicy.warmTierRetentionPeriod;
-        const coldTierEnd = warmTierEnd + ilmPolicy.coldTierRetentionPeriod;
-        const frozenTierEnd = coldTierEnd + ilmPolicy.frozenTierRetentionPeriod;
-
-        if (nowTime <= hotTierEnd) {
-            return 'hot';
-        } else if (nowTime <= warmTierEnd) {
-            return 'warm';
-        } else if (nowTime <= coldTierEnd) {
-            return 'cold';
-        } else if (nowTime <= frozenTierEnd) {
-            return 'frozen';
-        } else {
-            return 'delete';
-        }
-    }
-
-    private mapByTier(indices: Index[], ilmPolicy: IlmPolicy, now: Date): Record<Tier, Index[]> {
-        return indices.reduce((acc, index) => {
-            const tier = this.calculateTier(index, ilmPolicy, now);
-            if (!acc[tier]) {
-                acc[tier] = [];
-            }
-            acc[tier].push(index);
-            return acc;
-        }, {} as Record<Tier, Index[]>);
     }
 
     private getAverageStoragePerDay(index: Index, indexFrequency: IndexFrequency, now: Date): number {
