@@ -11,21 +11,22 @@ interface StoragePerDayAreaProps {
     sourceGroups: SourceGroup[];
     translateNames: boolean;
     onStorageRatesChange: (rates: { elasticStoragePerHotTierDay: number; elasticStoragePerColdTierDay: number; S3StoragePerColdTierDay: number }) => void;
+    defaultImportFrom?: string;
 }
 
-export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors, sourceGroups, translateNames, onStorageRatesChange }) => {
+export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors, sourceGroups, translateNames, onStorageRatesChange, defaultImportFrom }) => {
     const [storageValues, setStorageValues] = useState({
         docSize: '',
         frequency: '',
         avgDocs: '',
-        inputType: 'frequency' as StoragePerDayInputType,
-        importFromSourceGroup: ''
+        inputType: 'import' as StoragePerDayInputType,
+        importFromSourceGroup: defaultImportFrom || ''
     });
 
     const inputTypes = [
+        { value: 'import', label: t.importFromSourceGroup },
         { value: 'frequency', label: t.docFrequency },
         { value: 'avgDocs', label: t.avgDocs },
-        { value: 'import', label: t.importFromSourceGroup }
     ];
 
     const handleChange = (values: Partial<typeof storageValues>) => {
@@ -87,6 +88,7 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                         onChange={(e) => handleChange({ importFromSourceGroup: e.target.value })}
                         className={`w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${errors.importFromSourceGroup ? 'border-red-500' : ''}`}
                         aria-placeholder={t.importFromSourceGroupPlaceholder}
+                        value={storageValues.importFromSourceGroup}
                     >
                         <option value="">{t.importFromSourceGroupPlaceholder}</option>
                         {sourceGroups.map(sourceGroup => (

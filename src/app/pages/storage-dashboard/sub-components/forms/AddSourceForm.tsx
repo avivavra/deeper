@@ -89,6 +89,7 @@ export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, ha
                     sourceGroups={sourceGroups}
                     translateNames={translateNames}
                     onStorageRatesChange={handleStorageRatesChange}
+                    defaultImportFrom={relatedSourceGroup.name}
                 />
                 <div className="flex justify-end gap-2 mt-6">
                     <button
