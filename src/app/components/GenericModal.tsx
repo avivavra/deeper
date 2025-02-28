@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface GenericModalProps {
     showModal: boolean;
@@ -7,6 +7,19 @@ interface GenericModalProps {
 }
 
 export const GenericModal: React.FC<GenericModalProps> = ({ showModal, setShowModal, children }) => {
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setShowModal(false);
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [setShowModal]);
+
     if (!showModal) return null;
 
     return (

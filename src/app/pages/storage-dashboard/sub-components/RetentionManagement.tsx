@@ -181,7 +181,7 @@ export const RetentionManagement = ({
                                                 alignment={direction === 'rtl' ? 'right' : 'left'}
                                             />
                                         )}
-                                        <div className="flex overflow-x-auto space-x-2" style={{ maxWidth: '15rem' }}>
+                                        <div className="flex overflow-x-auto space-x-2" style={{ maxWidth: '14rem' }}>
                                             {sources.filter(source => source.relatedSourceGroup === sourceGroup.name).map(source => (
                                                 <TooltipIcon
                                                     key={source.name}
