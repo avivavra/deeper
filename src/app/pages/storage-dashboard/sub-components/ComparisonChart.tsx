@@ -62,7 +62,7 @@ export const ComparisonChart = ({ direction, translateNames, filteredSourceGroup
               reversed={direction === 'rtl'}
             />
             <YAxis
-              label={{ value: chartMode === 'retention' ? t.days : t.storage, angle: direction === 'rtl' ? 90 : -90, position: direction === 'rtl' ? 'outsideLeft' : 'insideLeft', dx: direction === 'rtl' ? 30 : 0 }}
+              label={{ value: chartMode === 'retention' ? t.days : t.storage + ' (GB)', angle: direction === 'rtl' ? 90 : -90, position: direction === 'rtl' ? 'outsideLeft' : 'insideLeft', dx: direction === 'rtl' ? 30 : 0 }}
               orientation={direction === 'rtl' ? 'right' : 'left'}
               tick={{ dx: direction === 'rtl' ? 27 : 0 }}
             />
