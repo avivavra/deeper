@@ -195,12 +195,14 @@ export const RetentionManagement = ({
                                                 >
                                                     <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
                                                         {source.name}
-                                                        <button
-                                                            onClick={() => handleRemoveSource(source.name)}
-                                                            className={`${marginClassName}2 text-gray-500 hover:text-gray-800`}
-                                                        >
-                                                            &times;
-                                                        </button>
+                                                        {isInSimulation && (
+                                                            <button
+                                                                onClick={() => handleRemoveSource(source.name)}
+                                                                className={`${marginClassName}2 text-gray-500 hover:text-gray-800`}
+                                                            >
+                                                                &times;
+                                                            </button>
+                                                        )}
                                                     </span>
                                                 </TooltipIcon>
                                             ))}
