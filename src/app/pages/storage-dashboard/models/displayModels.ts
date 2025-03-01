@@ -71,6 +71,7 @@ export type Translation = {
     docFrequency: string;
     avgDocs: string;
     cancel: string;
+    close: string;
     addSourceGroupButton: string;
     day: string;
     days: string;
@@ -94,4 +95,7 @@ export type Translation = {
     elasticsearchStorageExplanation: string;
     s3StorageExplanation: string;
     comparing: string;
+    infoIconTooltip: string;
+    explanationTitle: string;
+    explanationContent: string;
 };

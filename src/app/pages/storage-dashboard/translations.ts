@@ -40,6 +40,7 @@ export const translations: {
     perSecond: 'per second',
     avgDocs: 'Average Documents per Day',
     cancel: 'Cancel',
+    close: 'Close',
     addSourceGroupButton: 'Add Source Group',
     day: 'day',
     days: 'days',
@@ -58,6 +59,9 @@ export const translations: {
     sourceNameError: 'Source name is required',
     addSourceButton: 'Add Source',
     comparing: 'Comparing',
+    infoIconTooltip: 'Click to learn more about the site.',
+    explanationTitle: 'About the Site',
+    explanationContent: 'This site provides a comprehensive dashboard for managing storage and retention policies.',
   },
   hebrew: {
     title: 'דאשבורד אחסון',
@@ -96,6 +100,7 @@ export const translations: {
     perSecond: 'לשנייה',
     avgDocs: 'מסמכים ממוצעים ליום',
     cancel: 'ביטול',
+    close: 'סגירה',
     addSourceGroupButton: 'הוסף אינדקס',
     day: 'יום',
     days: 'ימים',
@@ -113,5 +118,8 @@ export const translations: {
     sourceNameError: 'שם המקור נדרש',
     addSourceButton: 'הוסף מקור',
     comparing: 'השוואת',
+    infoIconTooltip: 'לחץ כדי ללמוד עוד על האתר.',
+    explanationTitle: 'אודות האתר',
+    explanationContent: 'אתר זה מספק דאשבורד מקיף לניהול אחסון ומדיניות שמירה.',
   }
 };

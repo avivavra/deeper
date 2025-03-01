@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GenericDropdown, ToggleSwitch } from '../../../components';
 import { ClusterMetadata, SourceGroup, Audience, Translation } from '../models';
+import { GenericModal } from '../../../components/GenericModal';
+import { FaInfoCircle } from 'react-icons/fa';
 
 interface StorageHeaderProps {
   audience: Audience;
@@ -33,10 +35,12 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
   t,
   direction
 }) => {
+  const [showInfoModal, setShowInfoModal] = useState(false);
+
   return (
     <div>
       <div className="flex justify-between items-center">
-        <div className="relative title-dropdown">
+        <div className="relative title-dropdown flex items-center">
           <GenericDropdown
             buttonLabel={t.title}
             options={[
@@ -47,6 +51,13 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
             width="w-56"
             type="radio"
           />
+          <button
+            className="ml-2 mr-2 text-gray-500 hover:text-gray-700"
+            onClick={() => setShowInfoModal(true)}
+            title={t.infoIconTooltip}
+          >
+            <FaInfoCircle className="text-xl" />
+          </button>
         </div>
         <div className="flex gap-4">
           <GenericDropdown
@@ -82,6 +93,20 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
           </div>
         </div>
       </div>
+      {showInfoModal && (
+        <GenericModal showModal={showInfoModal} setShowModal={setShowInfoModal}>
+          <div className="p-4">
+            <h2 className="text-xl font-bold mb-2 text-gray-800">{t.explanationTitle}</h2>
+            <p className="text-gray-800">{t.explanationContent}</p>
+            <button
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+              onClick={() => setShowInfoModal(false)}
+            >
+              {t.close}
+            </button>
+          </div>
+        </GenericModal>
+      )}
     </div>
   );
 };
