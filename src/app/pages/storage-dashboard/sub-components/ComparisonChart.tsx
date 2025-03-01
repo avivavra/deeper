@@ -35,10 +35,12 @@ export const ComparisonChart = ({ direction, translateNames, filteredSourceGroup
     s3Storage: group.S3Storage || 0,
   }));
 
+  const title = t.comparing + ' ' + (chartMode === 'retention' ? t.retentionPeriods : t.storage);
+
   return (
     <div>
       <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-800">{t.retentionPeriods}</h2>
+        <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
         <GenericDropdown
           buttonLabel={chartMode === 'retention' ? t.retentionPeriods : t.storage}
           options={[

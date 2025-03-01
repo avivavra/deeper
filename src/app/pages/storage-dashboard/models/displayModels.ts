@@ -93,4 +93,5 @@ export type Translation = {
     addSourceExplanation: string;
     elasticsearchStorageExplanation: string;
     s3StorageExplanation: string;
+    comparing: string;
 };
