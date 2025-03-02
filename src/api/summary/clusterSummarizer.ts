@@ -1,8 +1,8 @@
 import { ClusterData, ClusterMetadata, SourceGroup } from "../../app/pages/storage-dashboard/models";
-import { ElasticsearchClusterApi, Index } from "../elasticsearch";
+import { ElasticsearchClusterApi, IlmPolicy, Index, IndexTemplate } from "../elasticsearch";
 import { S3BucketApi } from "../s3";
 import { convert } from "../../app/utils";
-import { config } from "../../config/config";
+import { config } from "../../config";
 
 type IndexFrequency = 'daily' | 'monthly' | 'yearly';
 
@@ -12,7 +12,7 @@ export type IndexTemplateConfig = {
     frequency: IndexFrequency;
 };
 
-type IndexTemplate = {
+type ProcessedIndexTemplate = {
     name: string;
     hebrewName: string;
     hotRetentionDays: number;
@@ -78,58 +78,68 @@ export class ClusterSummarizer {
         });
     }
 
-    private async getIndexTemplates(): Promise<IndexTemplate[]> {
+    private async getIndexTemplates(): Promise<ProcessedIndexTemplate[]> {
         const now = new Date();
 
         const templates = await this.elasticsearchClusterApi.fetchIndexTemplates();
         const indices = await this.elasticsearchClusterApi.fetchIndices();
         const ilmPolicies = await this.elasticsearchClusterApi.fetchIlmPoliciesWithDeletePhase();
 
-        const indexTemplates = this.indexTemplatesConfig.map((indexTemplate): IndexTemplate => {
-            const template = templates.find(template => template.name === indexTemplate.name);
-            if (!template) throw new Error(`Index template ${indexTemplate.name} not found`);
+        const indexTemplates = this.indexTemplatesConfig.map((templateConfig): ProcessedIndexTemplate => {
+            const template = templates.find(template => template.name === templateConfig.name);
+            if (!template) throw new Error(`Index template ${templateConfig.name} not found`);
 
             const matchingIlmPolicy = ilmPolicies.find(policy => policy.name === template.ilmPolicy);
             if (!matchingIlmPolicy) throw new Error(`Ilm policy ${template.ilmPolicy} does not exist or does not a delete phase`);
 
-            const matchingHotTierIndices = this.getMatchingHotTierIndices(indices, template.patterns);
-            if (matchingHotTierIndices.length === 0) console.warn(`No hot tier indices found for index template ${template.name}`);
-
-            const matchingColdTierIndices = this.getMatchingColdTierIndices(indices, template.patterns);
-            if (matchingIlmPolicy.coldTierRetentionPeriod > 0 && matchingColdTierIndices.length === 0) {
-                console.warn(`No cold tier indices found for index template ${template.name}, although cold tier retention period is ${matchingIlmPolicy.coldTierRetentionPeriod}`);
+            const hotTierIndices = this.getMatchingHotTierIndices(indices, template.patterns);
+            if (hotTierIndices.length === 0) console.warn(`No hot tier indices found for index template ${name}`);
+    
+            const coldTierIndices = this.getMatchingColdTierIndices(indices, template.patterns);
+            if (matchingIlmPolicy.coldTierRetentionPeriod > 0 && coldTierIndices.length === 0) {
+                console.warn(`No cold tier indices found for index template ${name}, although cold tier retention period is ${matchingIlmPolicy.coldTierRetentionPeriod}`);
             }
 
-            const normalHotTierIndices = this.getNormalIndices(matchingHotTierIndices);
-            const normalColdTierIndices = this.getNormalIndices(matchingColdTierIndices);
-
-            const hotRetentionDays = convert.millisToDays(matchingIlmPolicy.hotTierRetentionPeriod + matchingIlmPolicy.warmTierRetentionPeriod);
-            const coldRetentionDays = convert.millisToDays(matchingIlmPolicy.coldTierRetentionPeriod + matchingIlmPolicy.frozenTierRetentionPeriod);
-
-            const hotTierStorage = normalHotTierIndices.reduce((acc, index) => acc + index.storage, 0);
-            const coldTierStorage = normalColdTierIndices.reduce((acc, index) => acc + index.storage, 0);
-
-            const hotTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalHotTierIndices, indexTemplate.frequency, now);
-            const coldTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalColdTierIndices, indexTemplate.frequency, now);
-
-            return {
-                name: template.name,
-                hebrewName: indexTemplate.hebrewName,
-                hotRetentionDays,
-                coldRetentionDays,
-                hotTierStorage,
-                coldTierStorage,
-                hotTierStoragePerDay,
-                coldTierStoragePerDay,
-                indexNamesByTier: {
-                    hotTier: matchingHotTierIndices.map(index => index.name),
-                    coldTier: matchingColdTierIndices.map(index => index.name)
-                }
-            }
+            return this.summarizeIndexTemplate(templateConfig, matchingIlmPolicy, hotTierIndices, coldTierIndices, now);
         });
 
         return indexTemplates;
     }
+
+    summarizeIndexTemplate(
+        { name, hebrewName, frequency }: IndexTemplateConfig,
+        ilmPolicy: IlmPolicy,
+        hotTierIndices: Index[],
+        coldTierIndices: Index[],
+        now: Date
+    ): ProcessedIndexTemplate {
+        const normalHotTierIndices = this.getNormalIndices(hotTierIndices);
+        const normalColdTierIndices = this.getNormalIndices(coldTierIndices);
+
+        const hotRetentionDays = convert.millisToDays(ilmPolicy.hotTierRetentionPeriod + ilmPolicy.warmTierRetentionPeriod);
+        const coldRetentionDays = convert.millisToDays(ilmPolicy.coldTierRetentionPeriod + ilmPolicy.frozenTierRetentionPeriod);
+
+        const hotTierStorage = normalHotTierIndices.reduce((acc, index) => acc + index.storage, 0);
+        const coldTierStorage = normalColdTierIndices.reduce((acc, index) => acc + index.storage, 0);
+
+        const hotTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalHotTierIndices, frequency, now);
+        const coldTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalColdTierIndices, frequency, now);
+
+        return {
+            name,
+            hebrewName,
+            hotRetentionDays,
+            coldRetentionDays,
+            hotTierStorage,
+            coldTierStorage,
+            hotTierStoragePerDay,
+            coldTierStoragePerDay,
+            indexNamesByTier: {
+                hotTier: hotTierIndices.map(index => index.name),
+                coldTier: coldTierIndices.map(index => index.name)
+            }
+        }
+    };
 
     private getMatchingHotTierIndices(indices: Index[], patterns: string[]): Index[] {
         return indices.filter(index =>

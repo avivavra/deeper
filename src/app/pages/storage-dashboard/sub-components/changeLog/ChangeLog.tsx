@@ -306,10 +306,10 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
                     </button>
                   </div>
                   <div className="text-gray-600 mt-1">
-                    {t.hotTier}: {change.original.hotDays} {arrow} {change.current.hotDays} {t.days}
+                    {t.hotTier}: {change.original.hotDays.toFixed(2)} {arrow} {change.current.hotDays.toFixed(2)} {t.days}
                   </div>
                   <div className="text-gray-600">
-                    {t.coldTier}: {change.original.coldDays} {arrow} {change.current.coldDays} {t.days}
+                    {t.coldTier}: {change.original.coldDays.toFixed(2)} {arrow} {change.current.coldDays.toFixed(2)} {t.days}
                   </div>
                   <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
                   <div className="text-sm ml-2 text-gray-800">

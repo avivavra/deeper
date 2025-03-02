@@ -295,11 +295,11 @@ export const RetentionManagement = ({
                                     <div className="grid grid-cols-1 gap-4 mt-2 mb-4">
                                         <div className="flex justify-between text-sm text-gray-800">
                                             <span className="text-left">{t.hotTierRetention}</span>
-                                            <span className="text-right">{sourceGroup.hotRetentionDays} {t.day}</span>
+                                            <span className="text-right">{sourceGroup.hotRetentionDays.toFixed(2)} {t.day}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-gray-800">
                                             <span className="text-left">{t.coldTierRetention}</span>
-                                            <span className="text-right">{sourceGroup.coldRetentionDays} {t.day}</span>
+                                            <span className="text-right">{sourceGroup.coldRetentionDays.toFixed(2)} {t.day}</span>
                                         </div>
                                     </div>
                                 )}
@@ -307,7 +307,7 @@ export const RetentionManagement = ({
                                 <div className="grid grid-cols-1 gap-4 mt-2">
                                     <div className="flex justify-between text-sm font-bold text-gray-800">
                                         <span>{t.totalRetentionPeriod}</span>
-                                        <span>{sourceGroup.totalRetentionDays} {t.day}</span>
+                                        <span>{sourceGroup.totalRetentionDays.toFixed(2)} {t.day}</span>
                                     </div>
                                     <div className="flex justify-between text-sm text-gray-800">
                                         <span className="text-left">{t.elasticsearchStorage}</span>

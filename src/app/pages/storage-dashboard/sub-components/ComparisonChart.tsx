@@ -31,8 +31,8 @@ export const ComparisonChart = ({ direction, translateNames, filteredSourceGroup
 
   const chartData = chartMode === 'retention' ? filteredSourceGroups : filteredSourceGroups.map(group => ({
     ...group,
-    elasticStorage: group.elasticStorage || 0,
-    s3Storage: group.S3Storage || 0,
+    elasticStorage: group.elasticStorage.toFixed(2) || 0,
+    s3Storage: group.S3Storage.toFixed(2) || 0,
   }));
 
   const title = t.comparing + ' ' + (chartMode === 'retention' ? t.retentionPeriods : t.storage);
@@ -62,9 +62,9 @@ export const ComparisonChart = ({ direction, translateNames, filteredSourceGroup
               reversed={direction === 'rtl'}
             />
             <YAxis
-              label={{ value: chartMode === 'retention' ? t.days : t.storage + ' (GB)', angle: direction === 'rtl' ? 90 : -90, position: direction === 'rtl' ? 'outsideLeft' : 'insideLeft', dx: direction === 'rtl' ? 30 : 0 }}
+              label={{ value: chartMode === 'retention' ? t.days : t.storage + ' (GB)', angle: direction === 'rtl' ? 90 : -90, position: direction === 'rtl' ? 'outsideLeft' : 'insideLeft', dx: direction === 'rtl' ? 35 : -8 }}
               orientation={direction === 'rtl' ? 'right' : 'left'}
-              tick={{ dx: direction === 'rtl' ? 27 : 0 }}
+              tick={{ dx: direction === 'rtl' ? 42 : 0 }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
