@@ -93,11 +93,11 @@ export class ClusterSummarizer {
             if (!matchingIlmPolicy) throw new Error(`Ilm policy ${template.ilmPolicy} does not exist or does not a delete phase`);
 
             const hotTierIndices = this.getMatchingHotTierIndices(indices, template.patterns);
-            if (hotTierIndices.length === 0) console.warn(`No hot tier indices found for index template ${name}`);
+            if (hotTierIndices.length === 0) console.warn(`No hot tier indices found for index template ${templateConfig.name}`);
     
             const coldTierIndices = this.getMatchingColdTierIndices(indices, template.patterns);
             if (matchingIlmPolicy.coldTierRetentionPeriod > 0 && coldTierIndices.length === 0) {
-                console.warn(`No cold tier indices found for index template ${name}, although cold tier retention period is ${matchingIlmPolicy.coldTierRetentionPeriod}`);
+                console.warn(`No cold tier indices found for index template ${templateConfig.name}, although cold tier retention period is ${matchingIlmPolicy.coldTierRetentionPeriod}`);
             }
 
             return this.summarizeIndexTemplate(templateConfig, matchingIlmPolicy, hotTierIndices, coldTierIndices, now);

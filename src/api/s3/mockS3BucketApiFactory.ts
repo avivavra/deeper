@@ -27,7 +27,7 @@ export class MockS3BucketApiFactory implements S3BucketApiFactory {
                     }])
             } as S3BucketApi;
         } else {
-            throw new Error("Cluster not found");
+            throw new Error(`Bucket ${bucketName} not found`);
         }
     };
 };
