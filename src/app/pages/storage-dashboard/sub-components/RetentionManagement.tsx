@@ -108,6 +108,16 @@ export const RetentionManagement = ({
 
     const marginClassName = direction === 'ltr' ? 'ml-' : 'mr-';
 
+    const calculateTotalStorage = (sourceGroup: SourceGroup) => {
+        const relatedSources = sources.filter(source => source.relatedSourceGroup === sourceGroup.name);
+        const totalElasticStorage = relatedSources.reduce((acc, source) => acc + source.elasticStorage, sourceGroup.elasticStorage);
+        const totalS3Storage = relatedSources.reduce((acc, source) => acc + source.S3Storage, sourceGroup.S3Storage);
+        const totalElasticStoragePerHotTierDay = relatedSources.reduce((acc, source) => acc + source.elasticStoragePerHotTierDay, sourceGroup.elasticStoragePerHotTierDay);
+        const totalElasticStoragePerColdTierDay = relatedSources.reduce((acc, source) => acc + source.elasticStoragePerColdTierDay, sourceGroup.elasticStoragePerColdTierDay);
+        const totalS3StoragePerColdTierDay = relatedSources.reduce((acc, source) => acc + source.S3StoragePerColdTierDay, sourceGroup.S3StoragePerColdTierDay);
+        return { totalElasticStorage, totalS3Storage, totalElasticStoragePerHotTierDay, totalElasticStoragePerColdTierDay, totalS3StoragePerColdTierDay };
+    };
+
     return (
         <div>
             <GenericModal showModal={showAddSource} setShowModal={setShowAddSource}>
@@ -143,199 +153,202 @@ export const RetentionManagement = ({
                 </div>
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {filteredSourceGroups.map(sourceGroup => (
-                            <div key={sourceGroup.name} className="bg-gray-50 p-4 rounded-lg border relative">
-                                <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-bold text-gray-800 flex items-center">
-                                        {direction === 'ltr' ? sourceGroup.name : sourceGroup.hebrewName}
-                                        {displayRates && (
-                                            <TooltipIcon
-                                                content={
-                                                    <>
-                                                        <div>
-                                                            <strong>Hot Tier</strong>
-                                                            <br />
-                                                            {
-                                                                sourceGroup.indexNamesByTier.hotTier.length === 0
-                                                                    ? <div>No Indices</div>
-                                                                    : <span>{[...sourceGroup.indexNamesByTier.hotTier.slice(0, 3).join(', ')]}</span>
-                                                            }
-                                                            {sourceGroup.indexNamesByTier.hotTier.length > 3 && (
-                                                                <span>...</span>
-                                                            )}
-                                                        </div>
-                                                        <div className="mt-2">
-                                                            <strong>Cold Tier</strong>
-                                                            <br />
-                                                            {
-                                                                sourceGroup.indexNamesByTier.coldTier.length === 0
-                                                                    ? <div>No Indices</div>
-                                                                    : <span>{sourceGroup.indexNamesByTier.coldTier.slice(0, 3).join(', ')}</span>
-                                                            }
-                                                            {sourceGroup.indexNamesByTier.coldTier.length > 3 && (
-                                                                <span>...</span>
-                                                            )}
-                                                        </div>
-                                                    </>
-                                                }
-                                                alignment={direction === 'rtl' ? 'right' : 'left'}
-                                            />
-                                        )}
-                                        <div className="flex overflow-x-auto space-x-2" style={{ maxWidth: '14rem' }}>
-                                            {sources.filter(source => source.relatedSourceGroup === sourceGroup.name).map(source => (
+                        {filteredSourceGroups.map(sourceGroup => {
+                            const { totalElasticStorage, totalS3Storage, totalElasticStoragePerHotTierDay, totalElasticStoragePerColdTierDay, totalS3StoragePerColdTierDay } = calculateTotalStorage(sourceGroup);
+                            return (
+                                <div key={sourceGroup.name} className="bg-gray-50 p-4 rounded-lg border relative">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-lg font-bold text-gray-800 flex items-center">
+                                            {direction === 'ltr' ? sourceGroup.name : sourceGroup.hebrewName}
+                                            {displayRates && (
                                                 <TooltipIcon
-                                                    key={source.name}
-                                                    alignment={direction === 'rtl' ? 'right' : 'left'}
                                                     content={
                                                         <>
-                                                            <div>{t.elasticsearchStorage}: {source.elasticStorage.toFixed(2)} GB</div>
-                                                            <div>{t.s3Storage}: {source.S3Storage.toFixed(2)} GB</div>
+                                                            <div>
+                                                                <strong>Hot Tier</strong>
+                                                                <br />
+                                                                {
+                                                                    sourceGroup.indexNamesByTier.hotTier.length === 0
+                                                                        ? <div>No Indices</div>
+                                                                        : <span>{[...sourceGroup.indexNamesByTier.hotTier.slice(0, 3).join(', ')]}</span>
+                                                                }
+                                                                {sourceGroup.indexNamesByTier.hotTier.length > 3 && (
+                                                                    <span>...</span>
+                                                                )}
+                                                            </div>
+                                                            <div className="mt-2">
+                                                                <strong>Cold Tier</strong>
+                                                                <br />
+                                                                {
+                                                                    sourceGroup.indexNamesByTier.coldTier.length === 0
+                                                                        ? <div>No Indices</div>
+                                                                        : <span>{sourceGroup.indexNamesByTier.coldTier.slice(0, 3).join(', ')}</span>
+                                                                }
+                                                                {sourceGroup.indexNamesByTier.coldTier.length > 3 && (
+                                                                    <span>...</span>
+                                                                )}
+                                                            </div>
                                                         </>
                                                     }
-                                                >
-                                                    <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
-                                                        {source.name}
-                                                        {isInSimulation && (
-                                                            <button
-                                                                onClick={() => handleRemoveSource(source.name)}
-                                                                className={`${marginClassName}2 text-gray-500 hover:text-gray-800`}
-                                                            >
-                                                                &times;
-                                                            </button>
-                                                        )}
-                                                    </span>
-                                                </TooltipIcon>
-                                            ))}
-                                        </div>
-                                        {isInSimulation && (
-                                            <button
-                                                onClick={() => handleAddSource(sourceGroup)}
-                                                className={`${marginClassName}2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-                                            >
-                                                <Plus className="h-4 w-4 mx-1 text-white" />
-                                                {t.addSource}
-                                                <TooltipIcon
-                                                    content={t.addSourceExplanation}
                                                     alignment={direction === 'rtl' ? 'right' : 'left'}
+                                                />
+                                            )}
+                                            <div className="flex overflow-x-auto space-x-2" style={{ maxWidth: '14rem' }}>
+                                                {sources.filter(source => source.relatedSourceGroup === sourceGroup.name).map(source => (
+                                                    <TooltipIcon
+                                                        key={source.name}
+                                                        alignment={direction === 'rtl' ? 'right' : 'left'}
+                                                        content={
+                                                            <>
+                                                                <div>{t.elasticsearchStorage}: {source.elasticStorage.toFixed(2)} GB</div>
+                                                                <div>{t.s3Storage}: {source.S3Storage.toFixed(2)} GB</div>
+                                                            </>
+                                                        }
+                                                    >
+                                                        <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
+                                                            {source.name}
+                                                            {isInSimulation && (
+                                                                <button
+                                                                    onClick={() => handleRemoveSource(source.name)}
+                                                                    className={`${marginClassName}2 text-gray-500 hover:text-gray-800`}
+                                                                >
+                                                                    &times;
+                                                                </button>
+                                                            )}
+                                                        </span>
+                                                    </TooltipIcon>
+                                                ))}
+                                            </div>
+                                            {isInSimulation && (
+                                                <button
+                                                    onClick={() => handleAddSource(sourceGroup)}
+                                                    className={`${marginClassName}2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                                                 >
-                                                    <span className={`${marginClassName}2 text-gray-200 cursor-pointer`}>?</span>
-                                                </TooltipIcon>
-                                            </button>
+                                                    <Plus className="h-4 w-4 mx-1 text-white" />
+                                                    {t.addSource}
+                                                    <TooltipIcon
+                                                        content={t.addSourceExplanation}
+                                                        alignment={direction === 'rtl' ? 'right' : 'left'}
+                                                    >
+                                                        <span className={`${marginClassName}2 text-gray-200 cursor-pointer`}>?</span>
+                                                    </TooltipIcon>
+                                                </button>
+                                            )}
+                                        </h3>
+                                        {isInSimulation && (
+                                            <div className={`flex ${direction === 'ltr' ? 'space-x-2' : 'space-x-reverse'} items-center`}>
+                                                <button
+                                                    onClick={() => handleRemoveSourceGroup(sourceGroup.name)}
+                                                    className="inline-flex items-center p-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
                                         )}
-                                    </h3>
-                                    {isInSimulation && (
-                                        <div className={`flex ${direction === 'ltr' ? 'space-x-2' : 'space-x-reverse'} items-center`}>
-                                            <button
-                                                onClick={() => handleRemoveSourceGroup(sourceGroup.name)}
-                                                className="inline-flex items-center p-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
+                                    </div>
+
+                                    {isInSimulation ? (
+                                        <>
+                                            <div className="space-y-2 mt-4">
+                                                <div className="flex justify-between text-sm text-gray-800">
+                                                    <span>{t.hotTierRetention}</span>
+                                                    {editingHotRetention === sourceGroup.name ? (
+                                                        <input
+                                                            type="number"
+                                                            value={hotRetentionValue !== null ? hotRetentionValue : sourceGroup.hotRetentionDays}
+                                                            onChange={(e) => setHotRetentionValue(parseInt(e.target.value))}
+                                                            onBlur={() => handleHotRetentionBlur(sourceGroup.name)}
+                                                            onKeyPress={(e) => handleHotRetentionKeyPress(e, sourceGroup.name)}
+                                                            className="border rounded p-1 w-16"
+                                                        />
+                                                    ) : (
+                                                        <span onDoubleClick={() => handleHotRetentionDoubleClick(sourceGroup.name, sourceGroup.hotRetentionDays)}>
+                                                            {sourceGroup.hotRetentionDays}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <CustomSlider
+                                                    resetKey={`hot-${sourceGroup.name}-${sourceGroup.hotRetentionDays}`}
+                                                    value={[sourceGroup.hotRetentionDays]}
+                                                    min={1}
+                                                    max={sourceGroup.initialHotRetentionDays >= 10 ? sourceGroup.initialHotRetentionDays * 2 : 20}
+                                                    onChange={(value) => handleRetentionChange(sourceGroup.name, value[0], sourceGroup.coldRetentionDays)}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2 mt-4">
+                                                <div className="flex justify-between text-sm text-gray-800">
+                                                    <span>{t.coldTierRetention}</span>
+                                                    {editingColdRetention === sourceGroup.name ? (
+                                                        <input
+                                                            type="number"
+                                                            value={coldRetentionValue !== null ? coldRetentionValue : sourceGroup.coldRetentionDays}
+                                                            onChange={(e) => setColdRetentionValue(parseInt(e.target.value))}
+                                                            onBlur={() => handleColdRetentionBlur(sourceGroup.name)}
+                                                            onKeyPress={(e) => handleColdRetentionKeyPress(e, sourceGroup.name)}
+                                                            className="border rounded p-1 w-16"
+                                                        />
+                                                    ) : (
+                                                        <span onDoubleClick={() => handleColdRetentionDoubleClick(sourceGroup.name, sourceGroup.coldRetentionDays)}>
+                                                            {sourceGroup.coldRetentionDays}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <CustomSlider
+                                                    resetKey={`cold-${sourceGroup.name}-${sourceGroup.coldRetentionDays}`}
+                                                    value={[sourceGroup.coldRetentionDays]}
+                                                    min={0}
+                                                    max={sourceGroup.initialColdRetentionDays >= 20 ? sourceGroup.initialColdRetentionDays * 2 : 40}
+                                                    onChange={(value) => handleRetentionChange(sourceGroup.name, sourceGroup.hotRetentionDays, value[0])}
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="grid grid-cols-1 gap-4 mt-2 mb-4">
+                                            <div className="flex justify-between text-sm text-gray-800">
+                                                <span className="text-left">{t.hotTierRetention}</span>
+                                                <span className="text-right">{sourceGroup.hotRetentionDays.toFixed(2)} {t.day}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm text-gray-800">
+                                                <span className="text-left">{t.coldTierRetention}</span>
+                                                <span className="text-right">{sourceGroup.coldRetentionDays.toFixed(2)} {t.day}</span>
+                                            </div>
                                         </div>
                                     )}
-                                </div>
 
-                                {isInSimulation ? (
-                                    <>
-                                        <div className="space-y-2 mt-4">
-                                            <div className="flex justify-between text-sm text-gray-800">
-                                                <span>{t.hotTierRetention}</span>
-                                                {editingHotRetention === sourceGroup.name ? (
-                                                    <input
-                                                        type="number"
-                                                        value={hotRetentionValue !== null ? hotRetentionValue : sourceGroup.hotRetentionDays}
-                                                        onChange={(e) => setHotRetentionValue(parseInt(e.target.value))}
-                                                        onBlur={() => handleHotRetentionBlur(sourceGroup.name)}
-                                                        onKeyPress={(e) => handleHotRetentionKeyPress(e, sourceGroup.name)}
-                                                        className="border rounded p-1 w-16"
-                                                    />
-                                                ) : (
-                                                    <span onDoubleClick={() => handleHotRetentionDoubleClick(sourceGroup.name, sourceGroup.hotRetentionDays)}>
-                                                        {sourceGroup.hotRetentionDays}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <CustomSlider
-                                                resetKey={`hot-${sourceGroup.name}-${sourceGroup.hotRetentionDays}`}
-                                                value={[sourceGroup.hotRetentionDays]}
-                                                min={1}
-                                                max={sourceGroup.initialHotRetentionDays >= 10 ? sourceGroup.initialHotRetentionDays * 2 : 20}
-                                                onChange={(value) => handleRetentionChange(sourceGroup.name, value[0], sourceGroup.coldRetentionDays)}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2 mt-4">
-                                            <div className="flex justify-between text-sm text-gray-800">
-                                                <span>{t.coldTierRetention}</span>
-                                                {editingColdRetention === sourceGroup.name ? (
-                                                    <input
-                                                        type="number"
-                                                        value={coldRetentionValue !== null ? coldRetentionValue : sourceGroup.coldRetentionDays}
-                                                        onChange={(e) => setColdRetentionValue(parseInt(e.target.value))}
-                                                        onBlur={() => handleColdRetentionBlur(sourceGroup.name)}
-                                                        onKeyPress={(e) => handleColdRetentionKeyPress(e, sourceGroup.name)}
-                                                        className="border rounded p-1 w-16"
-                                                    />
-                                                ) : (
-                                                    <span onDoubleClick={() => handleColdRetentionDoubleClick(sourceGroup.name, sourceGroup.coldRetentionDays)}>
-                                                        {sourceGroup.coldRetentionDays}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <CustomSlider
-                                                resetKey={`cold-${sourceGroup.name}-${sourceGroup.coldRetentionDays}`}
-                                                value={[sourceGroup.coldRetentionDays]}
-                                                min={0}
-                                                max={sourceGroup.initialColdRetentionDays >= 20 ? sourceGroup.initialColdRetentionDays * 2 : 40}
-                                                onChange={(value) => handleRetentionChange(sourceGroup.name, sourceGroup.hotRetentionDays, value[0])}
-                                            />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="grid grid-cols-1 gap-4 mt-2 mb-4">
-                                        <div className="flex justify-between text-sm text-gray-800">
-                                            <span className="text-left">{t.hotTierRetention}</span>
-                                            <span className="text-right">{sourceGroup.hotRetentionDays.toFixed(2)} {t.day}</span>
+                                    <div className="grid grid-cols-1 gap-4 mt-2">
+                                        <div className="flex justify-between text-sm font-bold text-gray-800">
+                                            <span>{t.totalRetentionPeriod}</span>
+                                            <span>{sourceGroup.totalRetentionDays.toFixed(2)} {t.day}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-gray-800">
-                                            <span className="text-left">{t.coldTierRetention}</span>
-                                            <span className="text-right">{sourceGroup.coldRetentionDays.toFixed(2)} {t.day}</span>
+                                            <span className="text-left">{t.elasticsearchStorage}</span>
+                                            <span className="text-right">
+                                                <span dir='ltr'>{totalElasticStorage.toFixed(2)} GB</span>
+                                                {displayRates && (
+                                                    <TooltipIcon
+                                                        content={`${t.hotTier}: ${totalElasticStoragePerHotTierDay.toFixed(2)}GB/${t.day}, ${t.coldTier}: ${totalElasticStoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
+                                                        alignment={direction === 'rtl' ? 'right' : 'left'}
+                                                    />
+                                                )}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-gray-800">
+                                            <span className="text-left">{t.s3Storage}</span>
+                                            <span className="text-right">
+                                                <span dir='ltr'>{totalS3Storage.toFixed(2)} GB</span>
+                                                {displayRates && (
+                                                    <TooltipIcon
+                                                        content={`${t.coldTier}: ${totalS3StoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
+                                                        alignment={direction === 'rtl' ? 'right' : 'left'}
+                                                    />
+                                                )}
+                                            </span>
                                         </div>
                                     </div>
-                                )}
-
-                                <div className="grid grid-cols-1 gap-4 mt-2">
-                                    <div className="flex justify-between text-sm font-bold text-gray-800">
-                                        <span>{t.totalRetentionPeriod}</span>
-                                        <span>{sourceGroup.totalRetentionDays.toFixed(2)} {t.day}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm text-gray-800">
-                                        <span className="text-left">{t.elasticsearchStorage}</span>
-                                        <span className="text-right">
-                                            <span dir='ltr'>{sourceGroup.elasticStorage.toFixed(2)} GB</span>
-                                            {displayRates && (
-                                                <TooltipIcon
-                                                    content={`${t.hotTier}: ${sourceGroup.elasticStoragePerHotTierDay.toFixed(2)}GB/${t.day}, ${t.coldTier}: ${sourceGroup.elasticStoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
-                                                    alignment={direction === 'rtl' ? 'right' : 'left'}
-                                                />
-                                            )}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-sm text-gray-800">
-                                        <span className="text-left">{t.s3Storage}</span>
-                                        <span className="text-right">
-                                            <span dir='ltr'>{sourceGroup.S3Storage.toFixed(2)} GB</span>
-                                            {displayRates && (
-                                                <TooltipIcon
-                                                    content={`${t.coldTier}: ${sourceGroup.S3StoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
-                                                    alignment={direction === 'rtl' ? 'right' : 'left'}
-                                                />
-                                            )}
-                                        </span>
-                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </div>
