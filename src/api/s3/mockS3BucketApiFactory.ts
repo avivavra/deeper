@@ -10,21 +10,7 @@ export class MockS3BucketApiFactory implements S3BucketApiFactory {
                     Promise.resolve({
                         totalS3Storage: clusterA.totalS3Storage,
                         usedS3Storage: clusterA.usedS3Storage
-                    }),
-                getFolders: () =>
-                    Promise.resolve([{
-                        name: "test-template",
-                        storage: 20
-                    }, {
-                        name: ".fleet-fileds-tohost-meta",
-                        storage: 30
-                    }, {
-                        name: ".monitoring-ent-search-mb",
-                        storage: 15
-                    }, {
-                        name: ".fleet-fileds-fromhost-data",
-                        storage: 10
-                    }])
+                    })
             } as S3BucketApi;
         } else {
             throw new Error(`Bucket ${bucketName} not found`);

@@ -50,15 +50,15 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
             const GBPerSecond = convert.kbToGB(Number(storageValues.docSize)) * Number(storageValues.frequency);
             rates = {
                 elasticStoragePerHotTierDay: GBPerSecond * DAILY_SECONDS,
-                elasticStoragePerColdTierDay: GBPerSecond * DAILY_SECONDS * config.s3ColdTierMultiplier,
-                S3StoragePerColdTierDay: GBPerSecond * DAILY_SECONDS * config.elasticColdTierMultiplier
+                elasticStoragePerColdTierDay: GBPerSecond * DAILY_SECONDS * config.elasticColdTierMultiplier,
+                S3StoragePerColdTierDay: GBPerSecond * DAILY_SECONDS * config.elasticColdTierMultiplier * config.s3ColdTierMultiplier
             };
         } else {
             const GBPerDay = convert.kbToGB(Number(storageValues.docSize)) * Number(storageValues.avgDocs);
             rates = {
                 elasticStoragePerHotTierDay: GBPerDay,
-                elasticStoragePerColdTierDay: GBPerDay * config.s3ColdTierMultiplier,
-                S3StoragePerColdTierDay: GBPerDay * config.elasticColdTierMultiplier
+                elasticStoragePerColdTierDay: GBPerDay * config.elasticColdTierMultiplier,
+                S3StoragePerColdTierDay: GBPerDay * config.elasticColdTierMultiplier * config.s3ColdTierMultiplier
             };
         }
         if (rates) {

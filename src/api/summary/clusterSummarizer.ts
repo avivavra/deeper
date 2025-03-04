@@ -51,15 +51,9 @@ export class ClusterSummarizer {
     }
 
     async summarizeSourceGroups(): Promise<SourceGroup[]> {
-        const [elasticIndexTemplates, s3Folders] = await Promise.all([
-            this.getIndexTemplates(),
-            this.s3BucketApi.getFolders()
-        ]);
+        const elasticIndexTemplates = await this.getIndexTemplates();
 
         return elasticIndexTemplates.map(indexTemplate => {
-            const matchingFolder = s3Folders.find(folder => folder.name === indexTemplate.name);
-            if (!matchingFolder) throw new Error(`No S3 folder found for index template ${indexTemplate.name}`);
-
             return {
                 name: indexTemplate.name,
                 hebrewName: indexTemplate.hebrewName,
@@ -71,8 +65,8 @@ export class ClusterSummarizer {
                 elasticStorage: indexTemplate.hotTierStorage + indexTemplate.coldTierStorage,
                 elasticStoragePerHotTierDay: indexTemplate.hotTierStoragePerDay,
                 elasticStoragePerColdTierDay: indexTemplate.coldTierStoragePerDay,
-                S3StoragePerColdTierDay: indexTemplate.coldTierStoragePerDay * 0.6, // TODO: implement
-                S3Storage: matchingFolder.storage,
+                S3StoragePerColdTierDay: indexTemplate.coldTierStoragePerDay * config.s3ColdTierMultiplier,
+                S3Storage: indexTemplate.coldTierStorage * config.s3ColdTierMultiplier,
                 indexNamesByTier: indexTemplate.indexNamesByTier,
             };
         });
