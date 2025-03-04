@@ -361,6 +361,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           ) : (
             <StorageUsageOverview
               {...displayProps}
+              thresholdMode={audience === 'user' ? 'medium' : 'none'}
               usedElasticStorage={usedElasticStorage}
               totalElasticStorage={totalElasticStorage}
               elasticStoragePercentage={elasticStoragePercentage}

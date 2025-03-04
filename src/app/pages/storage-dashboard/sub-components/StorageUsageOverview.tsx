@@ -13,9 +13,10 @@ type StorageUsageOverviewProps = {
   s3StoragePercentage: number;
   t: Translation;
   direction: Direction;
+  thresholdMode?: 'none' | 'medium' | 'high';
 };
 
-const StorageBar: React.FC<{
+const RegularStorageBar: React.FC<{
   label: string | React.ReactNode;
   usedStorage: number;
   totalStorage: number;
@@ -58,6 +59,45 @@ const StorageBar: React.FC<{
   )
 };
 
+const ThresholdStorageBar: React.FC<{
+  label: string | React.ReactNode;
+  usedStorage: number;
+  totalStorage: number;
+  direction: Direction;
+  thresholdMode: 'medium' | 'high';
+}> = ({ label, usedStorage, totalStorage, direction, thresholdMode }) => {
+  const getThresholdTotalStorage = () => {
+    if (thresholdMode === 'medium') return totalStorage * (config.storageThresholds.medium / 100);
+    if (thresholdMode === 'high') return totalStorage * (config.storageThresholds.high / 100);
+    return totalStorage;
+  };
+
+  const adjustedTotalStorage = getThresholdTotalStorage();
+
+  const storagePercentage = (usedStorage / adjustedTotalStorage) * 100;
+  const isErrorZone = storagePercentage > 100;
+
+  const marginClassName = direction === 'ltr' ? 'ml-' : 'mr-';
+
+  return (
+    <div>
+      <div className="flex justify-between mb-2">
+        <span className="font-medium text-gray-800">{label}</span>
+        <span className={isErrorZone ? "text-red-500 font-medium" : "text-gray-800"}>
+          <span dir='ltr'>{usedStorage.toFixed(2)}/{adjustedTotalStorage.toFixed(2)} GB ({Number(storagePercentage).toFixed(1)}%)</span>
+          {isErrorZone && <FaExclamationCircle className={`text-red-500 inline ${marginClassName}1`} />}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden">
+        <div
+          className={`h-4 rounded-full ${isErrorZone ? 'bg-red-500' : 'bg-blue-600'}`}
+          style={{ width: `${Math.min(storagePercentage, 100)}%` }}
+        />
+      </div>
+    </div>
+  )
+};
+
 export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
   usedElasticStorage,
   totalElasticStorage,
@@ -67,6 +107,7 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
   s3StoragePercentage,
   t,
   direction,
+  thresholdMode = 'none',
 }) => {
   return (
     <div>
@@ -74,30 +115,60 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
         <h2 className="text-lg font-semibold text-gray-800">{t.storageUsageOverview}</h2>
       </div>
       <div className="space-y-6">
-        <StorageBar
-          direction={direction}
-          label={
-            <>
-              {t.elasticsearchStorage}
-              <TooltipIcon content={t.elasticsearchStorageExplanation} alignment={direction === 'rtl' ? 'right' : 'left'} />
-            </>
-          }
-          usedStorage={usedElasticStorage}
-          totalStorage={totalElasticStorage}
-          storagePercentage={elasticStoragePercentage}
-        />
-        <StorageBar
-          direction={direction}
-          label={
-            <>
-              {t.s3Storage}
-              <TooltipIcon content={t.s3StorageExplanation} alignment={direction === 'rtl' ? 'right' : 'left'} />
-            </>
-          }
-          usedStorage={usedS3Storage}
-          totalStorage={totalS3Storage}
-          storagePercentage={s3StoragePercentage}
-        />
+        {thresholdMode === 'none' ? (
+          <RegularStorageBar
+            direction={direction}
+            label={
+              <>
+                {t.elasticsearchStorage}
+                <TooltipIcon content={t.elasticsearchStorageExplanation} alignment={direction === 'rtl' ? 'right' : 'left'} />
+              </>
+            }
+            usedStorage={usedElasticStorage}
+            totalStorage={totalElasticStorage}
+            storagePercentage={elasticStoragePercentage}
+          />
+        ) : (
+          <ThresholdStorageBar
+            direction={direction}
+            label={
+              <>
+                {t.elasticsearchStorage}
+                <TooltipIcon content={t.elasticsearchStorageExplanation} alignment={direction === 'rtl' ? 'right' : 'left'} />
+              </>
+            }
+            usedStorage={usedElasticStorage}
+            totalStorage={totalElasticStorage}
+            thresholdMode={thresholdMode}
+          />
+        )}
+        {thresholdMode === 'none' ? (
+          <RegularStorageBar
+            direction={direction}
+            label={
+              <>
+                {t.s3Storage}
+                <TooltipIcon content={t.s3StorageExplanation} alignment={direction === 'rtl' ? 'right' : 'left'} />
+              </>
+            }
+            usedStorage={usedS3Storage}
+            totalStorage={totalS3Storage}
+            storagePercentage={s3StoragePercentage}
+          />
+        ) : (
+          <ThresholdStorageBar
+            direction={direction}
+            label={
+              <>
+                {t.s3Storage}
+                <TooltipIcon content={t.s3StorageExplanation} alignment={direction === 'rtl' ? 'right' : 'left'} />
+              </>
+            }
+            usedStorage={usedS3Storage}
+            totalStorage={totalS3Storage}
+            thresholdMode={thresholdMode}
+          />
+        )}
       </div>
     </div>
   );
