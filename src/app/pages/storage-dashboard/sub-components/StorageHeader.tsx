@@ -95,11 +95,11 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
       </div>
       {showInfoModal && (
         <GenericModal showModal={showInfoModal} setShowModal={setShowInfoModal}>
-          <div className="p-4">
-            <h2 className="text-xl font-bold mb-2 text-gray-800">{t.explanationTitle}</h2>
-            <p className="text-gray-800">{t.explanationContent}</p>
+          <div className="p-8 max-w-3xl">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">{t.explanationTitle}</h2>
+            <p className="text-lg text-gray-800" style={{ whiteSpace: 'pre-line' }}>{t.explanationContent}</p>
             <button
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+              className="mt-6 px-6 py-3 bg-blue-500 text-white rounded text-lg"
               onClick={() => setShowInfoModal(false)}
             >
               {t.close}
