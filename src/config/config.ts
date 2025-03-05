@@ -7,11 +7,15 @@ export const config = {
     },
     defaultMode: 'developer',
     normalIndicesThreshold: 0.5,
+    s3Urls: {
+        env1: ''
+    },
     clustersConnection: {
         'Cluster A': {
             name: 'Cluster A',
             hebrewName: 'אשכול A',
             url: 'elasticsearch/local',
+            bucketName: '',
             username: 'elastic',
             password: 'y6WgXosR',
             indexTemplatesConfig: [
