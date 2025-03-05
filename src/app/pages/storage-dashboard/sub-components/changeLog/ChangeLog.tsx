@@ -146,11 +146,17 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
   const handleCopyToClipboard = () => {
     const text = formatChangeLog(changeLog);
 
-    navigator.clipboard.writeText(text).then(() => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
       console.log('Change log copied to clipboard');
-    }).catch(err => {
+    } catch (err) {
       console.error('Failed to copy text: ', err);
-    });
+    }
+    document.body.removeChild(textArea);
   };
 
   const processImportedEntries = (parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number, relatedSourceGroup?: string, elasticStoragePerHotTierDay?: number, elasticStoragePerColdTierDay?: number, S3StoragePerColdTierDay?: number }[]) => {
