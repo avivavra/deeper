@@ -74,7 +74,7 @@ const ThresholdStorageBar: React.FC<{
 
   const adjustedTotalStorage = getThresholdTotalStorage();
 
-  const storagePercentage = (usedStorage / adjustedTotalStorage) * 100;
+  const storagePercentage = adjustedTotalStorage ? (usedStorage / adjustedTotalStorage) * 100 : 0;
   const isErrorZone = storagePercentage > 100;
 
   const marginClassName = direction === 'ltr' ? 'ml-' : 'mr-';
