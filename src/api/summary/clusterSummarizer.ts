@@ -2,7 +2,7 @@ import { ClusterData, ClusterMetadata, SourceGroup } from "../../app/pages/stora
 import { ElasticsearchClusterApi, IlmPolicy, Index, IndexTemplate } from "../elasticsearch";
 import { S3BucketApi } from "../s3";
 import { convert } from "../../app/utils";
-import { config } from "../../config";
+import { config } from "../../../config";
 
 type IndexFrequency = 'daily' | 'monthly' | 'yearly';
 

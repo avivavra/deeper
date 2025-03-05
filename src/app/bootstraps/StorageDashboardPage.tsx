@@ -1,7 +1,7 @@
 "use client";
 
 import { StorageDashboardPage as StorageDashboardPageComponent } from '../pages/storage-dashboard';
-import { config, clustersMetadata } from '../../config';
+import { config, clustersMetadata } from '../../../config';
 import { Audience } from '../pages/storage-dashboard/models';
 import { MockS3BucketApiFactory, ConfigElasticsearchClusterApiFactory, ConfigClusterSummarizerFactory, ExampleDataClusterSummarizerFactory } from '../../api';
 import React from 'react';

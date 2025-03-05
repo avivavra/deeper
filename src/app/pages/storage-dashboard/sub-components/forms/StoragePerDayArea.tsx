@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SourceGroup, Translation, StoragePerDayInputType } from '../../models';
 import { convert } from '../../../../utils';
-import { config } from '../../../../../config';
+import { config } from '../../../../../../config';
 
 const DAILY_SECONDS = 86400;
 
