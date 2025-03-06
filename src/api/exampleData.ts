@@ -58,13 +58,32 @@ export const clusterAIndices: SourceGroup[] = [
     coldRetentionDays: 0,
     initialHotRetentionDays: Infinity,
     initialColdRetentionDays: 0,
-    elasticStorage: 4 * 30 + 0.2 * 90,
+    elasticStorage: 4 * 70 + 0.2 * 0,
     S3Storage: 3 * 90,
     totalRetentionDays: Infinity + 0,
     indexNamesByTier: {
       hotTier: ['forever-1', 'forever-2'],
       coldTier: []
-    }
+    },
+    hideAddSourceButton: true
+  },
+  {
+    name: 'cold-forever',
+    hebrewName: 'קר לנצח',
+    elasticStoragePerHotTierDay: 4,
+    S3StoragePerColdTierDay: 3,
+    elasticStoragePerColdTierDay: 0.2,
+    hotRetentionDays: 10,
+    coldRetentionDays: Infinity,
+    initialHotRetentionDays: 10,
+    initialColdRetentionDays: Infinity,
+    elasticStorage: 4 * 10 + 0.2 * 110,
+    S3Storage: 3 * 90,
+    totalRetentionDays: 5 + Infinity,
+    indexNamesByTier: {
+      hotTier: [],
+      coldTier: ['forever-1', 'forever-2']
+    },
   },
   {
     name: 'metrics-app1',

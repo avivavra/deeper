@@ -229,7 +229,7 @@ export const RetentionManagement = ({
                                                     </TooltipIcon>
                                                 ))}
                                             </div>
-                                            {isInSimulation && (
+                                            {isInSimulation && !disableEditing && (
                                                 <button
                                                     onClick={() => handleAddSource(sourceGroup)}
                                                     className={`${marginClassName}2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
@@ -249,7 +249,8 @@ export const RetentionManagement = ({
                                             <div className={`flex ${direction === 'ltr' ? 'space-x-2' : 'space-x-reverse'} items-center`}>
                                                 <button
                                                     onClick={() => handleRemoveSourceGroup(sourceGroup.name)}
-                                                    className="inline-flex items-center p-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                                    className={`inline-flex items-center p-2 border border-gray-300 text-sm font-medium rounded-md ${disableEditing ? 'text-gray-400 bg-gray-200 cursor-not-allowed' : 'text-gray-800 bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'}`}
+                                                    disabled={disableEditing}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>

@@ -34,7 +34,7 @@ interface AddSourceGroupForm {
     translateNames: boolean;
 }
 
-export const AddSourceGroupForm: React.FC<AddSourceGroupForm> = ({ t, setShowAddSourceGroup, handleAddSourceGroup: handleAddSourceGroup, sourceGroups, translateNames }) => {
+export const AddSourceGroupForm: React.FC<AddSourceGroupForm> = ({ t, setShowAddSourceGroup, handleAddSourceGroup, sourceGroups, translateNames }) => {
     const [newSourceGroup, setNewSourceGroup] = useState<NewSourceGroup>(emptyNewSourceGroup());
     const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
     const [storageRates, setStorageRates] = useState({
@@ -90,6 +90,10 @@ export const AddSourceGroupForm: React.FC<AddSourceGroupForm> = ({ t, setShowAdd
         }
     };
 
+    const filteredSourceGroups = sourceGroups.filter(group => 
+        group.hotRetentionDays !== Infinity && group.coldRetentionDays !== Infinity
+    );
+
     return (
         <div className="p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.addSourceGroup}</h2>
@@ -105,7 +109,7 @@ export const AddSourceGroupForm: React.FC<AddSourceGroupForm> = ({ t, setShowAdd
                 <StoragePerDayArea
                     t={t}
                     errors={errors}
-                    sourceGroups={sourceGroups}
+                    sourceGroups={filteredSourceGroups}
                     translateNames={translateNames}
                     onStorageRatesChange={handleStorageRatesChange}
                 />
