@@ -116,6 +116,8 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     setDisplaySourceGroups(prevSourceGroups => {
       const updatedSourceGroups = prevSourceGroups.map(sourceGroup => {
         if (sourceGroup.name === name) {
+          const newElasticStorage = newHotDays * sourceGroup.elasticStoragePerHotTierDay + newColdDays * sourceGroup.elasticStoragePerColdTierDay;
+          const newS3Storage = newColdDays * sourceGroup.S3StoragePerColdTierDay;
           return {
             ...sourceGroup,
             hotRetentionDays: newHotDays,
@@ -311,11 +313,14 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     const relatedSourceGroupObject = sourceGroups.data?.find(sourceGroup => sourceGroup.name === relatedSourceGroup);
     if (!relatedSourceGroupObject) throw new Error(`Related source group not found: ${relatedSourceGroup}`);
 
+    const newElasticStorage = elasticStoragePerHotTierDay * relatedSourceGroupObject.hotRetentionDays + elasticStoragePerColdTierDay * relatedSourceGroupObject.coldRetentionDays;
+    const newS3Storage = S3StoragePerColdTierDay * relatedSourceGroupObject.coldRetentionDays;
+
     const newSource: Source = {
       name: sourceName,
       relatedSourceGroup: relatedSourceGroup,
-      elasticStorage: elasticStoragePerHotTierDay * relatedSourceGroupObject.hotRetentionDays + elasticStoragePerColdTierDay * relatedSourceGroupObject.coldRetentionDays,
-      S3Storage: S3StoragePerColdTierDay * relatedSourceGroupObject.coldRetentionDays,
+      elasticStorage: newElasticStorage,
+      S3Storage: newS3Storage,
       elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
       elasticStoragePerColdTierDay: elasticStoragePerColdTierDay,
       S3StoragePerColdTierDay: S3StoragePerColdTierDay,

@@ -162,9 +162,9 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
     document.body.removeChild(textArea);
   };
 
-  const processImportedEntries = (parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number, relatedSourceGroup?: string, elasticStoragePerHotTierDay?: number, elasticStoragePerColdTierDay?: number, S3StoragePerColdTierDay?: number }[]) => {
+  const processImportedEntries = (parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, relatedSourceGroup?: string, elasticStoragePerHotTierDay?: number, elasticStoragePerColdTierDay?: number, S3StoragePerColdTierDay?: number }[]) => {
     try {
-      parsedEntries.forEach(({ sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage, relatedSourceGroup, elasticStoragePerHotTierDay, elasticStoragePerColdTierDay, S3StoragePerColdTierDay }) => {
+      parsedEntries.forEach(({ sourceGroupName, newHotDays, newColdDays, relatedSourceGroup, elasticStoragePerHotTierDay, elasticStoragePerColdTierDay, S3StoragePerColdTierDay }) => {
         if (relatedSourceGroup) {
           handleNewSource(sourceGroupName, relatedSourceGroup, elasticStoragePerHotTierDay!, elasticStoragePerColdTierDay!, S3StoragePerColdTierDay!);
         } else {
@@ -173,6 +173,8 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
             handleRemoveSourceGroup(sourceGroupName);
           } else {
             const isExistingSourceGroup = sourceGroups.find(sourceGroup => sourceGroup.name === sourceGroupName);
+            const newElasticStorage = newHotDays * elasticStoragePerHotTierDay! + newColdDays * elasticStoragePerColdTierDay!;
+            const newS3Storage = newColdDays * S3StoragePerColdTierDay!;
             if (isExistingSourceGroup) {
               handleSourceGroupRetentionChange(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
             } else {
