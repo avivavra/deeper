@@ -84,17 +84,19 @@ export class ClusterSummarizer {
             if (!template) throw new Error(`Index template ${templateConfig.name} not found`);
 
             const matchingIlmPolicy = ilmPolicies.find(policy => policy.name === template.ilmPolicy);
-            if (!matchingIlmPolicy) throw new Error(`Ilm policy ${template.ilmPolicy} does not exist or does not a delete phase`);
 
             const hotTierIndices = this.getMatchingHotTierIndices(indices, template.patterns);
             if (hotTierIndices.length === 0) console.warn(`No hot tier indices found for index template ${templateConfig.name}`);
-    
+
             const coldTierIndices = this.getMatchingColdTierIndices(indices, template.patterns);
-            if (matchingIlmPolicy.coldTierRetentionPeriod > 0 && coldTierIndices.length === 0) {
-                console.warn(`No cold tier indices found for index template ${templateConfig.name}, although cold tier retention period is ${matchingIlmPolicy.coldTierRetentionPeriod}`);
+
+            if (matchingIlmPolicy) {
+                if (matchingIlmPolicy.coldTierRetentionPeriod > 0 && coldTierIndices.length === 0) {
+                    console.warn(`No cold tier indices found for index template ${templateConfig.name}, although cold tier retention period is ${matchingIlmPolicy.coldTierRetentionPeriod}`);
+                }
             }
 
-            return this.summarizeIndexTemplate(templateConfig, matchingIlmPolicy, hotTierIndices, coldTierIndices, now);
+            return this.summarizeIndexTemplate(templateConfig, hotTierIndices, coldTierIndices, now, matchingIlmPolicy);
         });
 
         return indexTemplates;
@@ -102,16 +104,16 @@ export class ClusterSummarizer {
 
     summarizeIndexTemplate(
         { name, hebrewName, frequency }: IndexTemplateConfig,
-        ilmPolicy: IlmPolicy,
         hotTierIndices: Index[],
         coldTierIndices: Index[],
-        now: Date
+        now: Date,
+        ilmPolicy?: IlmPolicy
     ): ProcessedIndexTemplate {
         const normalHotTierIndices = this.getNormalIndices(hotTierIndices);
         const normalColdTierIndices = this.getNormalIndices(coldTierIndices);
 
-        const hotRetentionDays = convert.millisToDays(ilmPolicy.hotTierRetentionPeriod + ilmPolicy.warmTierRetentionPeriod);
-        const coldRetentionDays = convert.millisToDays(ilmPolicy.coldTierRetentionPeriod + ilmPolicy.frozenTierRetentionPeriod);
+        const hotRetentionDays = ilmPolicy ? convert.millisToDays(ilmPolicy.hotTierRetentionPeriod + ilmPolicy.warmTierRetentionPeriod) : Infinity;
+        const coldRetentionDays = ilmPolicy ? convert.millisToDays(ilmPolicy.coldTierRetentionPeriod + ilmPolicy.frozenTierRetentionPeriod) : 0;
 
         const hotTierStorage = normalHotTierIndices.reduce((acc, index) => acc + index.storage, 0);
         const coldTierStorage = normalColdTierIndices.reduce((acc, index) => acc + index.storage, 0);

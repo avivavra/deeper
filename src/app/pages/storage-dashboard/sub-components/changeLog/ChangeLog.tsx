@@ -49,8 +49,11 @@ S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.curren
 };
 
 const parseChangeLog = (text: string) => {
+  // Remove characters with char code 8206
+  const cleanedText = text.replace(/[\u200E]/g, '');
+
   const parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number, relatedSourceGroup?: string, elasticStoragePerHotTierDay?: number, elasticStoragePerColdTierDay?: number, S3StoragePerColdTierDay?: number }[] = [];
-  const entries = text.split('\n\n');
+  const entries = cleanedText.split('\n\n');
   entries.forEach(entry => {
     const lines = entry.trim().split('\n');
     if (lines.length === 7 && lines[0].startsWith('Source: ')) {
