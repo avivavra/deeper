@@ -1,4 +1,4 @@
-import { config } from "../../../config/config";
+import { config } from "../../config/config";
 import { ElasticsearchClusterApi } from "./elasticsearchClusterApi";
 import { ElasticsearchClusterApiFactory } from "./elasticsearchClusterApiFactory";
 import { AxiosElasticsearchClusterApi } from "./axiosElasticsearchClusterApi";

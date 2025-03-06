@@ -1,6 +1,6 @@
 import React from 'react';
 import { Direction, Translation } from '../models';
-import { config } from '../../../../../config';
+import { config } from '../../../../config';
 import { FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
 import { TooltipIcon } from '../../../components/TooltipIcon';
 
