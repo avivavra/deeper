@@ -15,7 +15,7 @@ export const config = {
             name: 'Cluster A',
             hebrewName: 'אשכול A',
             url: 'elasticsearch/local',
-            bucketName: '',
+            bucketName: 'Bucket A',
             username: 'elastic',
             password: 'y6WgXosR',
             indexTemplatesConfig: [

@@ -32,21 +32,21 @@ export class ClusterSummarizer {
         private readonly clusterMetadata: ClusterMetadata,
         private indexTemplatesConfig: IndexTemplateConfig[],
         private readonly elasticsearchClusterApi: ElasticsearchClusterApi,
-        private readonly s3BucketApi: S3BucketApi
+        private readonly s3BucketApi?: S3BucketApi
     ) { }
 
     async summarize(): Promise<ClusterData> {
         const [elasticsearchStorage, s3Storage] = await Promise.all([
             this.elasticsearchClusterApi.fetchClusterStorage(),
-            this.s3BucketApi.getStorage()
+            this.s3BucketApi?.getStorage()
         ]);
 
         return {
             ...this.clusterMetadata,
             totalElasticStorage: elasticsearchStorage.totalStorage,
             usedElasticStorage: elasticsearchStorage.usedStorage,
-            totalS3Storage: s3Storage.totalS3Storage,
-            usedS3Storage: s3Storage.usedS3Storage
+            totalS3Storage: s3Storage?.totalS3Storage || 0,
+            usedS3Storage: s3Storage?.usedS3Storage || 0
         };
     }
 

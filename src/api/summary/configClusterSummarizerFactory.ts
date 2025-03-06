@@ -14,7 +14,7 @@ export class ConfigClusterSummarizerFactory implements ClusterSummarizerFactory 
         const clusterConfig = (config.clustersConnection as {
             [clusterName: string]: {
                 name: string,
-                bucketName: string,
+                bucketName?: string,
                 hebrewName: string,
                 indexTemplatesConfig: IndexTemplateConfig[]
             }
@@ -24,7 +24,7 @@ export class ConfigClusterSummarizerFactory implements ClusterSummarizerFactory 
             { name: clusterConfig.name, hebrewName: clusterConfig.hebrewName },
             clusterConfig.indexTemplatesConfig,
             this.elasticsearchClusterApiFactory.create("", clusterName), // TODO: handle two envs
-            this.s3BucketApiFactory.create("env1", clusterConfig.bucketName)
+            clusterConfig.bucketName ? this.s3BucketApiFactory.create("env1", clusterConfig.bucketName): undefined
         );
     }
 }

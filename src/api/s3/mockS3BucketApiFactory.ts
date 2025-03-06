@@ -4,7 +4,7 @@ import { S3BucketApiFactory } from "./s3BucketApiFactory";
 
 export class MockS3BucketApiFactory implements S3BucketApiFactory {
     create(env: string, bucketName: string): S3BucketApi {
-        if (bucketName === "Cluster A") {
+        if (bucketName === "Bucket A") {
             return {
                 getStorage: () =>
                     Promise.resolve({
