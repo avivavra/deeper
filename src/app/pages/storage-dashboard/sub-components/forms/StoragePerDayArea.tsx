@@ -12,9 +12,10 @@ interface StoragePerDayAreaProps {
     translateNames: boolean;
     onStorageRatesChange: (rates: { elasticStoragePerHotTierDay: number; elasticStoragePerColdTierDay: number; S3StoragePerColdTierDay: number }) => void;
     defaultImportFrom?: string;
+    availableInputTypes?: StoragePerDayInputType[];
 }
 
-export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors, sourceGroups, translateNames, onStorageRatesChange, defaultImportFrom }) => {
+export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors, sourceGroups, translateNames, onStorageRatesChange, defaultImportFrom, availableInputTypes }) => {
     const [storageValues, setStorageValues] = useState({
         docSize: '',
         frequency: '',
@@ -27,7 +28,7 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
         { value: 'import', label: t.importFromSourceGroup },
         { value: 'frequency', label: t.docFrequency },
         { value: 'avgDocs', label: t.avgDocs },
-    ];
+    ].filter(type => !availableInputTypes || availableInputTypes.includes(type.value as StoragePerDayInputType));
 
     const handleChange = (values: Partial<typeof storageValues>) => {
         setStorageValues(prev => ({ ...prev, ...values }));
