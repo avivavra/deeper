@@ -39,7 +39,9 @@ export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, 
   useEffect(() => {
     setSourceGroups(async () => {
       const summarizer = clustersSummarizerFactory.createSummarizer(selectedClusterMetadata.name);
-      return summarizer.summarizeSourceGroups();
+      const fetchedSourceGroups = await summarizer.summarizeSourceGroups();
+
+      return fetchedSourceGroups.sort((a, b) => b.elasticStorage - a.elasticStorage);
     });
   }, [setSourceGroups, clustersSummarizerFactory, selectedClusterMetadata.name]);
 

@@ -17,7 +17,7 @@ type StorageDashboardPageProps = {
 
 export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode }: StorageDashboardPageProps) => {
   const { audience, setAudience, direction, t } = useAudience(defaultMode);
-  const { isInSimulation: isInSimulation, handleSimulationToggle } = useSimulation();
+  const { isInSimulation, handleSimulationToggle } = useSimulation();
   const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, sourceGroups, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata);
 
   const [displaySourceGroups, setDisplaySourceGroups] = useState<SourceGroup[]>([]);
