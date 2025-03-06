@@ -95,6 +95,7 @@ export type Translation = {
     elasticsearchStorageExplanation: string;
     s3StorageExplanation: string;
     comparing: string;
+    forever: string;
     infoIconTooltip: string;
     explanationTitle: string;
     explanationContent: string;

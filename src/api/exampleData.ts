@@ -49,6 +49,24 @@ export const clusterAIndices: SourceGroup[] = [
     }
   },
   {
+    name: 'hot-forever',
+    hebrewName: 'חם לנצח',
+    elasticStoragePerHotTierDay: 4,
+    S3StoragePerColdTierDay: 3,
+    elasticStoragePerColdTierDay: 0.2,
+    hotRetentionDays: Infinity,
+    coldRetentionDays: 0,
+    initialHotRetentionDays: Infinity,
+    initialColdRetentionDays: 0,
+    elasticStorage: 4 * 30 + 0.2 * 90,
+    S3Storage: 3 * 90,
+    totalRetentionDays: Infinity + 0,
+    indexNamesByTier: {
+      hotTier: ['forever-1', 'forever-2'],
+      coldTier: []
+    }
+  },
+  {
     name: 'metrics-app1',
     hebrewName: 'מדדים-אפליקציה1',
     elasticStoragePerHotTierDay: 2,

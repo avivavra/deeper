@@ -6,9 +6,10 @@ type CustomSliderProps = {
     max: number;
     onChange: (value: number[]) => void;
     resetKey: string;
+    disabled?: boolean;
 };
 
-export const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSliderProps) => {
+export const CustomSlider = ({ value, min, max, onChange, resetKey, disabled = false }: CustomSliderProps) => {
     const [sliderValue, setSliderValue] = useState(value[0]);
     const sliderRef = useRef<HTMLInputElement>(null);
 
@@ -23,12 +24,14 @@ export const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSlid
     };
 
     const handleMouseDown = () => {
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
+        if (!disabled) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-        if (sliderRef.current) {
+        if (sliderRef.current && !disabled) {
             const newValue = parseInt(sliderRef.current.value);
             setSliderValue(newValue);
             onChange([newValue]);
@@ -36,8 +39,10 @@ export const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSlid
     };
 
     const handleMouseUp = () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        if (!disabled) {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        }
     };
 
     return (
@@ -50,6 +55,7 @@ export const CustomSlider = ({ value, min, max, onChange, resetKey }: CustomSlid
             onChange={handleChange}
             onMouseDown={handleMouseDown}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            disabled={disabled}
         />
     );
 };

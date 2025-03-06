@@ -77,7 +77,7 @@ export class ClusterSummarizer {
 
         const templates = await this.elasticsearchClusterApi.fetchIndexTemplates();
         const indices = await this.elasticsearchClusterApi.fetchIndices();
-        const ilmPolicies = await this.elasticsearchClusterApi.fetchIlmPoliciesWithDeletePhase();
+        const ilmPolicies = await this.elasticsearchClusterApi.fetchIlmPolicies();
 
         const indexTemplates = this.indexTemplatesConfig.map((templateConfig): ProcessedIndexTemplate => {
             const template = templates.find(template => template.name === templateConfig.name);

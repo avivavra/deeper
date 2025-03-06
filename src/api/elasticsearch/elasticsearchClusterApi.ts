@@ -29,5 +29,5 @@ export interface ElasticsearchClusterApi {
     }>;
     fetchIndexTemplates: () => Promise<IndexTemplate[]>;
     fetchIndices: () => Promise<Index[]>;
-    fetchIlmPoliciesWithDeletePhase: () => Promise<IlmPolicy[]>;
+    fetchIlmPolicies: () => Promise<IlmPolicy[]>;
 }

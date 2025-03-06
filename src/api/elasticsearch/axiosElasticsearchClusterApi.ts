@@ -140,7 +140,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
     }
 
     /** @returns In milli-seconds */
-    async fetchIlmPoliciesWithDeletePhase(): Promise<IlmPolicy[]> {
+    async fetchIlmPolicies(): Promise<IlmPolicy[]> {
         try {
             const response = await this.axiosInstance.get<IlmPolicyResponse>('/_ilm/policy', {
                 params: {
@@ -156,20 +156,23 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                 const warmMinAge = phases.warm ? this.parseDurationToEpochMillis(phases.warm.min_age) : null;
                 const coldMinAge = phases.cold ? this.parseDurationToEpochMillis(phases.cold.min_age) : null;
                 const frozenMinAge = phases.frozen ? this.parseDurationToEpochMillis(phases.frozen.min_age) : null;
-                const deleteMinAge = this.parseDurationToEpochMillis(phases.delete.min_age);
+                const deleteMinAge = phases.delete ? this.parseDurationToEpochMillis(phases.delete.min_age) : null;
 
-                const hotTierRetentionPeriod = warmMinAge || coldMinAge || frozenMinAge || deleteMinAge;
+                const hotTierRetentionPeriod = warmMinAge || coldMinAge || frozenMinAge || deleteMinAge || Infinity;
 
-                const warmTierRetentionPeriod = warmMinAge
-                    ? (coldMinAge || frozenMinAge || deleteMinAge) - hotTierRetentionPeriod
+                const warmAndHotTierRetentionPeriod = warmMinAge
+                    ? coldMinAge || frozenMinAge || deleteMinAge || Infinity
                     : 0;
+                const warmTierRetentionPeriod = warmAndHotTierRetentionPeriod === Infinity
+                    ? Infinity
+                    : warmAndHotTierRetentionPeriod - hotTierRetentionPeriod;
 
                 const coldTierRetentionPeriod = coldMinAge
-                    ? frozenMinAge || deleteMinAge
+                    ? frozenMinAge || deleteMinAge || Infinity
                     : 0;
 
                 const frozenTierRetentionPeriod = frozenMinAge
-                    ? deleteMinAge
+                    ? deleteMinAge || Infinity
                     : 0;
 
                 return {

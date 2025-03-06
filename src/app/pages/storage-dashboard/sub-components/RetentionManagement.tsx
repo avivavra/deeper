@@ -54,13 +54,17 @@ export const RetentionManagement = ({
     };
 
     const handleHotRetentionDoubleClick = (sourceGroupName: string, currentHotDays: number) => {
-        setEditingHotRetention(sourceGroupName);
-        setHotRetentionValue(currentHotDays);
+        if (currentHotDays !== Infinity && !isAnyRetentionInfinity(sourceGroupName)) {
+            setEditingHotRetention(sourceGroupName);
+            setHotRetentionValue(currentHotDays);
+        }
     };
 
     const handleColdRetentionDoubleClick = (sourceGroupName: string, currentColdDays: number) => {
-        setEditingColdRetention(sourceGroupName);
-        setColdRetentionValue(currentColdDays);
+        if (currentColdDays !== Infinity && !isAnyRetentionInfinity(sourceGroupName)) {
+            setEditingColdRetention(sourceGroupName);
+            setColdRetentionValue(currentColdDays);
+        }
     };
 
     const handleHotRetentionBlur = (sourceGroupName: string) => {
@@ -104,6 +108,11 @@ export const RetentionManagement = ({
     const handleAddSourceSubmit = (newSource: Source) => {
         handleAddSourceExternal(newSource);
         setShowAddSource(false);
+    };
+
+    const isAnyRetentionInfinity = (sourceGroupName: string) => {
+        const sourceGroup = filteredSourceGroups.find(i => i.name === sourceGroupName);
+        return sourceGroup ? sourceGroup.hotRetentionDays === Infinity || sourceGroup.coldRetentionDays === Infinity : false;
     };
 
     const marginClassName = direction === 'ltr' ? 'ml-' : 'mr-';
@@ -155,6 +164,7 @@ export const RetentionManagement = ({
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {filteredSourceGroups.map(sourceGroup => {
                             const { totalElasticStorage, totalS3Storage, totalElasticStoragePerHotTierDay, totalElasticStoragePerColdTierDay, totalS3StoragePerColdTierDay } = calculateTotalStorage(sourceGroup);
+                            const disableEditing = isAnyRetentionInfinity(sourceGroup.name);
                             return (
                                 <div key={sourceGroup.name} className="bg-gray-50 p-4 rounded-lg border relative">
                                     <div className="flex justify-between items-center">
@@ -260,10 +270,11 @@ export const RetentionManagement = ({
                                                             onBlur={() => handleHotRetentionBlur(sourceGroup.name)}
                                                             onKeyPress={(e) => handleHotRetentionKeyPress(e, sourceGroup.name)}
                                                             className="border rounded p-1 w-16"
+                                                            disabled={disableEditing}
                                                         />
                                                     ) : (
                                                         <span onDoubleClick={() => handleHotRetentionDoubleClick(sourceGroup.name, sourceGroup.hotRetentionDays)}>
-                                                            {sourceGroup.hotRetentionDays}
+                                                            {sourceGroup.hotRetentionDays === Infinity ? t.forever : sourceGroup.hotRetentionDays}
                                                         </span>
                                                     )}
                                                 </div>
@@ -273,6 +284,7 @@ export const RetentionManagement = ({
                                                     min={1}
                                                     max={sourceGroup.initialHotRetentionDays >= 10 ? sourceGroup.initialHotRetentionDays * 2 : 20}
                                                     onChange={(value) => handleRetentionChange(sourceGroup.name, value[0], sourceGroup.coldRetentionDays)}
+                                                    disabled={disableEditing}
                                                 />
                                             </div>
 
@@ -287,10 +299,11 @@ export const RetentionManagement = ({
                                                             onBlur={() => handleColdRetentionBlur(sourceGroup.name)}
                                                             onKeyPress={(e) => handleColdRetentionKeyPress(e, sourceGroup.name)}
                                                             className="border rounded p-1 w-16"
+                                                            disabled={disableEditing}
                                                         />
                                                     ) : (
                                                         <span onDoubleClick={() => handleColdRetentionDoubleClick(sourceGroup.name, sourceGroup.coldRetentionDays)}>
-                                                            {sourceGroup.coldRetentionDays}
+                                                            {sourceGroup.coldRetentionDays === Infinity ? t.forever : sourceGroup.coldRetentionDays}
                                                         </span>
                                                     )}
                                                 </div>
@@ -300,6 +313,7 @@ export const RetentionManagement = ({
                                                     min={0}
                                                     max={sourceGroup.initialColdRetentionDays >= 20 ? sourceGroup.initialColdRetentionDays * 2 : 40}
                                                     onChange={(value) => handleRetentionChange(sourceGroup.name, sourceGroup.hotRetentionDays, value[0])}
+                                                    disabled={disableEditing}
                                                 />
                                             </div>
                                         </>
@@ -307,11 +321,11 @@ export const RetentionManagement = ({
                                         <div className="grid grid-cols-1 gap-4 mt-2 mb-4">
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.hotTierRetention}</span>
-                                                <span className="text-right">{sourceGroup.hotRetentionDays.toFixed(2)} {t.day}</span>
+                                                <span className="text-right">{sourceGroup.hotRetentionDays === Infinity ? t.forever : `${sourceGroup.hotRetentionDays.toFixed(2)} ${t.day}`}</span>
                                             </div>
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.coldTierRetention}</span>
-                                                <span className="text-right">{sourceGroup.coldRetentionDays.toFixed(2)} {t.day}</span>
+                                                <span className="text-right">{sourceGroup.coldRetentionDays === Infinity ? t.forever : `${sourceGroup.coldRetentionDays.toFixed(2)} ${t.day}`}</span>
                                             </div>
                                         </div>
                                     )}
@@ -319,7 +333,7 @@ export const RetentionManagement = ({
                                     <div className="grid grid-cols-1 gap-4 mt-2">
                                         <div className="flex justify-between text-sm font-bold text-gray-800">
                                             <span>{t.totalRetentionPeriod}</span>
-                                            <span>{sourceGroup.totalRetentionDays.toFixed(2)} {t.day}</span>
+                                            <span>{sourceGroup.totalRetentionDays === Infinity ? t.forever : `${sourceGroup.totalRetentionDays.toFixed(2)} ${t.day}`}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-gray-800">
                                             <span className="text-left">{t.elasticsearchStorage}</span>

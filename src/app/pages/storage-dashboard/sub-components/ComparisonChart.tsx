@@ -29,7 +29,11 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
 export const ComparisonChart = ({ direction, translateNames, filteredSourceGroups, t }: ComparisonChartProps) => {
   const [chartMode, setChartMode] = useState<ChartMode>('storage');
 
-  const chartData = chartMode === 'retention' ? filteredSourceGroups : filteredSourceGroups.map(group => ({
+  const chartData = chartMode === 'retention' ? filteredSourceGroups.filter(group => 
+    group.hotRetentionDays !== Infinity && group.coldRetentionDays !== Infinity
+  ).map(group => ({
+    ...group,
+  })) : filteredSourceGroups.map(group => ({
     ...group,
     elasticStorage: group.elasticStorage.toFixed(2) || 0,
     s3Storage: group.S3Storage.toFixed(2) || 0,
