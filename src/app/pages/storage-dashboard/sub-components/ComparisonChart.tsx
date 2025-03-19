@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
 import { SourceGroup, Direction, Translation } from '../models';
 import { GenericDropdown } from '../../../components';
+import { format } from '../../../utils';
 
 type ChartMode = 'retention' | 'storage';
 
@@ -35,8 +36,8 @@ export const ComparisonChart = ({ direction, translateNames, filteredSourceGroup
     ...group,
   })) : filteredSourceGroups.map(group => ({
     ...group,
-    elasticStorage: group.elasticStorage.toFixed(2) || 0,
-    s3Storage: group.S3Storage.toFixed(2) || 0,
+    elasticStorage: format.numberToFixed(group.elasticStorage) || 0,
+    s3Storage: format.numberToFixed(group.S3Storage) || 0,
   }));
 
   const title = t.comparing + ' ' + (chartMode === 'retention' ? t.retentionPeriods : t.storage);

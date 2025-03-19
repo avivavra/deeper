@@ -3,6 +3,7 @@ import { Direction, Translation } from '../models';
 import { config } from '../../../../config';
 import { FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
 import { TooltipIcon } from '../../../components/TooltipIcon';
+import { format } from '../../../utils';
 
 type StorageUsageOverviewProps = {
   usedElasticStorage: number;
@@ -44,7 +45,7 @@ const RegularStorageBar: React.FC<{
       <div className="flex justify-between mb-2">
         <span className="font-medium text-gray-800">{label}</span>
         <span className={usedStorage > totalStorage ? "text-red-500 font-medium" : "text-gray-800"}>
-          <span dir='ltr'>{usedStorage.toFixed(2)}/{totalStorage.toFixed(2)} GB ({Number(storagePercentage).toFixed(1)}%)</span>
+          <span dir='ltr'>{format.numberToFixed(usedStorage)}/{format.numberToFixed(totalStorage)} GB ({format.numberToFixed(storagePercentage, 1)}%)</span>
           {isWarningZone(storagePercentage) && <FaExclamationTriangle className={`text-orange-500 inline ${marginClassName}1`} />}
           {isErrorZone(storagePercentage) && <FaExclamationCircle className={`text-red-500 inline ${marginClassName}1`} />}
         </span>
@@ -84,7 +85,7 @@ const ThresholdStorageBar: React.FC<{
       <div className="flex justify-between mb-2">
         <span className="font-medium text-gray-800">{label}</span>
         <span className={isErrorZone ? "text-red-500 font-medium" : "text-gray-800"}>
-          <span dir='ltr'>{usedStorage.toFixed(2)}/{adjustedTotalStorage.toFixed(2)} GB ({Number(storagePercentage).toFixed(1)}%)</span>
+          <span dir='ltr'>{format.numberToFixed(usedStorage)}/{format.numberToFixed(adjustedTotalStorage)} GB ({format.numberToFixed(storagePercentage, 1)}%)</span>
           {isErrorZone && <FaExclamationCircle className={`text-red-500 inline ${marginClassName}1`} />}
         </span>
       </div>

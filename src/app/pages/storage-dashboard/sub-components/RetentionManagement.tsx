@@ -3,6 +3,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { TooltipIcon, CustomSlider, GenericModal } from '../../../components';
 import { SourceGroup, Direction, Translation, Source } from '../models';
 import { AddSourceForm } from './forms/AddSourceForm';
+import { format } from '../../../utils';
 
 type RetentionManagementProps = {
     isInSimulation: boolean;
@@ -210,8 +211,8 @@ export const RetentionManagement = ({
                                                         alignment={direction === 'rtl' ? 'right' : 'left'}
                                                         content={
                                                             <>
-                                                                <div>{t.elasticsearchStorage}: {source.elasticStorage.toFixed(2)} GB</div>
-                                                                <div>{t.s3Storage}: {source.S3Storage.toFixed(2)} GB</div>
+                                                                <div>{t.elasticsearchStorage}: {format.numberToFixed(source.elasticStorage)} GB</div>
+                                                                <div>{t.s3Storage}: {format.numberToFixed(source.S3Storage)} GB</div>
                                                             </>
                                                         }
                                                     >
@@ -322,11 +323,11 @@ export const RetentionManagement = ({
                                         <div className="grid grid-cols-1 gap-4 mt-2 mb-4">
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.hotTierRetention}</span>
-                                                <span className="text-right">{sourceGroup.hotRetentionDays === Infinity ? t.forever : `${sourceGroup.hotRetentionDays.toFixed(2)} ${t.day}`}</span>
+                                                <span className="text-right">{sourceGroup.hotRetentionDays === Infinity ? t.forever : `${format.numberToFixed(sourceGroup.hotRetentionDays)} ${t.day}`}</span>
                                             </div>
                                             <div className="flex justify-between text-sm text-gray-800">
                                                 <span className="text-left">{t.coldTierRetention}</span>
-                                                <span className="text-right">{sourceGroup.coldRetentionDays === Infinity ? t.forever : `${sourceGroup.coldRetentionDays.toFixed(2)} ${t.day}`}</span>
+                                                <span className="text-right">{sourceGroup.coldRetentionDays === Infinity ? t.forever : `${format.numberToFixed(sourceGroup.coldRetentionDays)} ${t.day}`}</span>
                                             </div>
                                         </div>
                                     )}
@@ -334,15 +335,15 @@ export const RetentionManagement = ({
                                     <div className="grid grid-cols-1 gap-4 mt-2">
                                         <div className="flex justify-between text-sm font-bold text-gray-800">
                                             <span>{t.totalRetentionPeriod}</span>
-                                            <span>{sourceGroup.totalRetentionDays === Infinity ? t.forever : `${sourceGroup.totalRetentionDays.toFixed(2)} ${t.day}`}</span>
+                                            <span>{sourceGroup.totalRetentionDays === Infinity ? t.forever : `${format.numberToFixed(sourceGroup.totalRetentionDays)} ${t.day}`}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-gray-800">
                                             <span className="text-left">{t.elasticsearchStorage}</span>
                                             <span className="text-right">
-                                                <span dir='ltr'>{totalElasticStorage.toFixed(2)} GB</span>
+                                                <span dir='ltr'>{format.numberToFixed(totalElasticStorage)} GB</span>
                                                 {displayRates && (
                                                     <TooltipIcon
-                                                        content={`${t.hotTier}: ${totalElasticStoragePerHotTierDay.toFixed(2)}GB/${t.day}, ${t.coldTier}: ${totalElasticStoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
+                                                        content={`${t.hotTier}: ${format.numberToFixed(totalElasticStoragePerHotTierDay)}GB/${t.day}, ${t.coldTier}: ${format.numberToFixed(totalElasticStoragePerColdTierDay)}GB/${t.day}`}
                                                         alignment={direction === 'rtl' ? 'right' : 'left'}
                                                     />
                                                 )}
@@ -351,10 +352,10 @@ export const RetentionManagement = ({
                                         <div className="flex justify-between text-sm text-gray-800">
                                             <span className="text-left">{t.s3Storage}</span>
                                             <span className="text-right">
-                                                <span dir='ltr'>{totalS3Storage.toFixed(2)} GB</span>
+                                                <span dir='ltr'>{format.numberToFixed(totalS3Storage)} GB</span>
                                                 {displayRates && (
                                                     <TooltipIcon
-                                                        content={`${t.coldTier}: ${totalS3StoragePerColdTierDay.toFixed(2)}GB/${t.day}`}
+                                                        content={`${t.coldTier}: ${format.numberToFixed(totalS3StoragePerColdTierDay)}GB/${t.day}`}
                                                         alignment={direction === 'rtl' ? 'right' : 'left'}
                                                     />
                                                 )}

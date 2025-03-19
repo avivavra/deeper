@@ -5,4 +5,4 @@ export const convert = {
     minutesToMillis: (minutes: number) => minutes * 60 * 1000,
     hoursToMillis: (hours: number) => hours * 60 * 60 * 1000,
     daysToMillis: (days: number) => days * 24 * 60 * 60 * 1000
-}
+};

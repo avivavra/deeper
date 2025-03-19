@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Trash2, Share2, Upload, RotateCw } from 'lucide-react';
 import { SourceGroup, ChangeLogEntry, Direction, Translation } from '../../models';
 import { GenericDropdown, GenericModal } from '../../../../components';
+import { format } from '../../../../utils';
 
 interface ChangeLogProps {
   changeLog: ChangeLogEntry[];
@@ -26,11 +27,11 @@ const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
 
       return `Source: ${change.name}
 Related Source Group: ${change.relatedSourceGroup}
-Elasticsearch Storage: ${change.original.elasticStorage?.toFixed(2) || 0} GB → ${change.current.elasticStorage?.toFixed(2) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange?.toFixed(2) || 0} GB)
-S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.current.s3Storage?.toFixed(2) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange?.toFixed(2) || 0} GB)
-Elastic Storage Per Hot Tier Day: ${change.current.elasticStoragePerHotTierDay?.toFixed(2) || 0} GB
-Elastic Storage Per Cold Tier Day: ${change.current.elasticStoragePerColdTierDay?.toFixed(2) || 0} GB
-S3 Storage Per Cold Tier Day: ${change.current.S3StoragePerColdTierDay?.toFixed(2) || 0} GB
+Elasticsearch Storage: ${format.numberToFixed(change.original.elasticStorage) || 0} GB → ${format.numberToFixed(change.current.elasticStorage) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${format.numberToFixed(totalElasticStorageChange) || 0} GB)
+S3 Storage: ${format.numberToFixed(change.original.s3Storage) || 0} GB → ${format.numberToFixed(change.current.s3Storage) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${format.numberToFixed(totalS3StorageChange) || 0} GB)
+Elastic Storage Per Hot Tier Day: ${format.numberToFixed(change.current.elasticStoragePerHotTierDay) || 0} GB
+Elastic Storage Per Cold Tier Day: ${format.numberToFixed(change.current.elasticStoragePerColdTierDay) || 0} GB
+S3 Storage Per Cold Tier Day: ${format.numberToFixed(change.current.S3StoragePerColdTierDay) || 0} GB
 `;
     } else {
       const hotDaysChange = change.current.hotDays - change.original.hotDays;
@@ -41,8 +42,8 @@ S3 Storage Per Cold Tier Day: ${change.current.S3StoragePerColdTierDay?.toFixed(
       return `Source Group: ${change.name}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
-Elasticsearch Storage: ${change.original.elasticStorage?.toFixed(2) || 0} GB → ${change.current.elasticStorage?.toFixed(2) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${totalElasticStorageChange?.toFixed(2) || 0} GB)
-S3 Storage: ${change.original.s3Storage?.toFixed(2) || 0} GB → ${change.current.s3Storage?.toFixed(2) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${totalS3StorageChange?.toFixed(2) || 0} GB)
+Elasticsearch Storage: ${format.numberToFixed(change.original.elasticStorage) || 0} GB → ${format.numberToFixed(change.current.elasticStorage) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${format.numberToFixed(totalElasticStorageChange) || 0} GB)
+S3 Storage: ${format.numberToFixed(change.original.s3Storage) || 0} GB → ${format.numberToFixed(change.current.s3Storage) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${format.numberToFixed(totalS3StorageChange) || 0} GB)
 `;
     }
   }).join('\n');
@@ -295,10 +296,10 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
                   </div>
                   <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
                   <div className="text-sm ml-2 text-gray-800">
-                    {t.elasticsearchStorage}: {elasticStorageChange > 0 ? '+' : ''}{elasticStorageChange?.toFixed(2) || 0} GB
+                    {t.elasticsearchStorage}: {elasticStorageChange > 0 ? '+' : ''}{format.numberToFixed(elasticStorageChange) || 0} GB
                   </div>
                   <div className="text-sm ml-2 text-gray-800">
-                    {t.s3Storage}: {s3StorageChange > 0 ? '+' : ''}{s3StorageChange?.toFixed(2) || 0} GB
+                    {t.s3Storage}: {s3StorageChange > 0 ? '+' : ''}{format.numberToFixed(s3StorageChange) || 0} GB
                   </div>
                 </div>
               );
@@ -317,17 +318,17 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
                     </button>
                   </div>
                   <div className="text-gray-600 mt-1">
-                    {t.hotTier}: {change.original.hotDays.toFixed(2)} {arrow} {change.current.hotDays.toFixed(2)} {t.days}
+                    {t.hotTier}: {format.numberToFixed(change.original.hotDays)} {arrow} {format.numberToFixed(change.current.hotDays)} {t.days}
                   </div>
                   <div className="text-gray-600">
-                    {t.coldTier}: {change.original.coldDays.toFixed(2)} {arrow} {change.current.coldDays.toFixed(2)} {t.days}
+                    {t.coldTier}: {format.numberToFixed(change.original.coldDays)} {arrow} {format.numberToFixed(change.current.coldDays)} {t.days}
                   </div>
                   <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
                   <div className="text-sm ml-2 text-gray-800">
-                    {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{(change.current.elasticStorage - change.original.elasticStorage).toFixed(2)} GB
+                    {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{format.numberToFixed(change.current.elasticStorage - change.original.elasticStorage)} GB
                   </div>
                   <div className="text-sm ml-2 text-gray-800">
-                    {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{(change.current.s3Storage - change.original.s3Storage).toFixed(2)} GB
+                    {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{format.numberToFixed(change.current.s3Storage - change.original.s3Storage)} GB
                   </div>
                 </div>
               );
