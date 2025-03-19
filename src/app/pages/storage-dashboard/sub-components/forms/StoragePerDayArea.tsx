@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { SourceGroup, Translation, StoragePerDayInputType } from '../../models';
 import { convert } from '../../../../utils';
 import { config } from '../../../../../config';
@@ -13,21 +13,22 @@ interface StoragePerDayAreaProps {
     onStorageRatesChange: (rates: { elasticStoragePerHotTierDay: number; elasticStoragePerColdTierDay: number; S3StoragePerColdTierDay: number }) => void;
     defaultImportFrom?: string;
     availableInputTypes?: StoragePerDayInputType[];
+    defaultInputType?: StoragePerDayInputType;
 }
 
-export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors, sourceGroups, translateNames, onStorageRatesChange, defaultImportFrom, availableInputTypes }) => {
+export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors, sourceGroups, translateNames, onStorageRatesChange, defaultImportFrom, availableInputTypes, defaultInputType }) => {
     const [storageValues, setStorageValues] = useState({
         docSize: '',
         frequency: '',
         avgDocs: '',
-        inputType: 'import' as StoragePerDayInputType,
+        inputType: defaultInputType || 'import' as StoragePerDayInputType,
         importFromSourceGroup: defaultImportFrom || ''
     });
 
     const inputTypes = [
         { value: 'import', label: t.importFromSourceGroup },
-        { value: 'frequency', label: t.docFrequency },
-        { value: 'avgDocs', label: t.avgDocs },
+        { value: 'avgDocsPerSecond', label: t.avgDocsPerSecond },
+        { value: 'avgDocsPerDay', label: t.avgDocsPerDay },
     ].filter(type => !availableInputTypes || availableInputTypes.includes(type.value as StoragePerDayInputType));
 
     const handleChange = (values: Partial<typeof storageValues>) => {
@@ -35,6 +36,8 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
     };
 
     const memoizedOnStorageRatesChange = useCallback(onStorageRatesChange, []);
+
+    const prevRatesRef = useRef<{ elasticStoragePerHotTierDay: number; elasticStoragePerColdTierDay: number; S3StoragePerColdTierDay: number } | null>(null);
 
     useEffect(() => {
         let rates;
@@ -47,7 +50,7 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                     S3StoragePerColdTierDay: importedSourceGroup.S3StoragePerColdTierDay
                 };
             }
-        } else if (storageValues.inputType === 'frequency') {
+        } else if (storageValues.inputType === 'avgDocsPerSecond') {
             const GBPerSecond = convert.kbToGB(Number(storageValues.docSize)) * Number(storageValues.frequency);
             rates = {
                 elasticStoragePerHotTierDay: GBPerSecond * DAILY_SECONDS,
@@ -62,10 +65,28 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                 S3StoragePerColdTierDay: GBPerDay * config.elasticColdTierMultiplier * config.s3ColdTierMultiplier
             };
         }
+
         if (rates) {
-            memoizedOnStorageRatesChange(rates);
+            const prevRates = prevRatesRef.current;
+            if (
+                !prevRates ||
+                prevRates.elasticStoragePerHotTierDay !== rates.elasticStoragePerHotTierDay ||
+                prevRates.elasticStoragePerColdTierDay !== rates.elasticStoragePerColdTierDay ||
+                prevRates.S3StoragePerColdTierDay !== rates.S3StoragePerColdTierDay
+            ) {
+                prevRatesRef.current = rates; // Update the ref with new rates
+                memoizedOnStorageRatesChange(rates); // Call the callback only if rates have changed
+            }
         }
-    }, [storageValues, sourceGroups, memoizedOnStorageRatesChange]);
+    }, [
+        storageValues.inputType,
+        storageValues.docSize,
+        storageValues.frequency,
+        storageValues.avgDocs,
+        storageValues.importFromSourceGroup,
+        sourceGroups,
+        memoizedOnStorageRatesChange
+    ]);
 
     return (
         <div className="bg-gray-50 p-4 rounded-lg space-y-4">
@@ -112,9 +133,9 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                             placeholder="0.1"
                         />
                     </div>
-                    {storageValues.inputType === 'frequency' ? (
+                    {storageValues.inputType === 'avgDocsPerSecond' ? (
                         <div>
-                            <label className="text-sm font-medium text-gray-800">{t.docFrequency} ({t.perSecond})</label>
+                            <label className="text-sm font-medium text-gray-800">{t.avgDocsPerSecond}</label>
                             <input
                                 type="number"
                                 value={storageValues.frequency || ''}
@@ -125,7 +146,7 @@ export const StoragePerDayArea: React.FC<StoragePerDayAreaProps> = ({ t, errors,
                         </div>
                     ) : (
                         <div>
-                            <label className="text-sm font-medium text-gray-800">{t.avgDocs}</label>
+                            <label className="text-sm font-medium text-gray-800">{t.avgDocsPerDay}</label>
                             <input
                                 type="number"
                                 value={storageValues.avgDocs || ''}

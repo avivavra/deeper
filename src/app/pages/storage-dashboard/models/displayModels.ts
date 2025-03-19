@@ -2,7 +2,7 @@ export type Direction = 'rtl' | 'ltr';
 
 export type Audience = 'developer' | 'user';
 
-export type StoragePerDayInputType = 'frequency' | 'avgDocs' | 'import';
+export type StoragePerDayInputType = 'avgDocsPerSecond' | 'avgDocsPerDay' | 'import';
 
 export type SourceGroupChange = {
     type: 'sourceGroup';
@@ -68,8 +68,8 @@ export type Translation = {
     sourceGroupName: string;
     avgDocSize: string;
     inputType: string;
-    docFrequency: string;
-    avgDocs: string;
+    avgDocsPerSecond: string;
+    avgDocsPerDay: string;
     cancel: string;
     close: string;
     addSourceGroupButton: string;

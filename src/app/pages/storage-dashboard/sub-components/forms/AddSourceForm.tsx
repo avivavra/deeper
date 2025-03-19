@@ -8,7 +8,7 @@ const emptyNewSource = (): NewSource => ({
     docSize: '',
     frequency: '',
     avgDocs: '',
-    inputType: 'frequency',
+    inputType: 'avgDocsPerSecond',
     importFromSourceGroup: ''
 });
 
@@ -90,7 +90,8 @@ export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, ha
                     translateNames={translateNames}
                     onStorageRatesChange={handleStorageRatesChange}
                     defaultImportFrom={relatedSourceGroup.name}
-                    availableInputTypes={['frequency', 'avgDocs']}
+                    availableInputTypes={['avgDocsPerSecond', 'avgDocsPerDay']}
+                    defaultInputType="frequency"
                 />
                 <div className="flex justify-end gap-2 mt-6">
                     <button

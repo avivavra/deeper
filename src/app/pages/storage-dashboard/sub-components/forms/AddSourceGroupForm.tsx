@@ -9,7 +9,7 @@ const emptyNewSourceGroup = (): NewSourceGroup => ({
     docSize: '',
     frequency: '',
     avgDocs: '',
-    inputType: 'frequency',
+    inputType: 'avgDocsPerSecond',
     totalRetention: '',
     coldRetention: '',
     importFromSourceGroup: ''
