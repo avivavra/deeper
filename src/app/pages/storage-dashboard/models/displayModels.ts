@@ -99,4 +99,7 @@ export type Translation = {
     infoIconTooltip: string;
     explanationTitle: string;
     explanationContent: string;
+    simulationExitTitle: string;
+    simulationExitMessage: string;
+    confirm: string;
 };

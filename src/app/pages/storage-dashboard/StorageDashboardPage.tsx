@@ -48,6 +48,26 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
   const { changeLog, getChangeLogEntry, emptyChangeLog, addChangeLogEntry, updateChangeLogEntry, removeChangeLogEntry, elasticStorageDiff, s3StorageDiff } = useChangeLog();
   const [showAddSourceGroup, setShowAddSourceGroup] = useState(false);
   const [sources, setSources] = useState<Source[]>([]);
+  const [showExitSimulationModal, setShowExitSimulationModal] = useState(false);
+  const [pendingSimulationToggle, setPendingSimulationToggle] = useState(false);
+
+  const handleSimulationToggleWithConfirmation = () => {
+    if (isInSimulation && changeLog.length > 0) {
+      setShowExitSimulationModal(true);
+    } else {
+      handleSimulationToggle();
+    }
+  };
+
+  const confirmExitSimulation = () => {
+    setShowExitSimulationModal(false);
+    handleSimulationToggle();
+  };
+
+  const cancelExitSimulation = () => {
+    setShowExitSimulationModal(false);
+    setPendingSimulationToggle(false);
+  };
 
   const handleResetChanges = () => {
     if (sourceGroups.status === 'succeeded' && sourceGroups.data) {
@@ -378,7 +398,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             selectedSourceGroups={sourceGroupsSelection}
             handleSourceGroupToggle={handleSourceGroupToggle}
             isInSimulation={isInSimulation}
-            handleModeToggle={handleSimulationToggle}
+            handleModeToggle={handleSimulationToggleWithConfirmation}
           />
         }
         storageUsage={
@@ -456,6 +476,28 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
             sourceGroups={displaySourceGroups}
             setShowAddSourceGroup={setShowAddSourceGroup}
           />
+        </GenericModal>
+      )}
+      {showExitSimulationModal && (
+        <GenericModal showModal={showExitSimulationModal} setShowModal={setShowExitSimulationModal}>
+          <div className="p-4">
+            <h2 className="text-lg font-bold text-gray-800">{t.simulationExitTitle}</h2>
+            <p className="mt-2 text-gray-700">{t.simulationExitMessage}</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                className="btn-secondary bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded"
+                onClick={cancelExitSimulation}
+              >
+                {t.cancel}
+              </button>
+              <button
+                className="btn-primary bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mx-2"
+                onClick={confirmExitSimulation}
+              >
+                {t.confirm}
+              </button>
+            </div>
+          </div>
         </GenericModal>
       )}
     </>

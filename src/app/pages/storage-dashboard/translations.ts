@@ -63,6 +63,9 @@ export const translations: {
     infoIconTooltip: 'Click to learn more about the site.',
     explanationTitle: 'About the Site',
     explanationContent: 'This site provides a comprehensive dashboard for managing storage and retention policies.',
+    simulationExitTitle: 'Exit Simulation Mode',
+    simulationExitMessage: 'Are you sure you want to exit simulation mode? Your changes will not be saved.',
+    confirm: 'Confirm',
   },
   hebrew: {
     title: 'דאשבורד אחסון',
@@ -123,5 +126,8 @@ export const translations: {
     infoIconTooltip: 'לחץ כדי ללמוד עוד על האתר.',
     explanationTitle: 'אודות האתר',
     explanationContent: 'אתר זה מספק דאשבורד מקיף לניהול אחסון ומדיניות שמירה.',
+    simulationExitTitle: 'יציאה מהסימולציה',
+    simulationExitMessage: 'האם אתה בטוח שברצונך לצאת ממצב סימולציה? השינויים שלך לא יישמרו.',
+    confirm: 'אישור',
   }
 };
