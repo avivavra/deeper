@@ -6,6 +6,7 @@ import { ClusterSummarizerFactory } from '../../../api';
 import { StorageDashboardLayout } from './StorageDashboardLayout';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
 import { useAudience, useSimulation, useCluster } from './hooks';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 import './StorageDashboardPage.css';
 
@@ -16,9 +17,31 @@ type StorageDashboardPageProps = {
 };
 
 export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode }: StorageDashboardPageProps) => {
-  const { audience, setAudience, direction, t } = useAudience(defaultMode);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const audienceParam = searchParams.get('audience') || 'user';
+  const selectedClusterParam = searchParams.get('cluster') || clustersMetadata[0]?.name;
+
+  const { audience, setAudience: setAudienceState, direction, t } = useAudience(audienceParam as Audience);
   const { isInSimulation, handleSimulationToggle } = useSimulation();
-  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster, sourceGroups, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata);
+  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster: setSelectedClusterState, sourceGroups, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata);
+
+  const setAudience = (newAudience: Audience) => {
+    setAudienceState(newAudience);
+    setSearchParams({ ...Object.fromEntries(searchParams), audience: newAudience });
+  };
+
+  const handleSetSelectedCluster = (clusterName: string) => {
+    setSelectedClusterState(clusterName);
+    setSearchParams({ ...Object.fromEntries(searchParams), cluster: clusterName });
+  };
+
+  useEffect(() => {
+    if (!clustersMetadata.find(cluster => cluster.name === selectedClusterParam)) {
+      navigate(`?audience=${audienceParam}&cluster=${clustersMetadata[0]?.name}`);
+    }
+  }, [clustersMetadata, selectedClusterParam, audienceParam, navigate]);
 
   const [displaySourceGroups, setDisplaySourceGroups] = useState<SourceGroup[]>([]);
   const [sourceGroupsSelection, setSourceGroupsSelection] = useState<{ [key: string]: boolean }>({});
