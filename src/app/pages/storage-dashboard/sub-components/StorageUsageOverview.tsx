@@ -14,7 +14,7 @@ type StorageUsageOverviewProps = {
   s3StoragePercentage: number;
   t: Translation;
   direction: Direction;
-  thresholdMode?: 'none' | 'medium' | 'high';
+  thresholdMode?: 'none' | 'medium' | 'high' | number;
 };
 
 const RegularStorageBar: React.FC<{
@@ -65,9 +65,10 @@ const ThresholdStorageBar: React.FC<{
   usedStorage: number;
   totalStorage: number;
   direction: Direction;
-  thresholdMode: 'medium' | 'high';
+  thresholdMode: 'medium' | 'high' | number;
 }> = ({ label, usedStorage, totalStorage, direction, thresholdMode }) => {
   const getThresholdTotalStorage = () => {
+    if (typeof thresholdMode === 'number') return totalStorage * (thresholdMode / 100);
     if (thresholdMode === 'medium') return totalStorage * (config.storageThresholds.medium / 100);
     if (thresholdMode === 'high') return totalStorage * (config.storageThresholds.high / 100);
     return totalStorage;

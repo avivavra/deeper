@@ -39,7 +39,38 @@ export const config = {
                     hebrewName: "אינדקס 4",
                     frequency: "daily"
                 }
-            ]
+            ],
+        },
+        'Cluster B': {
+            name: 'Cluster B',
+            hebrewName: 'אשכול B',
+            url: 'elasticsearch/remote',
+            bucketName: 'Bucket B',
+            username: 'elastic',
+            password: 'y6WgXosR',
+            indexTemplatesConfig: [
+                {
+                    name: "test-template-2",
+                    hebrewName: "אינדקס 5",
+                    frequency: "daily"
+                },
+                {
+                    name: ".fleet-fileds-tohost-meta-2",
+                    hebrewName: "אינדקס 6",
+                    frequency: "daily"
+                },
+                {
+                    name: ".monitoring-ent-search-mb-2",
+                    hebrewName: "אינדקס 7",
+                    frequency: "monthly"
+                },
+                {
+                    name: ".fleet-fileds-fromhost-data-2",
+                    hebrewName: "אינדקס 8",
+                    frequency: "daily"
+                }
+            ],
+            thresholdMode: 50 // Custom threshold mode (50%)
         }
     }
 };

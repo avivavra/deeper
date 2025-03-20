@@ -14,13 +14,14 @@ type StorageDashboardPageProps = {
   clustersSummarizerFactory: ClusterSummarizerFactory;
   clustersMetadata: ClusterMetadata[];
   defaultMode: Audience;
+  getThresholdMode: (clusterName: string) => number;
 };
 
-export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode }: StorageDashboardPageProps) => {
+export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode, getThresholdMode }: StorageDashboardPageProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const audienceParam = searchParams.get('audience') || 'user';
+  const audienceParam = searchParams.get('audience') || defaultMode;
   const selectedClusterParam = searchParams.get('cluster') || clustersMetadata[0]?.name;
 
   const { audience, setAudience: setAudienceState, direction, t } = useAudience(audienceParam as Audience);
@@ -383,6 +384,8 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
     displayRates: audience === 'developer'
   }
 
+  const thresholdMode = audience === 'user' ? getThresholdMode(selectedClusterMetadata?.name || '') || 'medium' : 'none';
+
   return (
     <>
       <StorageDashboardLayout
@@ -409,7 +412,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
           ) : (
             <StorageUsageOverview
               {...displayProps}
-              thresholdMode={audience === 'user' ? 'medium' : 'none'}
+              thresholdMode={thresholdMode}
               usedElasticStorage={usedElasticStorage}
               totalElasticStorage={totalElasticStorage}
               elasticStoragePercentage={elasticStoragePercentage}

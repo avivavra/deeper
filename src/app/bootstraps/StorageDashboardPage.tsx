@@ -13,12 +13,17 @@ const clustersSummarizerFactory = new ConfigClusterSummarizerFactory(elasticsear
 // const clustersSummarizerFactory = new ExampleDataClusterSummarizerFactory();
 
 export const StorageDashboardPage = () => {
+  const { clustersConnection, defaultMode } = config;
+
+  const getThresholdMode = (clusterName: string) => Number(clustersConnection[clusterName]?.thresholdMode);
+
   return (
     <BrowserRouter>
       <StorageDashboardPageComponent
         clustersSummarizerFactory={clustersSummarizerFactory}
         clustersMetadata={clustersMetadata}
-        defaultMode={config.defaultMode as Audience}
+        defaultMode={defaultMode as Audience}
+        getThresholdMode={getThresholdMode}
       />
     </BrowserRouter>
   );
