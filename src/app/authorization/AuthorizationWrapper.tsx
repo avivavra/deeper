@@ -24,7 +24,7 @@ export const AuthorizationWrapper: React.FC<AuthorizationWrapperProps> = ({ chil
       <div className="full-page-container">
         <FaCircleNotch className="loading-icon" />
       </div>
-    ); // Loader while checking authorization
+    );
   }
 
   if (!isAuthorized) {

@@ -10,6 +10,7 @@ export const config = {
     s3Urls: {
         env1: ''
     },
+    mailAddressees: ['example1@example.com', 'example2@example.com'],
     clustersConnection: {
         'Cluster A': {
             name: 'Cluster A',

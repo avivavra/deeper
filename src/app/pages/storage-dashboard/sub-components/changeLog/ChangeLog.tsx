@@ -17,6 +17,7 @@ interface ChangeLogProps {
   handleRemoveSourceGroup: (name: string) => void;
   handleAddNewSourceGroup: (name: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
   handleNewSource: (sourceName: string, relatedSourceGroup: string, elasticStoragePerHotTierDay: number, elasticStoragePerColdTierDay: number, S3StoragePerColdTierDay: number) => void;
+  mailAddressees: string[];
 }
 
 const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
@@ -113,6 +114,7 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
   handleRemoveSourceGroup,
   handleAddNewSourceGroup,
   handleNewSource,
+  mailAddressees,
 }) => {
   const arrow = direction === 'ltr' ? '→' : '←';
   const [showImportModal, setShowImportModal] = useState(false);
@@ -143,7 +145,7 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
     const text = formatChangeLog(changeLog);
 
     const subject = 'Elasticsearch Changes';
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    const mailtoLink = `mailto:${mailAddressees.join(',') || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
     window.location.href = mailtoLink;
   };
 

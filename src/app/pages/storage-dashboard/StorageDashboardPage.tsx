@@ -15,9 +15,16 @@ type StorageDashboardPageProps = {
   clustersMetadata: ClusterMetadata[];
   defaultMode: Audience;
   getThresholdMode: (clusterName: string) => number;
+  mailAddressees: string[];
 };
 
-export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetadata, defaultMode, getThresholdMode }: StorageDashboardPageProps) => {
+export const StorageDashboardPage = ({
+  clustersSummarizerFactory,
+  clustersMetadata,
+  defaultMode,
+  getThresholdMode,
+  mailAddressees,
+}: StorageDashboardPageProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -466,6 +473,7 @@ export const StorageDashboardPage = ({ clustersSummarizerFactory, clustersMetada
               handleRemoveSourceGroup={handleRemoveSourceGroup}
               handleAddNewSourceGroup={handleAddNewSourceGroup}
               handleNewSource={handleNewSource}
+              mailAddressees={mailAddressees}
             />
           )
         }

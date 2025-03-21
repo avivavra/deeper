@@ -10,12 +10,12 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthorizationWrapper } from '../authorization';
 
 const elasticsearchClusterApiFactory = new ConfigElasticsearchClusterApiFactory();
-const s3BucketApiFactory = new MockS3BucketApiFactory(); // TODO: implement
+const s3BucketApiFactory = new MockS3BucketApiFactory();
 const clustersSummarizerFactory = new ConfigClusterSummarizerFactory(elasticsearchClusterApiFactory, s3BucketApiFactory);
 const authorizationService = new MockAuthorizationService();
 
 export const StorageDashboardPage = () => {
-  const { clustersConnection, defaultMode } = config;
+  const { clustersConnection, defaultMode, mailAddressees } = config;
 
   const getThresholdMode = (clusterName: string) => Number(clustersConnection[clusterName]?.thresholdMode);
 
@@ -27,6 +27,7 @@ export const StorageDashboardPage = () => {
           clustersMetadata={clustersMetadata}
           defaultMode={defaultMode as Audience}
           getThresholdMode={getThresholdMode}
+          mailAddressees={mailAddressees}
         />
       </AuthorizationWrapper>
     </BrowserRouter>
