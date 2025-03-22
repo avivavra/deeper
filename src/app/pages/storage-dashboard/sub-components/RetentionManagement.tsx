@@ -18,6 +18,7 @@ type RetentionManagementProps = {
     sources: Source[];
     handleAddSource: (newSource: Source) => void;
     handleRemoveSource: (sourceName: string) => void;
+    actionButtons?: React.ReactNode; // New prop for action buttons
 };
 
 export const RetentionManagement = ({
@@ -32,7 +33,8 @@ export const RetentionManagement = ({
     setShowAddSourceGroup,
     sources,
     handleAddSource: handleAddSourceExternal,
-    handleRemoveSource
+    handleRemoveSource,
+    actionButtons,
 }: RetentionManagementProps) => {
     const [showAddSource, setShowAddSource] = useState(false);
     const [relatedSourceGroup, setRelatedSourceGroup] = useState<SourceGroup | null>(null);
@@ -145,21 +147,26 @@ export const RetentionManagement = ({
             <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-semibold text-gray-800">{t.retentionManagement}</h2>
-                    {isInSimulation && (
-                        <button
-                            onClick={() => setShowAddSourceGroup(true)}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            <Plus className="h-4 w-4 mx-2 text-white" />
-                            {t.addSourceGroup}
-                            <TooltipIcon
-                                content={t.addSourceGroupExplanation}
-                                alignment={direction === 'rtl' ? 'right' : 'left'}
+                    <div className="flex items-center">
+                        {isInSimulation && (
+                            <button
+                                onClick={() => setShowAddSourceGroup(true)}
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
-                                <span className={`${marginClassName}2 text-gray-200 cursor-pointer`}>?</span>
-                            </TooltipIcon>
-                        </button>
-                    )}
+                                <Plus className="h-4 w-4 mx-2 text-white" />
+                                {t.addSourceGroup}
+                                <TooltipIcon
+                                    content={t.addSourceGroupExplanation}
+                                    alignment={direction === 'rtl' ? 'right' : 'left'}
+                                >
+                                    <span className={`${marginClassName}2 text-gray-200 cursor-pointer`}>?</span>
+                                </TooltipIcon>
+                            </button>
+                        )}
+                        <div className={`flex ${direction === 'rtl' ? 'mr-4' : 'ml-4'}`}>
+                            {actionButtons} {/* Render action buttons here */}
+                        </div>
+                    </div>
                 </div>
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

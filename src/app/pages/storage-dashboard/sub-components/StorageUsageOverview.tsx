@@ -15,6 +15,7 @@ type StorageUsageOverviewProps = {
   t: Translation;
   direction: Direction;
   thresholdMode?: 'none' | 'medium' | 'high' | number;
+  actionButtons?: React.ReactNode;
 };
 
 const RegularStorageBar: React.FC<{
@@ -110,11 +111,15 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
   t,
   direction,
   thresholdMode = 'none',
+  actionButtons,
 }) => {
   return (
     <div>
-      <div className="mb-4">
+      <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold text-gray-800">{t.storageUsageOverview}</h2>
+        <div className="flex items-center space-x-4">
+          {actionButtons && <div>{actionButtons}</div>}
+        </div>
       </div>
       <div className="space-y-6">
         {thresholdMode === 'none' ? (

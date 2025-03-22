@@ -11,6 +11,7 @@ type ComparisonChartProps = {
   translateNames: boolean;
   filteredSourceGroups: SourceGroup[];
   t: Translation;
+  actionButtons?: React.ReactNode;
 };
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
@@ -27,7 +28,13 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   return null;
 };
 
-export const ComparisonChart = ({ direction, translateNames, filteredSourceGroups, t }: ComparisonChartProps) => {
+export const ComparisonChart = ({
+  direction,
+  translateNames,
+  filteredSourceGroups,
+  t,
+  actionButtons, // Destructure actionButtons
+}: ComparisonChartProps) => {
   const [chartMode, setChartMode] = useState<ChartMode>('storage');
 
   const chartData = chartMode === 'retention' ? filteredSourceGroups.filter(group => 
@@ -46,14 +53,17 @@ export const ComparisonChart = ({ direction, translateNames, filteredSourceGroup
     <div>
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-        <GenericDropdown
-          buttonLabel={chartMode === 'retention' ? t.retentionPeriods : t.storage}
-          options={[
-            { label: t.storage, value: 'storage', checked: chartMode === 'storage' },
-            { label: t.retentionPeriods, value: 'retention', checked: chartMode === 'retention' },
-          ]}
-          onSelect={(value) => setChartMode(value as ChartMode)}
-        />
+        <div className="flex items-center">
+          <GenericDropdown
+            buttonLabel={chartMode === 'retention' ? t.retentionPeriods : t.storage}
+            options={[
+              { label: t.storage, value: 'storage', checked: chartMode === 'storage' },
+              { label: t.retentionPeriods, value: 'retention', checked: chartMode === 'retention' },
+            ]}
+            onSelect={(value) => setChartMode(value as ChartMode)}
+          />
+          {actionButtons && <div  className={`flex ${direction === 'rtl' ? 'mr-4' : 'ml-4'}`}>{actionButtons}</div>}
+        </div>
       </div>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">

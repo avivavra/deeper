@@ -4,9 +4,10 @@ interface GenericModalProps {
     showModal: boolean;
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
     children: React.ReactNode;
+    width?: string; // Optional width prop
 }
 
-export const GenericModal: React.FC<GenericModalProps> = ({ showModal, setShowModal, children }) => {
+export const GenericModal: React.FC<GenericModalProps> = ({ showModal, setShowModal, children, width = '36rem' }) => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -28,7 +29,8 @@ export const GenericModal: React.FC<GenericModalProps> = ({ showModal, setShowMo
             onClick={() => setShowModal(false)}
         >
             <div 
-                className="bg-white rounded-lg shadow-lg w-[36rem] z-50"
+                className={`bg-white rounded-lg shadow-lg z-50`} 
+                style={{ width }} // Use the width prop
                 onClick={(e) => e.stopPropagation()}
             >
                 {children}

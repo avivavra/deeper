@@ -62,7 +62,7 @@ export const TooltipIcon = ({ content, alignment = 'left', children }: TooltipIc
                 <div
                     ref={tooltipRef}
                     style={tooltipStyle}
-                    className={`fixed z-10 w-48 p-3 text-sm text-white bg-gray-900 rounded-lg shadow-md transition-opacity duration-300 ${
+                    className={`fixed z-50 w-48 p-3 text-sm text-white bg-gray-900 rounded-lg shadow-md transition-opacity duration-300 ${
                         position === 'top' ? 'mb-2' : ' mt-2'
                     } ${currentAlignment === 'right' ? 'right-0' : 'left-0'}`}
                 >
