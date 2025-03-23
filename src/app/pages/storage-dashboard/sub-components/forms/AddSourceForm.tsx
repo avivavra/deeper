@@ -91,7 +91,7 @@ export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, ha
                     onStorageRatesChange={handleStorageRatesChange}
                     defaultImportFrom={relatedSourceGroup.name}
                     availableInputTypes={['avgDocsPerSecond', 'avgDocsPerDay']}
-                    defaultInputType="frequency"
+                    defaultInputType="avgDocsPerSecond"
                 />
                 <div className="flex justify-end gap-2 mt-6">
                     <button
