@@ -3,15 +3,16 @@ import { useCallback, useEffect, useState } from "react";
 import { ClusterData, ClusterMetadata, SourceGroup } from "../models";
 import { useAsyncState } from "../../../utils";
 
-export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, clustersMetadata: ClusterMetadata[]) => {
-  const [selectedClusterMetadata, setSelectedClusterMetadata] = useState<ClusterMetadata>(clustersMetadata[0]);
+export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, clustersMetadata: ClusterMetadata[], defaultClusterName?: string) => {
+  const defaultCluster = clustersMetadata.find(cluster => cluster.name === defaultClusterName) || clustersMetadata[0];
+  const [selectedClusterMetadata, setSelectedClusterMetadata] = useState<ClusterMetadata>(defaultCluster);
 
   const fetchInitialClusterStorage = useCallback(async () => {
-    const summarizer = clustersSummarizerFactory.createSummarizer(clustersMetadata[0].name);
+    const summarizer = clustersSummarizerFactory.createSummarizer(defaultCluster.name);
     const clustersStorage = await summarizer.summarize();
 
     return {
-      ...(clustersMetadata[0]),
+      ...defaultCluster,
       ...clustersStorage
     };
   }, [clustersMetadata, clustersSummarizerFactory]);

@@ -33,7 +33,7 @@ export const StorageDashboardPage = ({
 
   const { audience, setAudience: setAudienceState, direction, t } = useAudience(audienceParam as Audience);
   const { isInSimulation, handleSimulationToggle } = useSimulation();
-  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster: setSelectedClusterState, sourceGroups, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata);
+  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster: setSelectedClusterState, sourceGroups, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata, selectedClusterParam);
 
   const setAudience = (newAudience: Audience) => {
     setAudienceState(newAudience);
@@ -167,8 +167,6 @@ export const StorageDashboardPage = ({
     setDisplaySourceGroups(prevSourceGroups => {
       const updatedSourceGroups = prevSourceGroups.map(sourceGroup => {
         if (sourceGroup.name === name) {
-          const newElasticStorage = newHotDays * sourceGroup.elasticStoragePerHotTierDay + newColdDays * sourceGroup.elasticStoragePerColdTierDay;
-          const newS3Storage = newColdDays * sourceGroup.S3StoragePerColdTierDay;
           return {
             ...sourceGroup,
             hotRetentionDays: newHotDays,
