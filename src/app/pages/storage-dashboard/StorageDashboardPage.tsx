@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ClusterMetadata, SourceGroup, Audience, Direction, Translation, Source } from './models';
 import { ChangeLog, useChangeLog, StorageHeader, StorageUsageOverview, ComparisonChart, RetentionManagement, AddSourceGroupForm } from './sub-components';
 import { GenericModal } from '../../components';
-import { ClusterSummarizerFactory } from '../../../api';
+import { ClusterSummarizerFactory, SourcesTranslator } from '../../../api';
 import { StorageDashboardLayout } from './StorageDashboardLayout';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
 import { useAudience, useSimulation, useCluster } from './hooks';
@@ -16,6 +16,7 @@ type StorageDashboardPageProps = {
   defaultMode: Audience;
   getThresholdMode: (clusterName: string) => number;
   mailAddressees: string[];
+  sourcesTranslator: SourcesTranslator;
 };
 
 export const StorageDashboardPage = ({
@@ -24,9 +25,20 @@ export const StorageDashboardPage = ({
   defaultMode,
   getThresholdMode,
   mailAddressees,
+  sourcesTranslator,
 }: StorageDashboardPageProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const [sourcesTranslation, setSourcesTranslation] = useState<{origin: string, translated: string}[]>({});
+
+  useEffect(() => {
+    const fetchSourcesTranslation = async () => {
+      const translation = await sourcesTranslator.translate();
+      setSourcesTranslation(translation);
+    };
+    fetchSourcesTranslation();
+  }, [sourcesTranslator]);
 
   const audienceParam = searchParams.get('audience') || defaultMode;
   const selectedClusterParam = searchParams.get('cluster') || clustersMetadata[0]?.name;
@@ -450,6 +462,7 @@ export const StorageDashboardPage = ({
             sources={sources}
             handleAddSource={handleAddSource}
             handleRemoveSource={handleRemoveSource}
+            sourcesTranslation={sourcesTranslation}
           />
         }
         changeLog={

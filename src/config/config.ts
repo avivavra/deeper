@@ -12,6 +12,7 @@ export const config = {
     },
     mailAddressees: ['example1@example.com', 'example2@example.com'],
     sourceFieldName: 'sourceName',
+    sourcesTranslatorUrl: 'https://api.example.com/translate',
     clustersConnection: {
         'Cluster A': {
             name: 'Cluster A',

@@ -19,6 +19,10 @@ type RetentionManagementProps = {
     handleAddSource: (newSource: Source) => void;
     handleRemoveSource: (sourceName: string) => void;
     actionButtons?: React.ReactNode; // New prop for action buttons
+    sourcesTranslation: {
+        origin: string;
+        translated: string;
+    }[];
 };
 
 export const RetentionManagement = ({
@@ -35,6 +39,7 @@ export const RetentionManagement = ({
     handleAddSource: handleAddSourceExternal,
     handleRemoveSource,
     actionButtons,
+    sourcesTranslation
 }: RetentionManagementProps) => {
     const [showAddSource, setShowAddSource] = useState(false);
     const [relatedSourceGroup, setRelatedSourceGroup] = useState<SourceGroup | null>(null);
@@ -237,13 +242,17 @@ export const RetentionManagement = ({
                                                     </TooltipIcon>
                                                 ))}
                                                 {
-                                                    sourceGroup.sourceNames.map(sourceName => (
-                                                        <div className="relative inline-block">
-                                                            <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
-                                                                {sourceName}
-                                                            </span>
-                                                        </div>
-                                                    ))
+                                                    sourceGroup.sourceNames.map(sourceName => {
+                                                        const displayName = translateNames ? sourcesTranslation.find(source => source.origin === sourceName)?.translated || sourceName : sourceName;
+
+                                                        return (
+                                                            <div className="relative inline-block">
+                                                                <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
+                                                                    {displayName}
+                                                                </span>
+                                                            </div>
+                                                        )
+                                                    })
                                                 }
                                             </div>
                                             {isInSimulation && !disableEditing && (
