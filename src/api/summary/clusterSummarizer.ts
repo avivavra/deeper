@@ -81,7 +81,7 @@ export class ClusterSummarizer {
         const indices = await this.elasticsearchClusterApi.fetchIndices();
         const ilmPolicies = await this.elasticsearchClusterApi.fetchIlmPolicies();
 
-        const indexTemplates = this.indexTemplatesConfig.map((templateConfig) => {
+        const indexTemplatesTasks = this.indexTemplatesConfig.map((templateConfig) => {
             const template = templates.find(template => template.name === templateConfig.name);
             if (!template) throw new Error(`Index template ${templateConfig.name} not found`);
 
@@ -98,19 +98,20 @@ export class ClusterSummarizer {
                 }
             }
 
-            return this.summarizeIndexTemplate(templateConfig, hotTierIndices, coldTierIndices, now, matchingIlmPolicy);
+            return this.summarizeIndexTemplate(templateConfig, hotTierIndices, coldTierIndices, now, template.patterns, matchingIlmPolicy);
         });
 
-        return indexTemplates;
+        return Promise.all(indexTemplatesTasks);
     }
 
-    summarizeIndexTemplate(
+    async summarizeIndexTemplate(
         { name, hebrewName, frequency }: IndexTemplateConfig,
         hotTierIndices: Index[],
         coldTierIndices: Index[],
         now: Date,
+        patterns: string[],
         ilmPolicy?: IlmPolicy
-    ): ProcessedIndexTemplate {
+    ): Promise<ProcessedIndexTemplate> {
         const normalHotTierIndices = this.getNormalIndices(hotTierIndices);
         const normalColdTierIndices = this.getNormalIndices(coldTierIndices);
 
@@ -122,6 +123,8 @@ export class ClusterSummarizer {
 
         const hotTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalHotTierIndices, frequency, now);
         const coldTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalColdTierIndices, frequency, now);
+
+        const sourceNames = await this.getSourceNames(patterns);
 
         return {
             name,
@@ -136,9 +139,13 @@ export class ClusterSummarizer {
                 hotTier: hotTierIndices.map(index => index.name),
                 coldTier: coldTierIndices.map(index => index.name)
             },
-            sourceNames: []
+            sourceNames
         }
     };
+
+    private getSourceNames(patterns: string[]): Promise<string[]> {
+        return this.elasticsearchClusterApi.fetchSourceNames(patterns.join(','));
+    }
 
     private getMatchingHotTierIndices(indices: Index[], patterns: string[]): Index[] {
         return indices.filter(index =>

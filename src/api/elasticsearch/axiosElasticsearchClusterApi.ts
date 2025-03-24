@@ -52,8 +52,9 @@ type IndicesResponse = {
 
 export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
     private axiosInstance: AxiosInstance;
+    private sourceFieldName: string;
 
-    constructor(url: string, username: string, password: string) {
+    constructor(url: string, username: string, password: string, sourceFieldName: string) {
         this.axiosInstance = axios.create({
             baseURL: url,
             auth: {
@@ -61,6 +62,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                 password
             }
         });
+        this.sourceFieldName = sourceFieldName;
     }
 
     public async fetchClusterStorage(): Promise<{ totalStorage: number; usedStorage: number }> {
@@ -190,6 +192,33 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                 throw new Error(`Failed to fetch ILM policies: ${error.message}`);
             } else {
                 throw new Error('Failed to fetch ILM policies: Unknown error');
+            }
+        }
+    }
+
+    async fetchSourceNames(indexName: string): Promise<string[]> {
+        try {
+            const response = await this.axiosInstance.post<{
+                aggregations: {
+                    terms: {
+                        buckets: { key: string }[];
+                    };
+                };
+            }>(`/index/${indexName}/_search`, {
+                size: 0,
+                aggs: {
+                    terms: {
+                        field: this.sourceFieldName
+                    }
+                }
+            });
+
+            return response.data.aggregations.terms.buckets.map(bucket => bucket.key);
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to fetch source names: ${error.message}`);
+            } else {
+                throw new Error('Failed to fetch source names: Unknown error');
             }
         }
     }

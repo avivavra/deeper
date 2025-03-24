@@ -30,4 +30,5 @@ export interface ElasticsearchClusterApi {
     fetchIndexTemplates: () => Promise<IndexTemplate[]>;
     fetchIndices: () => Promise<Index[]>;
     fetchIlmPolicies: () => Promise<IlmPolicy[]>;
+    fetchSourceNames: (indexName: string) => Promise<string[]>;
 }

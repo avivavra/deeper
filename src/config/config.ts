@@ -11,6 +11,7 @@ export const config = {
         env1: ''
     },
     mailAddressees: ['example1@example.com', 'example2@example.com'],
+    sourceFieldName: 'sourceName',
     clustersConnection: {
         'Cluster A': {
             name: 'Cluster A',
