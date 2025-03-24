@@ -25,6 +25,7 @@ export type SourceGroup = {
         hotTier: string[];
         coldTier: string[];
     };
+    sourceNames: string[];
 };
 
 export type ClusterMetadata = {

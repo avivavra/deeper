@@ -211,7 +211,7 @@ export const RetentionManagement = ({
                                                     alignment={direction === 'rtl' ? 'right' : 'left'}
                                                 />
                                             )}
-                                            <div className="flex overflow-x-auto space-x-2" style={{ maxWidth: '14rem' }}>
+                                            <div className="flex overflow-x-auto" style={{ maxWidth: '14rem' }}>
                                                 {sources.filter(source => source.relatedSourceGroup === sourceGroup.name).map(source => (
                                                     <TooltipIcon
                                                         key={source.name}
@@ -236,6 +236,15 @@ export const RetentionManagement = ({
                                                         </span>
                                                     </TooltipIcon>
                                                 ))}
+                                                {
+                                                    sourceGroup.sourceNames.map(sourceName => (
+                                                        <div className="relative inline-block">
+                                                            <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
+                                                                {sourceName}
+                                                            </span>
+                                                        </div>
+                                                    ))
+                                                }
                                             </div>
                                             {isInSimulation && !disableEditing && (
                                                 <button

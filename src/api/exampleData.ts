@@ -46,7 +46,8 @@ export const clusterAIndices: SourceGroup[] = [
     indexNamesByTier: {
       hotTier: ['logs-production-1', 'logs-production-2'],
       coldTier: ['logs-production-3']
-    }
+    },
+    sourceNames: ['source1', 'source2']
   },
   {
     name: 'hot-forever',
@@ -65,7 +66,7 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: ['forever-1', 'forever-2'],
       coldTier: []
     },
-    hideAddSourceButton: true
+    sourceNames: []
   },
   {
     name: 'cold-forever',
@@ -84,6 +85,7 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: [],
       coldTier: ['forever-1', 'forever-2']
     },
+    sourceNames: ['source3']
   },
   {
     name: 'metrics-app1',
@@ -101,7 +103,8 @@ export const clusterAIndices: SourceGroup[] = [
     indexNamesByTier: {
       hotTier: ['metrics-app1-1', 'metrics-app1-2'],
       coldTier: []
-    }
+    },
+    sourceNames: ['source4', 'source5', 'source6']
   },
   {
     name: 'metrics-app2',
@@ -119,7 +122,8 @@ export const clusterAIndices: SourceGroup[] = [
     indexNamesByTier: {
       hotTier: ['metrics-app2-1'],
       coldTier: []
-    }
+    },
+    sourceNames: []
   },
   {
     name: 'audit-logs',
@@ -137,7 +141,8 @@ export const clusterAIndices: SourceGroup[] = [
     indexNamesByTier: {
       hotTier: ['audit-logs-1'],
       coldTier: []
-    }
+    },
+    sourceNames: ['source7777777', 'source77', 'source777', 'source7777']
   },
   {
     name: 'user-activity',
@@ -155,7 +160,8 @@ export const clusterAIndices: SourceGroup[] = [
     indexNamesByTier: {
       hotTier: ['user-activity-1'],
       coldTier: []
-    }
+    },
+    sourceNames: ['source8', 'source9']
   }
 ];
 
@@ -176,7 +182,8 @@ export const clusterBIndices: SourceGroup[] = [
     indexNamesByTier: {
       hotTier: ['metrics-app1-1', 'metrics-app1-2'],
       coldTier: []
-    }
+    },
+    sourceNames: ['source10', 'source11']
   },
   {
     name: 'metrics-app2',
@@ -194,7 +201,8 @@ export const clusterBIndices: SourceGroup[] = [
     indexNamesByTier: {
       hotTier: ['metrics-app2-1', 'metrics-app2-2'],
       coldTier: []
-    }
+    },
+    sourceNames: []
   },
   {
     name: 'audit-logs',
@@ -212,7 +220,8 @@ export const clusterBIndices: SourceGroup[] = [
     indexNamesByTier: {
       hotTier: ['audit-logs-1'],
       coldTier: []
-    }
+    },
+    sourceNames: ['source12']
   },
   {
     name: 'user-activity',
@@ -230,6 +239,7 @@ export const clusterBIndices: SourceGroup[] = [
     indexNamesByTier: {
       hotTier: ['user-activity-1'],
       coldTier: []
-    }
+    },
+    sourceNames: ['source13', 'source14']
   }
 ];

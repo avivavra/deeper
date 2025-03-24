@@ -24,7 +24,8 @@ type ProcessedIndexTemplate = {
     indexNamesByTier: {
         hotTier: string[];
         coldTier: string[];
-    }
+    },
+    sourceNames: string[];
 };
 
 export class ClusterSummarizer {
@@ -68,6 +69,7 @@ export class ClusterSummarizer {
                 S3StoragePerColdTierDay: indexTemplate.coldTierStoragePerDay * config.s3ColdTierMultiplier,
                 S3Storage: indexTemplate.coldTierStorage * config.s3ColdTierMultiplier,
                 indexNamesByTier: indexTemplate.indexNamesByTier,
+                sourceNames: indexTemplate.sourceNames
             };
         });
     }
@@ -79,7 +81,7 @@ export class ClusterSummarizer {
         const indices = await this.elasticsearchClusterApi.fetchIndices();
         const ilmPolicies = await this.elasticsearchClusterApi.fetchIlmPolicies();
 
-        const indexTemplates = this.indexTemplatesConfig.map((templateConfig): ProcessedIndexTemplate => {
+        const indexTemplates = this.indexTemplatesConfig.map((templateConfig) => {
             const template = templates.find(template => template.name === templateConfig.name);
             if (!template) throw new Error(`Index template ${templateConfig.name} not found`);
 
@@ -133,7 +135,8 @@ export class ClusterSummarizer {
             indexNamesByTier: {
                 hotTier: hotTierIndices.map(index => index.name),
                 coldTier: coldTierIndices.map(index => index.name)
-            }
+            },
+            sourceNames: []
         }
     };
 
