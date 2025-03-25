@@ -18,7 +18,7 @@ type RetentionManagementProps = {
     sources: Source[];
     handleAddSource: (newSource: Source) => void;
     handleRemoveSource: (sourceName: string) => void;
-    actionButtons?: React.ReactNode; // New prop for action buttons
+    actionButtons?: React.ReactNode;
     sourcesTranslation: {
         origin: string;
         translated: string;
@@ -219,7 +219,7 @@ export const RetentionManagement = ({
                                             <div className="flex overflow-x-auto" style={{ maxWidth: '14rem' }}>
                                                 {sources.filter(source => source.relatedSourceGroup === sourceGroup.name).map(source => (
                                                     <TooltipIcon
-                                                        key={source.name} // Add unique key here
+                                                        key={source.name}
                                                         alignment={direction === 'rtl' ? 'right' : 'left'}
                                                         content={
                                                             <>

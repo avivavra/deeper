@@ -33,7 +33,7 @@ export const ComparisonChart = ({
   translateNames,
   filteredSourceGroups,
   t,
-  actionButtons, // Destructure actionButtons
+  actionButtons,
 }: ComparisonChartProps) => {
   const [chartMode, setChartMode] = useState<ChartMode>('storage');
 

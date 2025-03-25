@@ -4,7 +4,7 @@ interface GenericModalProps {
     showModal: boolean;
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
     children: React.ReactNode;
-    width?: string; // Optional width prop
+    width?: string;
 }
 
 export const GenericModal: React.FC<GenericModalProps> = ({ showModal, setShowModal, children, width = '36rem' }) => {
@@ -30,7 +30,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({ showModal, setShowMo
         >
             <div 
                 className={`bg-white rounded-lg shadow-lg z-50`} 
-                style={{ width }} // Use the width prop
+                style={{ width }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {children}
