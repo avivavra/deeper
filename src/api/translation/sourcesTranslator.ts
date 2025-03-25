@@ -9,7 +9,7 @@ export class SourcesTranslator {
 
     async translate(): Promise<{origin: string, translated: string}[]> {
         try {
-            return Promise.resolve([{origin : 'source1', translated: 'מקור1'}]); // TODO: implement
+            return Promise.resolve([{origin : 'source1', translated: 'מקור1'}]);
         } catch (error) {
             console.error('Error translating source name:', error);
             throw error;

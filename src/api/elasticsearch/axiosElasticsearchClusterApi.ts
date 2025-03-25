@@ -199,21 +199,23 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
     async fetchSourceNames(indexName: string): Promise<string[]> {
         try {
             const response = await this.axiosInstance.post<{
-                aggregations: {
-                    terms: {
+                aggregations?: {
+                    sources: {
                         buckets: { key: string }[];
                     };
                 };
-            }>(`/index/${indexName}/_search`, {
+            }>(`/${indexName}/_search`, {
                 size: 0,
-                aggs: {
-                    terms: {
-                        field: this.sourceFieldName
+                aggregations: {
+                    sources: {
+                        terms: {
+                            field: this.sourceFieldName
+                        }
                     }
                 }
             });
 
-            return response.data.aggregations.terms.buckets.map(bucket => bucket.key);
+            return response.data.aggregations?.sources.buckets.map(bucket => bucket.key) || [];
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to fetch source names: ${error.message}`);

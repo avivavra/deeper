@@ -20,7 +20,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
       <div className="bg-white p-2 border border-gray-300 rounded shadow-sm">
         <p className="font-semibold text-gray-900">{label}</p>
         {payload.map((entry, index) => (
-          <p key={`item-${index}`} className="text-gray-700">{`${entry.name}: ${format.numberToFixed(Number(entry.value))}`}</p>
+          <p key={`item-${index}`} className="text-gray-700">{`${entry.name}: ${entry.value}`}</p>
         ))}
       </div>
     );
