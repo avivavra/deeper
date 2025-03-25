@@ -452,18 +452,24 @@ export const StorageDashboardPage = ({
           )
         }
         retentionManagement={
-          <RetentionManagement
-            {...displayProps}
-            isInSimulation={isInSimulation}
-            filteredSourceGroups={filteredSourceGroups}
-            handleSourceGroupRetentionChange={handleSourceGroupRetentionChange}
-            handleRemoveSourceGroup={handleRemoveSourceGroup}
-            setShowAddSourceGroup={setShowAddSourceGroup}
-            sources={sources}
-            handleAddSource={handleAddSource}
-            handleRemoveSource={handleRemoveSource}
-            sourcesTranslation={sourcesTranslation}
-          />
+          sourceGroups.status === 'loading' ? (
+            <div className="icon-container"><FaCircleNotch className="loading-icon" /></div>
+          ) : sourceGroups.status === 'error' ? (
+            <div className="icon-container"><FaTimesCircle className="error-icon" /></div>
+          ) : (
+            <RetentionManagement
+              {...displayProps}
+              isInSimulation={isInSimulation}
+              filteredSourceGroups={filteredSourceGroups}
+              handleSourceGroupRetentionChange={handleSourceGroupRetentionChange}
+              handleRemoveSourceGroup={handleRemoveSourceGroup}
+              setShowAddSourceGroup={setShowAddSourceGroup}
+              sources={sources}
+              handleAddSource={handleAddSource}
+              handleRemoveSource={handleRemoveSource}
+              sourcesTranslation={sourcesTranslation}
+            />
+          )
         }
         changeLog={
           isInSimulation && (
