@@ -1,6 +1,7 @@
 import { convert } from '../../app/utils';
 import axios, { AxiosInstance } from 'axios';
 import { ElasticsearchClusterApi, IlmPolicy, Index, IndexTemplate } from './elasticsearchClusterApi';
+import Cookies from 'js-cookie';
 
 type ClusterStats = {
     nodes: {
@@ -197,6 +198,13 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
     }
 
     async fetchSourceNames(indexName: string): Promise<string[]> {
+        const cacheKey = `sourceNames_${indexName}`;
+        const cachedData = Cookies.get(cacheKey);
+
+        if (cachedData) {
+            return JSON.parse(cachedData);
+        }
+
         try {
             const response = await this.axiosInstance.post<{
                 aggregations?: {
@@ -215,7 +223,10 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                 }
             });
 
-            return response.data.aggregations?.sources.buckets.map(bucket => bucket.key) || [];
+            const sourceNames = response.data.aggregations?.sources.buckets.map(bucket => bucket.key) || [];
+            Cookies.set(cacheKey, JSON.stringify(sourceNames), { expires: 0.5 }); // Cache for 12 hours
+            
+            return sourceNames;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to fetch source names: ${error.message}`);
