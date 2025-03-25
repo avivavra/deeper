@@ -228,7 +228,7 @@ export const RetentionManagement = ({
                                                             </>
                                                         }
                                                     >
-                                                        <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
+                                                        <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`}>
                                                             {source.name}
                                                             {isInSimulation && (
                                                                 <button
@@ -247,7 +247,7 @@ export const RetentionManagement = ({
 
                                                         return (
                                                             <div key={sourceName} className="relative inline-block"> {/* Add unique key here */}
-                                                                <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
+                                                                <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`}>
                                                                     {displayName}
                                                                 </span>
                                                             </div>

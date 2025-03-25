@@ -47,7 +47,7 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: ['logs-production-1', 'logs-production-2'],
       coldTier: ['logs-production-3']
     },
-    sourceNames: ['source1', 'source2']
+    sourceNames: ['source1', 'source2222222222222222222222222222222222222']
   },
   {
     name: 'hot-forever',
@@ -142,7 +142,7 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: ['audit-logs-1'],
       coldTier: []
     },
-    sourceNames: ['source7777777', 'source77', 'source777', 'source7777']
+    sourceNames: ['source7777777', 'source77', 'source777', 'source7777', 'source7', 'source77777', 'source7777777777777']
   },
   {
     name: 'user-activity',
