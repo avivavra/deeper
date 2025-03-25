@@ -54,7 +54,7 @@ export const CustomSlider = ({ value, min, max, onChange, resetKey, disabled = f
             value={sliderValue}
             onChange={handleChange}
             onMouseDown={handleMouseDown}
-            className={`w-full h-2 bg-gray-200 rounded-lg appearance-none ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             disabled={disabled}
         />
     );

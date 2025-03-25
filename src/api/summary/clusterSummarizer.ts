@@ -118,8 +118,8 @@ export class ClusterSummarizer {
         const hotRetentionDays = ilmPolicy ? convert.millisToDays(ilmPolicy.hotTierRetentionPeriod + ilmPolicy.warmTierRetentionPeriod) : Infinity;
         const coldRetentionDays = ilmPolicy ? convert.millisToDays(ilmPolicy.coldTierRetentionPeriod + ilmPolicy.frozenTierRetentionPeriod) : 0;
 
-        const hotTierStorage = normalHotTierIndices.reduce((acc, index) => acc + index.storage, 0);
-        const coldTierStorage = normalColdTierIndices.reduce((acc, index) => acc + index.storage, 0);
+        const hotTierStorage = hotTierIndices.reduce((acc, index) => acc + index.storage, 0);
+        const coldTierStorage = coldTierIndices.reduce((acc, index) => acc + index.storage, 0);
 
         const hotTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalHotTierIndices, frequency, now);
         const coldTierStoragePerDay = this.getAverageStoragePerDayMultiple(normalColdTierIndices, frequency, now);
@@ -165,10 +165,10 @@ export class ClusterSummarizer {
     }
 
     private getNormalIndices(indices: Index[]): Index[] {
-        const averageDocsCount = indices.reduce((acc, index) => acc + index.storage, 0) / indices.length;
-        const threshold = averageDocsCount * config.normalIndicesThreshold;
+        const averageStorage = indices.reduce((acc, index) => acc + index.storage, 0) / indices.length;
+        const threshold = averageStorage * config.normalIndicesThreshold;
 
-        return indices.filter(index => index.docsCount >= threshold);
+        return indices.filter(index => index.storage >= threshold);
     }
 
     private getAverageStoragePerDay(index: Index, indexFrequency: IndexFrequency, now: Date): number {
