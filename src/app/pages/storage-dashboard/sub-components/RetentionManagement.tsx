@@ -219,7 +219,7 @@ export const RetentionManagement = ({
                                             <div className="flex overflow-x-auto" style={{ maxWidth: '14rem' }}>
                                                 {sources.filter(source => source.relatedSourceGroup === sourceGroup.name).map(source => (
                                                     <TooltipIcon
-                                                        key={source.name}
+                                                        key={source.name} // Add unique key here
                                                         alignment={direction === 'rtl' ? 'right' : 'left'}
                                                         content={
                                                             <>
@@ -246,7 +246,7 @@ export const RetentionManagement = ({
                                                         const displayName = translateNames ? sourcesTranslation.find(source => source.origin === sourceName)?.translated || sourceName : sourceName;
 
                                                         return (
-                                                            <div className="relative inline-block">
+                                                            <div key={sourceName} className="relative inline-block"> {/* Add unique key here */}
                                                                 <span className={`${marginClassName}2 bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-2 rounded-md border border-gray-300 cursor-pointer flex items-center overflow-hidden whitespace-nowrap`} style={{ maxWidth: '150px' }}>
                                                                     {displayName}
                                                                 </span>
