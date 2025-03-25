@@ -301,7 +301,7 @@ export const RetentionManagement = ({
                                                         />
                                                     ) : (
                                                         <span onDoubleClick={() => handleHotRetentionDoubleClick(sourceGroup.name, sourceGroup.hotRetentionDays)}>
-                                                            {sourceGroup.hotRetentionDays === Infinity ? t.forever : sourceGroup.hotRetentionDays}
+                                                            {sourceGroup.hotRetentionDays === Infinity ? t.forever : format.numberToFixed(sourceGroup.hotRetentionDays)}
                                                         </span>
                                                     )}
                                                 </div>
@@ -330,7 +330,7 @@ export const RetentionManagement = ({
                                                         />
                                                     ) : (
                                                         <span onDoubleClick={() => handleColdRetentionDoubleClick(sourceGroup.name, sourceGroup.coldRetentionDays)}>
-                                                            {sourceGroup.coldRetentionDays === Infinity ? t.forever : sourceGroup.coldRetentionDays}
+                                                            {sourceGroup.coldRetentionDays === Infinity ? t.forever : format.numberToFixed(sourceGroup.coldRetentionDays)}
                                                         </span>
                                                     )}
                                                 </div>

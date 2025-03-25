@@ -1,3 +1,7 @@
 export const format = {
-    numberToFixed: (num?: number, digits = 2) => num ? parseFloat(num.toFixed(digits)).toString() : num,
+    numberToFixed: (num?: number, digits = 2) => {
+        if (num === undefined) return num;
+        const fixed = parseFloat(num.toFixed(digits));
+        return new Intl.NumberFormat().format(fixed);
+    },
 };
