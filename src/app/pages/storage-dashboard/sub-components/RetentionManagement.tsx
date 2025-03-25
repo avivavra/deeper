@@ -181,8 +181,10 @@ export const RetentionManagement = ({
                             return (
                                 <div key={sourceGroup.name} className="bg-gray-50 p-4 rounded-lg border relative">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-bold text-gray-800 flex items-center">
-                                            {direction === 'ltr' ? sourceGroup.name : sourceGroup.hebrewName}
+                                        <div className="flex w-full items-center">
+                                            <h3 className="text-lg font-bold text-gray-800 whitespace-nowrap">
+                                                {direction === 'ltr' ? sourceGroup.name : sourceGroup.hebrewName}
+                                            </h3>
                                             {displayRates && (
                                                 <TooltipIcon
                                                     content={
@@ -216,7 +218,7 @@ export const RetentionManagement = ({
                                                     alignment={direction === 'rtl' ? 'right' : 'left'}
                                                 />
                                             )}
-                                            <div className="flex overflow-x-auto" style={{ maxWidth: '14rem' }}>
+                                            <div className="flex overflow-x-auto">
                                                 {sources.filter(source => source.relatedSourceGroup === sourceGroup.name).map(source => (
                                                     <TooltipIcon
                                                         key={source.name}
@@ -258,7 +260,7 @@ export const RetentionManagement = ({
                                             {isInSimulation && !disableEditing && (
                                                 <button
                                                     onClick={() => handleAddSource(sourceGroup)}
-                                                    className={`${marginClassName}2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                                                    className={`${marginClassName}2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap`}
                                                 >
                                                     <Plus className="h-4 w-4 mx-1 text-white" />
                                                     {t.addSource}
@@ -270,18 +272,18 @@ export const RetentionManagement = ({
                                                     </TooltipIcon>
                                                 </button>
                                             )}
-                                        </h3>
-                                        {isInSimulation && (
-                                            <div className={`flex ${direction === 'ltr' ? 'space-x-2' : 'space-x-reverse'} items-center`}>
-                                                <button
-                                                    onClick={() => handleRemoveSourceGroup(sourceGroup.name)}
-                                                    className={`inline-flex items-center p-2 border border-gray-300 text-sm font-medium rounded-md ${disableEditing ? 'text-gray-400 bg-gray-200 cursor-not-allowed' : 'text-gray-800 bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'}`}
-                                                    disabled={disableEditing}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        )}
+                                            {isInSimulation && (
+                                                <div className={`flex ${direction === 'ltr' ? 'ml-2' : 'mr-2'} items-center`}>
+                                                    <button
+                                                        onClick={() => handleRemoveSourceGroup(sourceGroup.name)}
+                                                        className={`inline-flex items-center p-2 border border-gray-300 text-sm font-medium rounded-md ${disableEditing ? 'text-gray-400 bg-gray-200 cursor-not-allowed' : 'text-gray-800 bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'}`}
+                                                        disabled={disableEditing}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {isInSimulation ? (
