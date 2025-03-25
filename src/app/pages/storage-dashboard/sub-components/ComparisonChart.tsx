@@ -43,8 +43,8 @@ export const ComparisonChart = ({
     ...group,
   })) : filteredSourceGroups.map(group => ({
     ...group,
-    elasticStorage: format.numberToFixed(group.elasticStorage) || 0,
-    s3Storage: format.numberToFixed(group.S3Storage) || 0,
+    elasticStorage: group.elasticStorage || 0,
+    s3Storage: group.S3Storage || 0,
   }));
 
   const title = t.comparing + ' ' + (chartMode === 'retention' ? t.retentionPeriods : t.storage);
