@@ -28,11 +28,11 @@ const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
 
       return `Source: ${change.name}
 Related Source Group: ${change.relatedSourceGroup}
-Elasticsearch Storage: ${format.numberToFixed(change.original.elasticStorage) || 0} GB → ${format.numberToFixed(change.current.elasticStorage) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${format.numberToFixed(totalElasticStorageChange) || 0} GB)
-S3 Storage: ${format.numberToFixed(change.original.s3Storage) || 0} GB → ${format.numberToFixed(change.current.s3Storage) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${format.numberToFixed(totalS3StorageChange) || 0} GB)
-Elastic Storage Per Hot Tier Day: ${format.numberToFixed(change.current.elasticStoragePerHotTierDay) || 0} GB
-Elastic Storage Per Cold Tier Day: ${format.numberToFixed(change.current.elasticStoragePerColdTierDay) || 0} GB
-S3 Storage Per Cold Tier Day: ${format.numberToFixed(change.current.S3StoragePerColdTierDay) || 0} GB
+Elasticsearch Storage: ${format.numberToFixed(change.original.elasticStorage, 2, false) || 0} GB → ${format.numberToFixed(change.current.elasticStorage, 2, false) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${format.numberToFixed(totalElasticStorageChange, 2, false) || 0} GB)
+S3 Storage: ${format.numberToFixed(change.original.s3Storage, 2, false) || 0} GB → ${format.numberToFixed(change.current.s3Storage, 2, false) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${format.numberToFixed(totalS3StorageChange, 2, false) || 0} GB)
+Elastic Storage Per Hot Tier Day: ${format.numberToFixed(change.current.elasticStoragePerHotTierDay, 2, false) || 0} GB
+Elastic Storage Per Cold Tier Day: ${format.numberToFixed(change.current.elasticStoragePerColdTierDay, 2, false) || 0} GB
+S3 Storage Per Cold Tier Day: ${format.numberToFixed(change.current.S3StoragePerColdTierDay, 2, false) || 0} GB
 `;
     } else {
       const hotDaysChange = change.current.hotDays - change.original.hotDays;
@@ -43,8 +43,8 @@ S3 Storage Per Cold Tier Day: ${format.numberToFixed(change.current.S3StoragePer
       return `Source Group: ${change.name}
 Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
 Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
-Elasticsearch Storage: ${format.numberToFixed(change.original.elasticStorage) || 0} GB → ${format.numberToFixed(change.current.elasticStorage) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${format.numberToFixed(totalElasticStorageChange) || 0} GB)
-S3 Storage: ${format.numberToFixed(change.original.s3Storage) || 0} GB → ${format.numberToFixed(change.current.s3Storage) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${format.numberToFixed(totalS3StorageChange) || 0} GB)
+Elasticsearch Storage: ${format.numberToFixed(change.original.elasticStorage, 2, false) || 0} GB → ${format.numberToFixed(change.current.elasticStorage, 2, false) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${format.numberToFixed(totalElasticStorageChange, 2, false) || 0} GB)
+S3 Storage: ${format.numberToFixed(change.original.s3Storage, 2, false) || 0} GB → ${format.numberToFixed(change.current.s3Storage, 2, false) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${format.numberToFixed(totalS3StorageChange, 2, false) || 0} GB)
 `;
     }
   }).join('\n');
@@ -179,10 +179,18 @@ export const ChangeLog: React.FC<ChangeLogProps> = ({
             const existingSourceGroup = sourceGroups.find(sourceGroup => sourceGroup.name === sourceGroupName);
 
             if (existingSourceGroup) {
+              const hotDaysDiff = newHotDays - existingSourceGroup.hotRetentionDays;
+              const coldDaysDiff = newColdDays - existingSourceGroup.coldRetentionDays;
+
               const newElasticStorage = 
-                (newHotDays * existingSourceGroup.elasticStoragePerHotTierDay || 0) + 
-                (newColdDays * existingSourceGroup.elasticStoragePerColdTierDay || 0);
-              const newS3Storage = newColdDays * existingSourceGroup.S3StoragePerColdTierDay || 0;
+                existingSourceGroup.elasticStorage + 
+                (hotDaysDiff * existingSourceGroup.elasticStoragePerHotTierDay || 0) + 
+                (coldDaysDiff * existingSourceGroup.elasticStoragePerColdTierDay || 0);
+
+              const newS3Storage = 
+                existingSourceGroup.S3Storage + 
+                (coldDaysDiff * existingSourceGroup.S3StoragePerColdTierDay || 0);
+
               handleSourceGroupRetentionChange(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
             } else {
               const newElasticStorage = 
