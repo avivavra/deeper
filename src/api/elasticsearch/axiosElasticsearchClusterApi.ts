@@ -201,7 +201,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         const cacheKey = `sourceNames_${indexName}`;
         const cachedData = Cookies.get(cacheKey);
 
-        if (cachedData) {
+        if (cachedData && cachedData !== "undefined") {
             return JSON.parse(cachedData);
         }
 
