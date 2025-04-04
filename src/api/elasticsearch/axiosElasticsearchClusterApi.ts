@@ -171,7 +171,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                     : warmAndHotTierRetentionPeriod ? warmAndHotTierRetentionPeriod - hotTierRetentionPeriod : 0;
 
                 const coldTierRetentionPeriod = coldMinAge
-                    ? frozenMinAge || deleteMinAge || Infinity
+                    ? (frozenMinAge || deleteMinAge || Infinity) - (warmTierRetentionPeriod ? warmTierRetentionPeriod - hotTierRetentionPeriod : hotTierRetentionPeriod)
                     : 0;
 
                 const frozenTierRetentionPeriod = frozenMinAge

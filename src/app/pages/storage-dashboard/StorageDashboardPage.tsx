@@ -315,7 +315,8 @@ export const StorageDashboardPage = ({
       elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
       S3StoragePerColdTierDay: S3StoragePerColdTierDay,
       elasticStoragePerColdTierDay: 0,
-      indexNamesByTier: { hotTier: [], coldTier: [] }
+      indexNamesByTier: { hotTier: [], coldTier: [] },
+      sourceNames: []
     };
 
     handleAddSourceGroup(newSourceGroupData);
