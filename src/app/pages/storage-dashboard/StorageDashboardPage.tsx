@@ -120,27 +120,34 @@ export const StorageDashboardPage = ({
   const elasticStoragePercentage = totalElasticStorage ? (usedElasticStorage / totalElasticStorage) * 100 : 0;
   const s3StoragePercentage = totalS3Storage ? (usedS3Storage / totalS3Storage) * 100 : 0;
 
-  const filteredSourceGroups = displaySourceGroups ? displaySourceGroups.filter(sourceGroup => sourceGroupsSelection[sourceGroup.name]) : [];
+  const filteredSourceGroups = displaySourceGroups
+    ? displaySourceGroups.filter(sourceGroup => 
+        sourceGroupsSelection[sourceGroup.name] && 
+        (audience !== 'user' || sourceGroup.showToUsers !== false)
+      )
+    : [];
 
   const handleAddSourceGroup = (newSourceGroup: SourceGroup) => {
-    setDisplaySourceGroups([newSourceGroup, ...displaySourceGroups]);
-    setSourceGroupsSelection(prev => ({ ...prev, [newSourceGroup.name]: true }));
-    addChangeLogEntry({
-      type: 'sourceGroup',
-      name: newSourceGroup.name,
-      original: {
-        hotDays: 0,
-        coldDays: 0,
-        elasticStorage: 0,
-        s3Storage: 0,
-      },
-      current: {
-        hotDays: newSourceGroup.hotRetentionDays,
-        coldDays: newSourceGroup.coldRetentionDays,
-        elasticStorage: newSourceGroup.elasticStorage,
-        s3Storage: newSourceGroup.S3Storage,
-      }
-    });
+    if (newSourceGroup.canAddSources !== false) {
+      setDisplaySourceGroups([newSourceGroup, ...displaySourceGroups]);
+      setSourceGroupsSelection(prev => ({ ...prev, [newSourceGroup.name]: true }));
+      addChangeLogEntry({
+        type: 'sourceGroup',
+        name: newSourceGroup.name,
+        original: {
+          hotDays: 0,
+          coldDays: 0,
+          elasticStorage: 0,
+          s3Storage: 0,
+        },
+        current: {
+          hotDays: newSourceGroup.hotRetentionDays,
+          coldDays: newSourceGroup.coldRetentionDays,
+          elasticStorage: newSourceGroup.elasticStorage,
+          s3Storage: newSourceGroup.S3Storage,
+        }
+      });
+    }
   };
 
   const handleNewSourceGroupSubmitted = (newSourceGroup: SourceGroup) => {
@@ -316,7 +323,9 @@ export const StorageDashboardPage = ({
       S3StoragePerColdTierDay: S3StoragePerColdTierDay,
       elasticStoragePerColdTierDay: 0,
       indexNamesByTier: { hotTier: [], coldTier: [] },
-      sourceNames: []
+      sourceNames: [],
+      showToUsers: true,
+      canAddSources: true,
     };
 
     handleAddSourceGroup(newSourceGroupData);
@@ -393,13 +402,13 @@ export const StorageDashboardPage = ({
   const displayProps: {
     direction: Direction,
     translateNames: boolean,
-    displayRates: boolean,
+    displayTechData: boolean,
     t: Translation
   } = {
     direction,
     t,
     translateNames: audience === 'user',
-    displayRates: audience === 'developer'
+    displayTechData: audience === 'developer'
   }
 
   const thresholdMode = audience === 'user' ? getThresholdMode(selectedClusterMetadata?.name || '') || 'medium' : 'none';

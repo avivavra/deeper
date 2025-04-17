@@ -47,7 +47,9 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: ['logs-production-1', 'logs-production-2'],
       coldTier: ['logs-production-3']
     },
-    sourceNames: ['source1', 'source2222222222222222222222222222222222222']
+    sourceNames: ['source1', 'source2222222222222222222222222222222222222'],
+    canAddSources: true,
+    showToUsers: true
   },
   {
     name: 'hot-forever',
@@ -66,7 +68,9 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: ['forever-1', 'forever-2'],
       coldTier: []
     },
-    sourceNames: []
+    sourceNames: [],
+    canAddSources: false,
+    showToUsers: false
   },
   {
     name: 'cold-forever',
@@ -85,7 +89,9 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: [],
       coldTier: ['forever-1', 'forever-2']
     },
-    sourceNames: ['source3']
+    sourceNames: ['source3'],
+    canAddSources: true,
+    showToUsers: true
   },
   {
     name: 'metrics-app1',
@@ -104,7 +110,9 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: ['metrics-app1-1', 'metrics-app1-2'],
       coldTier: []
     },
-    sourceNames: ['source4', 'source5', 'source6']
+    sourceNames: ['source4', 'source5', 'source6'],
+    canAddSources: true,
+    showToUsers: true
   },
   {
     name: 'metrics-app2',
@@ -123,7 +131,9 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: ['metrics-app2-1'],
       coldTier: []
     },
-    sourceNames: []
+    sourceNames: [],
+    canAddSources: true,
+    showToUsers: true
   },
   {
     name: 'audit-logs',
@@ -142,7 +152,9 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: ['audit-logs-1'],
       coldTier: []
     },
-    sourceNames: ['source7777777', 'source77', 'source777', 'source7777', 'source7', 'source77777', 'source7777777777777']
+    sourceNames: ['source7777777', 'source77', 'source777', 'source7777', 'source7', 'source77777', 'source7777777777777'],
+    canAddSources: false,
+    showToUsers: true
   },
   {
     name: 'user-activity',
@@ -161,7 +173,9 @@ export const clusterAIndices: SourceGroup[] = [
       hotTier: ['user-activity-1'],
       coldTier: []
     },
-    sourceNames: ['source8', 'source9']
+    sourceNames: ['source8', 'source9'],
+    canAddSources: true,
+    showToUsers: false
   }
 ];
 
@@ -183,7 +197,9 @@ export const clusterBIndices: SourceGroup[] = [
       hotTier: ['metrics-app1-1', 'metrics-app1-2'],
       coldTier: []
     },
-    sourceNames: ['source10', 'source11']
+    sourceNames: ['source10', 'source11'],
+    canAddSources: true,
+    showToUsers: true
   },
   {
     name: 'metrics-app2',
@@ -202,7 +218,9 @@ export const clusterBIndices: SourceGroup[] = [
       hotTier: ['metrics-app2-1', 'metrics-app2-2'],
       coldTier: []
     },
-    sourceNames: []
+    sourceNames: [],
+    canAddSources: true,
+    showToUsers: true
   },
   {
     name: 'audit-logs',
@@ -221,7 +239,9 @@ export const clusterBIndices: SourceGroup[] = [
       hotTier: ['audit-logs-1'],
       coldTier: []
     },
-    sourceNames: ['source12']
+    sourceNames: ['source12'],
+    canAddSources: false,
+    showToUsers: true
   },
   {
     name: 'user-activity',
@@ -240,6 +260,8 @@ export const clusterBIndices: SourceGroup[] = [
       hotTier: ['user-activity-1'],
       coldTier: []
     },
-    sourceNames: ['source13', 'source14']
+    sourceNames: ['source13', 'source14'],
+    canAddSources: true,
+    showToUsers: false
   }
 ];

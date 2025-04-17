@@ -10,6 +10,8 @@ export type IndexTemplateConfig = {
     name: string;
     hebrewName: string;
     frequency: IndexFrequency;
+    canAddSources?: boolean;
+    showToUsers?: boolean;
 };
 
 type ProcessedIndexTemplate = {
@@ -69,7 +71,9 @@ export class ClusterSummarizer {
                 S3StoragePerColdTierDay: indexTemplate.coldTierStoragePerDay * config.s3ColdTierMultiplier,
                 S3Storage: indexTemplate.coldTierStorage * config.s3ColdTierMultiplier,
                 indexNamesByTier: indexTemplate.indexNamesByTier,
-                sourceNames: indexTemplate.sourceNames
+                sourceNames: indexTemplate.sourceNames,
+                canAddSources: indexTemplate.canAddSources !== false,
+                showToUsers: indexTemplate.showToUsers !== false
             };
         });
     }

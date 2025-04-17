@@ -84,7 +84,9 @@ export const AddSourceGroupForm: React.FC<AddSourceGroupForm> = ({ t, setShowAdd
                 initialHotRetentionDays: hotRetentionDays,
                 initialColdRetentionDays: coldRetentionDays,
                 indexNamesByTier: { hotTier: [], coldTier: [] },
-                sourceNames: []
+                sourceNames: [],
+                showToUsers: true,
+                canAddSources: true,
             };
 
             handleAddSourceGroup(newSourceGroupData);

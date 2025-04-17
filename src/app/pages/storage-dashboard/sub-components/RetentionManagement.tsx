@@ -10,7 +10,7 @@ type RetentionManagementProps = {
     filteredSourceGroups: SourceGroup[];
     direction: Direction;
     t: Translation;
-    displayRates: boolean;
+    displayTechData: boolean;
     translateNames: boolean;
     handleSourceGroupRetentionChange: (name: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
     handleRemoveSourceGroup: (name: string) => void;
@@ -31,7 +31,7 @@ export const RetentionManagement = ({
     direction,
     translateNames,
     t,
-    displayRates,
+    displayTechData,
     handleSourceGroupRetentionChange,
     handleRemoveSourceGroup,
     setShowAddSourceGroup,
@@ -178,6 +178,11 @@ export const RetentionManagement = ({
                         {filteredSourceGroups.map(sourceGroup => {
                             const { totalElasticStorage, totalS3Storage, totalElasticStoragePerHotTierDay, totalElasticStoragePerColdTierDay, totalS3StoragePerColdTierDay } = calculateTotalStorage(sourceGroup);
                             const disableEditing = isAnyRetentionInfinity(sourceGroup.name);
+                            const canAddSources = sourceGroup.canAddSources !== false;
+                            const showToUsers = displayTechData || sourceGroup.showToUsers !== false;
+
+                            if (!showToUsers) return null;
+
                             return (
                                 <div key={sourceGroup.name} className="bg-gray-50 p-4 rounded-lg border relative">
                                     <div className="flex justify-between items-center">
@@ -185,7 +190,7 @@ export const RetentionManagement = ({
                                             <h3 className="text-lg font-bold text-gray-800 whitespace-nowrap">
                                                 {direction === 'ltr' ? sourceGroup.name : sourceGroup.hebrewName}
                                             </h3>
-                                            {displayRates && (
+                                            {displayTechData && (
                                                 <TooltipIcon
                                                     content={
                                                         <>
@@ -257,7 +262,7 @@ export const RetentionManagement = ({
                                                     })
                                                 }
                                             </div>
-                                            {isInSimulation && !disableEditing && (
+                                            {isInSimulation && canAddSources && !disableEditing && (
                                                 <button
                                                     onClick={() => handleAddSource(sourceGroup)}
                                                     className={`${marginClassName}2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap`}
@@ -368,7 +373,7 @@ export const RetentionManagement = ({
                                             <span className="text-left">{t.elasticsearchStorage}</span>
                                             <span className="text-right">
                                                 <span dir='ltr'>{format.numberToFixed(totalElasticStorage)} GB</span>
-                                                {displayRates && (
+                                                {displayTechData && (
                                                     <TooltipIcon
                                                         content={`${t.hotTier}: ${format.numberToFixed(totalElasticStoragePerHotTierDay)}GB/${t.day}, ${t.coldTier}: ${format.numberToFixed(totalElasticStoragePerColdTierDay)}GB/${t.day}`}
                                                         alignment={direction === 'rtl' ? 'right' : 'left'}
@@ -380,7 +385,7 @@ export const RetentionManagement = ({
                                             <span className="text-left">{t.s3Storage}</span>
                                             <span className="text-right">
                                                 <span dir='ltr'>{format.numberToFixed(totalS3Storage)} GB</span>
-                                                {displayRates && (
+                                                {displayTechData && (
                                                     <TooltipIcon
                                                         content={`${t.coldTier}: ${format.numberToFixed(totalS3StoragePerColdTierDay)}GB/${t.day}`}
                                                         alignment={direction === 'rtl' ? 'right' : 'left'}

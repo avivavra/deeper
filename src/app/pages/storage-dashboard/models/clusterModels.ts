@@ -26,6 +26,8 @@ export type SourceGroup = {
         coldTier: string[];
     };
     sourceNames: string[];
+    canAddSources: boolean;
+    showToUsers: boolean;
 };
 
 export type ClusterMetadata = {

@@ -30,7 +30,9 @@ export const config = {
                 {
                     name: ".fleet-fileds-tohost-meta",
                     hebrewName: "אינדקס 2",
-                    frequency: "daily"
+                    frequency: "daily",
+                    canAddSources: false,
+                    showToUsers: false
                 },
                 {
                     name: ".monitoring-ent-search-mb",
@@ -60,7 +62,9 @@ export const config = {
                 {
                     name: ".fleet-fileds-tohost-meta-2",
                     hebrewName: "אינדקס 6",
-                    frequency: "daily"
+                    frequency: "daily",
+                    canAddSources: false,
+                    showToUsers: false
                 },
                 {
                     name: ".monitoring-ent-search-mb-2",
