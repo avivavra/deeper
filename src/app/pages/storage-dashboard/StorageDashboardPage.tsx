@@ -419,8 +419,6 @@ export const StorageDashboardPage = ({
         header={
           <StorageHeader
             {...displayProps}
-            audience={audience}
-            setAudience={setAudience}
             clustersMetadata={clustersMetadata}
             selectedClusterMetadata={selectedClusterMetadata}
             setSelectedCluster={handleSetSelectedCluster}

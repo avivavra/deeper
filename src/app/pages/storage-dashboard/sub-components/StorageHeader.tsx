@@ -5,8 +5,6 @@ import { GenericModal } from '../../../components/GenericModal';
 import { FaInfoCircle } from 'react-icons/fa';
 
 interface StorageHeaderProps {
-  audience: Audience;
-  setAudience: (audience: Audience) => void;
   clustersMetadata: ClusterMetadata[];
   selectedClusterMetadata: ClusterMetadata;
   setSelectedCluster: (clusterName: string) => void;
@@ -21,8 +19,6 @@ interface StorageHeaderProps {
 }
 
 export const StorageHeader: React.FC<StorageHeaderProps> = ({
-  audience,
-  setAudience,
   clustersMetadata: clusters,
   selectedClusterMetadata,
   setSelectedCluster,
@@ -41,16 +37,7 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
     <div>
       <div className="flex justify-between items-center">
         <div className="relative title-dropdown flex items-center">
-          <GenericDropdown
-            buttonLabel={t.title}
-            options={[
-              { label: t.developerMode, value: 'developer', checked: audience === 'developer' },
-              { label: t.userMode, value: 'user', checked: audience === 'user' }
-            ]}
-            onSelect={(value) => setAudience(value as Audience)}
-            width="w-56"
-            type="radio"
-          />
+          <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
           <button
             className="ml-2 mr-2 text-gray-500 hover:text-gray-700"
             onClick={() => setShowInfoModal(true)}
