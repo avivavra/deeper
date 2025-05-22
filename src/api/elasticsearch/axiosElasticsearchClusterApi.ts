@@ -217,7 +217,8 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                 aggregations: {
                     sources: {
                         terms: {
-                            field: this.sourceFieldName
+                            field: this.sourceFieldName,
+                            size: 50
                         }
                     }
                 }

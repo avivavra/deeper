@@ -1,5 +1,5 @@
 import { ClusterData, ClusterMetadata, SourceGroup } from "../../app/pages/storage-dashboard/models";
-import { ElasticsearchClusterApi, IlmPolicy, Index, IndexTemplate } from "../elasticsearch";
+import { ElasticsearchClusterApi, IlmPolicy, Index } from "../elasticsearch";
 import { S3BucketApi } from "../s3";
 import { convert } from "../../app/utils";
 import { config } from "../../config";
@@ -28,6 +28,8 @@ type ProcessedIndexTemplate = {
         coldTier: string[];
     },
     sourceNames: string[];
+    canAddSources?: boolean;
+    showToUsers?: boolean;
 };
 
 export class ClusterSummarizer {
@@ -212,4 +214,4 @@ export class ClusterSummarizer {
             return acc + this.getAverageStoragePerDay(index, indexFrequency, now);
         }, 0) / indices.length;
     }
-};
+}
