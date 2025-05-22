@@ -1,0 +1,26 @@
+.full-page-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: white;
+}
+
+.loading-icon {
+  font-size: 6rem; /* Further increased size for loader */
+  color: #007bff; /* Blue color for loader */
+}
+
+.error-icon {
+  font-size: 6rem; /* Further increased size for error icon */
+  color: #dc3545; /* Red color for error */
+}
+
+.error-text {
+  margin-top: 2rem; /* Slightly larger margin */
+  font-size: 2rem; /* Further increased size for error text */
+  color: red;
+  text-align: center;
+}

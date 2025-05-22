@@ -1,0 +1,392 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Trash2, Share2, Upload, RotateCw } from 'lucide-react';
+import { SourceGroup, ChangeLogEntry, Direction, Translation } from '../../models';
+import { GenericDropdown, GenericModal } from '../../../../components';
+import { format } from '../../../../utils';
+
+interface ChangeLogProps {
+  changeLog: ChangeLogEntry[];
+  direction: Direction;
+  sourceGroups: SourceGroup[];
+  handleRevertSourceGroupChange: (name: string) => void;
+  handleResetChanges: () => void;
+  handleSourceGroupRetentionChange: (name: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
+  handleSourceChange: (sourceName: string, newElasticStorage: number, newS3Storage: number) => void;
+  t: Translation;
+  translateNames: boolean;
+  handleRemoveSourceGroup: (name: string) => void;
+  handleAddNewSourceGroup: (name: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number) => void;
+  handleNewSource: (sourceName: string, relatedSourceGroup: string, elasticStoragePerHotTierDay: number, elasticStoragePerColdTierDay: number, S3StoragePerColdTierDay: number) => void;
+  mailAddressees: string[];
+}
+
+const formatChangeLog = (changeLog: ChangeLogEntry[]) => {
+  return changeLog.map(change => {
+    if (change.type === 'source') {
+      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
+
+      return `Source: ${change.name}
+Related Source Group: ${change.relatedSourceGroup}
+Elasticsearch Storage: ${format.numberToFixed(change.original.elasticStorage, 2, false) || 0} GB → ${format.numberToFixed(change.current.elasticStorage, 2, false) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${format.numberToFixed(totalElasticStorageChange, 2, false) || 0} GB)
+S3 Storage: ${format.numberToFixed(change.original.s3Storage, 2, false) || 0} GB → ${format.numberToFixed(change.current.s3Storage, 2, false) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${format.numberToFixed(totalS3StorageChange, 2, false) || 0} GB)
+Elastic Storage Per Hot Tier Day: ${format.numberToFixed(change.current.elasticStoragePerHotTierDay, 2, false) || 0} GB
+Elastic Storage Per Cold Tier Day: ${format.numberToFixed(change.current.elasticStoragePerColdTierDay, 2, false) || 0} GB
+S3 Storage Per Cold Tier Day: ${format.numberToFixed(change.current.S3StoragePerColdTierDay, 2, false) || 0} GB
+`;
+    } else {
+      const hotDaysChange = change.current.hotDays - change.original.hotDays;
+      const coldDaysChange = change.current.coldDays - change.original.coldDays;
+      const totalElasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+      const totalS3StorageChange = change.current.s3Storage - change.original.s3Storage;
+
+      return `Source Group: ${change.name}
+Hot Retention Days: ${change.original.hotDays} → ${change.current.hotDays} days (${hotDaysChange > 0 ? '+' : ''}${hotDaysChange} days)
+Cold Retention Days: ${change.original.coldDays} → ${change.current.coldDays} days (${coldDaysChange > 0 ? '+' : ''}${coldDaysChange} days)
+Elasticsearch Storage: ${format.numberToFixed(change.original.elasticStorage, 2, false) || 0} GB → ${format.numberToFixed(change.current.elasticStorage, 2, false) || 0} GB (${totalElasticStorageChange > 0 ? '+' : ''}${format.numberToFixed(totalElasticStorageChange, 2, false) || 0} GB)
+S3 Storage: ${format.numberToFixed(change.original.s3Storage, 2, false) || 0} GB → ${format.numberToFixed(change.current.s3Storage, 2, false) || 0} GB (${totalS3StorageChange > 0 ? '+' : ''}${format.numberToFixed(totalS3StorageChange, 2, false) || 0} GB)
+`;
+    }
+  }).join('\n');
+};
+
+const parseChangeLog = (text: string) => {
+  // Remove characters with char code 8206
+  const cleanedText = text.replace(/[\u200E]/g, '');
+
+  const parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, newElasticStorage: number, newS3Storage: number, relatedSourceGroup?: string, elasticStoragePerHotTierDay?: number, elasticStoragePerColdTierDay?: number, S3StoragePerColdTierDay?: number }[] = [];
+  const entries = cleanedText.split('\n\n');
+  entries.forEach(entry => {
+    const lines = entry.trim().split('\n');
+    if (lines.length === 7 && lines[0].startsWith('Source: ')) {
+      const sourceName = lines[0].replace('Source: ', '');
+      const relatedSourceGroup = lines[1].replace('Related Source Group: ', '');
+      const elasticStorage = parseFloat(lines[2].split('→')[1].split('GB')[0].trim());
+      const s3Storage = parseFloat(lines[3].split('→')[1].split('GB')[0].trim());
+      const elasticStoragePerHotTierDay = parseFloat(lines[4].split(':')[1].split('GB')[0].trim());
+      const elasticStoragePerColdTierDay = parseFloat(lines[5].split(':')[1].split('GB')[0].trim());
+      const S3StoragePerColdTierDay = parseFloat(lines[6].split(':')[1].split('GB')[0].trim());
+
+      if (elasticStorage && s3Storage && elasticStoragePerHotTierDay && elasticStoragePerColdTierDay && S3StoragePerColdTierDay) {
+        parsedEntries.push({
+          sourceGroupName: sourceName,
+          newHotDays: 0,
+          newColdDays: 0,
+          newElasticStorage: elasticStorage,
+          newS3Storage: s3Storage,
+          relatedSourceGroup: relatedSourceGroup,
+          elasticStoragePerHotTierDay: elasticStoragePerHotTierDay,
+          elasticStoragePerColdTierDay: elasticStoragePerColdTierDay,
+          S3StoragePerColdTierDay: S3StoragePerColdTierDay
+        });
+      }
+    } else if (lines.length >= 5) {
+      const sourceGroupName = lines[0].replace('Source Group: ', '');
+      const hotDays = parseInt(lines[1].split('→')[1].split('days')[0].trim());
+      const coldDays = parseInt(lines[2].split('→')[1].split('days')[0].trim());
+      const elasticStorage = parseFloat(lines[3].split('→')[1].split('GB')[0].trim());
+      const s3Storage = parseFloat(lines[4].split('→')[1].split('GB')[0].trim());
+
+      // Adjust condition to allow 0 values
+      if (hotDays !== undefined && coldDays !== undefined && elasticStorage !== undefined && s3Storage !== undefined) {
+        parsedEntries.push({
+          sourceGroupName: sourceGroupName,
+          newHotDays: hotDays,
+          newColdDays: coldDays,
+          newElasticStorage: elasticStorage,
+          newS3Storage: s3Storage,
+        });
+      }
+    }
+  });
+  return parsedEntries;
+};
+
+export const ChangeLog: React.FC<ChangeLogProps> = ({
+  changeLog,
+  direction,
+  sourceGroups,
+  handleRevertSourceGroupChange,
+  handleResetChanges,
+  handleSourceGroupRetentionChange,
+  handleSourceChange,
+  t,
+  translateNames,
+  handleRemoveSourceGroup,
+  handleAddNewSourceGroup,
+  handleNewSource,
+  mailAddressees,
+}) => {
+  const arrow = direction === 'ltr' ? '→' : '←';
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importText, setImportText] = useState('');
+  const importTextAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (showImportModal && importTextAreaRef.current) {
+      importTextAreaRef.current.focus();
+    }
+  }, [showImportModal]);
+
+  const handleExportToFile = () => {
+    const text = formatChangeLog(changeLog);
+
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'storage-changes.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportToEmail = () => {
+    const text = formatChangeLog(changeLog);
+
+    const subject = 'Elasticsearch Changes';
+    const mailtoLink = `mailto:${mailAddressees.join(',') || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    window.location.href = mailtoLink;
+  };
+
+  const handleCopyToClipboard = () => {
+    const text = formatChangeLog(changeLog);
+
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      console.log('Change log copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+    document.body.removeChild(textArea);
+  };
+
+  const processImportedEntries = (parsedEntries: { sourceGroupName: string, newHotDays: number, newColdDays: number, relatedSourceGroup?: string, elasticStoragePerHotTierDay?: number, elasticStoragePerColdTierDay?: number, S3StoragePerColdTierDay?: number }[]) => {
+    try {
+      parsedEntries.forEach(({ sourceGroupName, newHotDays, newColdDays, relatedSourceGroup, elasticStoragePerHotTierDay, elasticStoragePerColdTierDay, S3StoragePerColdTierDay }) => {
+        if (relatedSourceGroup) {
+          handleNewSource(sourceGroupName, relatedSourceGroup, elasticStoragePerHotTierDay!, elasticStoragePerColdTierDay!, S3StoragePerColdTierDay!);
+        } else {
+          const isRemovedSourceGroup = newHotDays === 0 && newColdDays === 0;
+          if (isRemovedSourceGroup) {
+            handleRemoveSourceGroup(sourceGroupName);
+          } else {
+            const existingSourceGroup = sourceGroups.find(sourceGroup => sourceGroup.name === sourceGroupName);
+
+            if (existingSourceGroup) {
+              const hotDaysDiff = newHotDays - existingSourceGroup.hotRetentionDays;
+              const coldDaysDiff = newColdDays - existingSourceGroup.coldRetentionDays;
+
+              const newElasticStorage = 
+                existingSourceGroup.elasticStorage + 
+                (hotDaysDiff * existingSourceGroup.elasticStoragePerHotTierDay || 0) + 
+                (coldDaysDiff * existingSourceGroup.elasticStoragePerColdTierDay || 0);
+
+              const newS3Storage = 
+                existingSourceGroup.S3Storage + 
+                (coldDaysDiff * existingSourceGroup.S3StoragePerColdTierDay || 0);
+
+              handleSourceGroupRetentionChange(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+            } else {
+              const newElasticStorage = 
+                (newHotDays * (elasticStoragePerHotTierDay || 0)) + 
+                (newColdDays * (elasticStoragePerColdTierDay || 0));
+              const newS3Storage = newColdDays * (S3StoragePerColdTierDay || 0);
+              handleAddNewSourceGroup(sourceGroupName, newHotDays, newColdDays, newElasticStorage, newS3Storage);
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error processing imported entries:', error);
+    }
+  };
+
+  const handleImportFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        try {
+          const text = e.target?.result as string;
+          const parsedEntries = parseChangeLog(text);
+          processImportedEntries(parsedEntries);
+        } catch (error) {
+          console.error('Error importing changes:', error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleImportFromText = () => {
+    try {
+      const parsedEntries = parseChangeLog(importText);
+      processImportedEntries(parsedEntries);
+    } catch (error) {
+      console.error('Error importing changes:', error);
+    }
+    setShowImportModal(false);
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-gray-800">{t.changeLog}</h2>
+        <div className="flex gap-2">
+          {changeLog.length > 0 ? (
+            <>
+              <button
+                onClick={handleResetChanges}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                <RotateCw className="h-4 w-4 mx-2 text-white" />
+              </button>
+              <GenericDropdown
+                buttonLabel={<Share2 className="h-4 w-4 mx-2 text-gray-800" />}
+                options={[
+                  { label: t.exportToFile, value: 'exportToFile' },
+                  { label: t.exportToEmail, value: 'exportToEmail' },
+                  { label: t.copyToClipboard, value: 'copyToClipboard' }
+                ]}
+                onSelect={(value) => {
+                  if (value === 'exportToFile') handleExportToFile();
+                  if (value === 'exportToEmail') handleExportToEmail();
+                  if (value === 'copyToClipboard') handleCopyToClipboard();
+                }}
+                width="w-40"
+                type="radio"
+                showChevron={false}
+                hideInputs={true}
+              />
+            </>
+          ) : (
+            <GenericDropdown
+              buttonLabel={<Upload className="h-4 w-4 mx-2 text-gray-800" />}
+              options={[
+                { label: t.importFromFile, value: 'importFromFile' },
+                { label: t.importFromText, value: 'importFromText' }
+              ]}
+              onSelect={(value) => {
+                if (value === 'importFromFile') {
+                  document.getElementById('import-file-input')?.click();
+                }
+                if (value === 'importFromText') {
+                  setShowImportModal(true);
+                }
+              }}
+              width="w-40"
+              type="radio"
+              showChevron={false}
+              hideInputs={true}
+            />
+          )}
+          <input
+            id="import-file-input"
+            type="file"
+            onChange={handleImportFromFile}
+            className="hidden"
+            accept=".txt"
+          />
+        </div>
+      </div>
+      <div className="space-y-4">
+        {changeLog.length > 0 ? (
+          changeLog.map(change => {
+            if (change.type === 'source') {
+              const elasticStorageChange = change.current.elasticStorage - change.original.elasticStorage;
+              const s3StorageChange = change.current.s3Storage - change.original.s3Storage;
+              return (
+                <div key={change.name} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-green-500`}>
+                  <div className="flex justify-between items-start">
+                    <div className="font-medium text-gray-800">{change.name}</div>
+                    <button
+                      onClick={() => handleSourceChange(change.name, change.original.elasticStorage, change.original.s3Storage)}
+                      className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
+                    </button>
+                  </div>
+                  <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                  <div className="text-sm ml-2 text-gray-800">
+                    {t.elasticsearchStorage}: {elasticStorageChange > 0 ? '+' : ''}{format.numberToFixed(elasticStorageChange) || 0} GB
+                  </div>
+                  <div className="text-sm ml-2 text-gray-800">
+                    {t.s3Storage}: {s3StorageChange > 0 ? '+' : ''}{format.numberToFixed(s3StorageChange) || 0} GB
+                  </div>
+                </div>
+              );
+            } else {
+              const hebrewName = sourceGroups.find(sourceGroup => sourceGroup.name === change.name)?.hebrewName || change.name;
+
+              return (
+                <div key={change.name} className={`text-sm ${direction === 'ltr' ? 'border-l-2 pl-3' : 'border-r-2 pr-3'} border-blue-500`}>
+                  <div className="flex justify-between items-start">
+                    <div className="font-medium text-gray-800">{translateNames ? hebrewName : change.name}</div>
+                    <button
+                      onClick={() => handleRevertSourceGroupChange(change.name)}
+                      className="px-2 py-1 text-sm text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <Trash2 className="h-4 w-4 mx-2 text-gray-800" />
+                    </button>
+                  </div>
+                  <div className="text-gray-600 mt-1">
+                    {t.hotTier}: {format.numberToFixed(change.original.hotDays)} {arrow} {format.numberToFixed(change.current.hotDays)} {t.days}
+                  </div>
+                  <div className="text-gray-600">
+                    {t.coldTier}: {format.numberToFixed(change.original.coldDays)} {arrow} {format.numberToFixed(change.current.coldDays)} {t.days}
+                  </div>
+                  <div className="font-medium text-gray-800 mt-2">{t.impact}</div>
+                  <div className="text-sm ml-2 text-gray-800">
+                    {t.hotTier}: {change.current.elasticStorage - change.original.elasticStorage > 0 ? '+' : ''}{format.numberToFixed(change.current.elasticStorage - change.original.elasticStorage)} GB
+                  </div>
+                  <div className="text-sm ml-2 text-gray-800">
+                    {t.coldTier}: {change.current.s3Storage - change.original.s3Storage > 0 ? '+' : ''}{format.numberToFixed(change.current.s3Storage - change.original.s3Storage)} GB
+                  </div>
+                </div>
+              );
+            }
+          })
+        ) : (
+          <div className="text-gray-500 text-center py-4">
+            {t.noChanges}
+          </div>
+        )}
+      </div>
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <GenericModal showModal={showImportModal} setShowModal={setShowImportModal}>
+            <div className="p-4">
+              <h2 className="text-lg font-semibold text-gray-800">{t.importFromText}</h2>
+              <textarea
+                ref={importTextAreaRef}
+                className="w-full h-40 p-2 mt-2 border border-gray-300 rounded-md text-gray-900"
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+              />
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setShowImportModal(false)}
+                  className="px-4 py-2 mr-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  onClick={handleImportFromText}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  {t.import}
+                </button>
+              </div>
+            </div>
+          </GenericModal>
+        </div>
+      )}
+    </div>
+  );
+};

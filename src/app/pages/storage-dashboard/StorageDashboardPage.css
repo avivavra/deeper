@@ -1,0 +1,24 @@
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.loading-icon, .error-icon {
+  font-size: 6.5rem;
+}
+
+.loading-icon {
+  color: #007bff; /* Replace with your desired primary color */
+  animation: spin 1s linear infinite;
+}
+
+.error-icon {
+  color: #ff0000; /* Red color for error icon */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
