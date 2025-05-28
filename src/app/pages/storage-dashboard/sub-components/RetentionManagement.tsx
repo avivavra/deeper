@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { TooltipIcon, CustomSlider, GenericModal } from '../../../components';
+import { TooltipIcon, CustomSlider, GenericModal, TooltipIcon as Tooltip } from '../../../components';
 import { SourceGroup, Direction, Translation, Source } from '../models';
 import { AddSourceForm } from './forms/AddSourceForm';
 import { format } from '../../../utils';
@@ -135,6 +135,23 @@ export const RetentionManagement = ({
         return { totalElasticStorage, totalS3Storage, totalElasticStoragePerHotTierDay, totalElasticStoragePerColdTierDay, totalS3StoragePerColdTierDay };
     };
 
+    // Helper to get translated/original name for tooltip
+    const getTooltipName = (sourceGroup: SourceGroup) => {
+        if (translateNames) {
+            // Try to find translation for this group
+            const translation = sourcesTranslation.find(s => s.origin === sourceGroup.name);
+            if (translation && translation.translated !== sourceGroup.name) {
+                // Name is not translated, show translated
+                return translation.translated;
+            }
+            // Name is translated, show original
+            return sourceGroup.name;
+        } else {
+            // Not translating, show hebrewName if available
+            return sourceGroup.hebrewName || sourceGroup.name;
+        }
+    };
+
     return (
         <div>
             <GenericModal showModal={showAddSource} setShowModal={setShowAddSource}>
@@ -187,9 +204,39 @@ export const RetentionManagement = ({
                                 <div key={sourceGroup.name} className="bg-gray-50 p-4 rounded-lg border relative">
                                     <div className="flex justify-between items-center">
                                         <div className="flex w-full items-center">
-                                            <h3 className="text-lg font-bold text-gray-800 whitespace-nowrap">
-                                                {direction === 'ltr' ? sourceGroup.name : sourceGroup.hebrewName}
-                                            </h3>
+                                            <div
+                                                className="relative group"
+                                                style={{ display: 'inline-block' }}
+                                            >
+                                                <h3 className="text-lg font-bold text-gray-800 whitespace-nowrap">
+                                                    {direction === 'ltr' ? sourceGroup.name : sourceGroup.hebrewName}
+                                                </h3>
+                                                <div
+                                                    className="absolute z-50 w-max max-w-xs p-2 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                                    style={{
+                                                        left: direction === 'ltr' ? '0' : undefined,
+                                                        right: direction === 'rtl' ? '0' : undefined,
+                                                        top: '100%',
+                                                        marginTop: '0.25rem',
+                                                        pointerEvents: 'none',
+                                                    }}
+                                                >
+                                                    {(() => {
+                                                        if (translateNames) {
+                                                            const translation = sourcesTranslation.find(s => s.origin === sourceGroup.name);
+                                                            if (translation && translation.translated !== sourceGroup.name) {
+                                                                // Name is not translated, show translated
+                                                                return translation.translated;
+                                                            }
+                                                            // Name is translated, show original
+                                                            return sourceGroup.name;
+                                                        } else {
+                                                            // Not translating, show hebrewName if available
+                                                            return sourceGroup.hebrewName || sourceGroup.name;
+                                                        }
+                                                    })()}
+                                                </div>
+                                            </div>
                                             {displayTechData && (
                                                 <TooltipIcon
                                                     content={
