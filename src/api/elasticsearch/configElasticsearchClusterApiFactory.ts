@@ -1,13 +1,15 @@
-import { config } from "../../config/config";
+import { config } from "../../config";
 import { ElasticsearchClusterApi } from "./elasticsearchClusterApi";
 import { ElasticsearchClusterApiFactory } from "./elasticsearchClusterApiFactory";
 import { AxiosElasticsearchClusterApi } from "./axiosElasticsearchClusterApi";
 
 export class ConfigElasticsearchClusterApiFactory implements ElasticsearchClusterApiFactory {
+    constructor(
+        private readonly clustersConfig: { [clusterName: string]: { url: string, username: string, password: string } }
+    ) {}
+
     create(env: string, clusterName: string): ElasticsearchClusterApi {
-        const clusterConfig = (config.clustersConnection as {
-            [clusterName: string]: { url: string, username: string, password: string }
-        })[clusterName];
+        const clusterConfig = this.clustersConfig[clusterName];
         if (!clusterConfig) {
             throw new Error(`Cluster not found: ${clusterName}`);
         }
