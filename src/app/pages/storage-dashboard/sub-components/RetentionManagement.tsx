@@ -157,6 +157,7 @@ export const RetentionManagement = ({
             <GenericModal showModal={showAddSource} setShowModal={setShowAddSource}>
                 {relatedSourceGroup && (
                     <AddSourceForm
+                        displayTechData={displayTechData}
                         t={t}
                         setShowAddSource={setShowAddSource}
                         handleAddSource={handleAddSourceSubmit}

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { SourceGroup, Source, Translation } from '../../models';
 import { StoragePerDayArea } from './StoragePerDayArea';
 import { NameArea } from './NameArea';
+import { config } from '../../../../../config';
+import { SourceInAClickButton } from './SourceInAClickButton';
 
 const emptyNewSource = (): NewSource => ({
     name: '',
@@ -28,9 +30,10 @@ interface AddSourceForm {
     sourceGroups: SourceGroup[];
     relatedSourceGroup: SourceGroup;
     translateNames: boolean;
+    displayTechData: boolean;
 }
 
-export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, handleAddSource, sourceGroups, relatedSourceGroup, translateNames }) => {
+export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, handleAddSource, sourceGroups, relatedSourceGroup, translateNames, displayTechData }) => {
     const [newSource, setNewSource] = useState<NewSource>(emptyNewSource());
     const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
     const [storageRates, setStorageRates] = useState({
@@ -73,7 +76,10 @@ export const AddSourceForm: React.FC<AddSourceForm> = ({ t, setShowAddSource, ha
 
     return (
         <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.addSource}</h2>
+            <div className="flex items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">{t.addSource}</h2>
+                {displayTechData && <SourceInAClickButton />}
+            </div>
             <div className="space-y-4">
                 <NameArea
                     label={t.sourceName}
