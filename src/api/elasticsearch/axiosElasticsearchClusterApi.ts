@@ -54,8 +54,9 @@ type IndicesResponse = {
 export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
     private axiosInstance: AxiosInstance;
     private sourceFieldName: string;
+    private clusterName: string;
 
-    constructor(url: string, username: string, password: string, sourceFieldName: string) {
+    constructor(clusterName: string, url: string, username: string, password: string, sourceFieldName: string) {
         this.axiosInstance = axios.create({
             baseURL: url,
             auth: {
@@ -64,6 +65,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
             }
         });
         this.sourceFieldName = sourceFieldName;
+        this.clusterName = clusterName;
     }
 
     public async fetchClusterStorage(): Promise<{ totalStorage: number; usedStorage: number }> {
@@ -171,7 +173,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
                     : warmAndHotTierRetentionPeriod ? warmAndHotTierRetentionPeriod - hotTierRetentionPeriod : 0;
 
                 const coldTierRetentionPeriod = coldMinAge
-                    ? (frozenMinAge || deleteMinAge || Infinity) - (warmTierRetentionPeriod ? warmTierRetentionPeriod - hotTierRetentionPeriod : hotTierRetentionPeriod)
+                    ? (frozenMinAge || deleteMinAge || Infinity) - (warmTierRetentionPeriod ? warmTierRetentionPeriod + hotTierRetentionPeriod : hotTierRetentionPeriod)
                     : 0;
 
                 const frozenTierRetentionPeriod = frozenMinAge
@@ -198,7 +200,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
     }
 
     async fetchSourceNames(indexName: string): Promise<string[]> {
-        const cacheKey = `sourceNames_${indexName}`;
+        const cacheKey = `sourceNames_${this.clusterName}_${indexName}`;
         const cachedData = Cookies.get(cacheKey);
 
         if (cachedData && cachedData !== "undefined") {
@@ -226,7 +228,7 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
 
             const sourceNames = response.data.aggregations?.sources.buckets.map(bucket => bucket.key) || [];
             Cookies.set(cacheKey, JSON.stringify(sourceNames), { expires: 0.5 }); // Cache for 12 hours
-            
+
             return sourceNames;
         } catch (error) {
             if (error instanceof Error) {

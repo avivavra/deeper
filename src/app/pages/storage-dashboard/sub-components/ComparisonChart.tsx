@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
 import { SourceGroup, Direction, Translation } from '../models';
 import { GenericDropdown } from '../../../components';
-import { format } from '../../../utils';
 
 type ChartMode = 'retention' | 'storage';
 

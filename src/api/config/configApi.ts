@@ -10,7 +10,7 @@ export type ClusterConfig = {
     name: string;
     hebrewName: string;
     url: string;
-    bucketName: string;
+    bucketName?: string;
     username: string;
     password: string;
     indexTemplatesConfig: IndexTemplateConfig[];

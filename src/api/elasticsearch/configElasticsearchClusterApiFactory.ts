@@ -14,6 +14,6 @@ export class ConfigElasticsearchClusterApiFactory implements ElasticsearchCluste
             throw new Error(`Cluster not found: ${clusterName}`);
         }
 
-        return new AxiosElasticsearchClusterApi(clusterConfig.url, clusterConfig.username, clusterConfig.password, config.sourceFieldName);
+        return new AxiosElasticsearchClusterApi(clusterName, clusterConfig.url, clusterConfig.username, clusterConfig.password, config.sourceFieldName);
     }
 }
