@@ -3,7 +3,7 @@ import { Direction, Translation } from '../models';
 import { config } from '../../../../config';
 import { FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
 import { TooltipIcon } from '../../../components/TooltipIcon';
-import { format } from '../../../utils';
+import { AsyncState, format } from '../../../utils';
 
 type StorageUsageOverviewProps = {
   usedElasticStorage: number;
@@ -16,6 +16,8 @@ type StorageUsageOverviewProps = {
   direction: Direction;
   thresholdMode?: 'none' | 'medium' | 'high' | number;
   actionButtons?: React.ReactNode;
+  elasticColdTierStorage?: AsyncState<number>;
+  divideHotAndColdTier?: boolean;
 };
 
 const RegularStorageBar: React.FC<{
@@ -24,7 +26,9 @@ const RegularStorageBar: React.FC<{
   totalStorage: number;
   storagePercentage: number;
   direction: Direction;
-}> = ({ label, usedStorage, totalStorage, storagePercentage, direction }) => {
+  coldTierStorage?: AsyncState<number>;
+  divideHotAndColdTier?: boolean;
+}> = ({ label, usedStorage, totalStorage, storagePercentage, direction, coldTierStorage, divideHotAndColdTier }) => {
   const getStorageBarColor = (percentage: number) => {
     if (percentage > config.storageThresholds.high) return 'bg-red-500';
     if (percentage > config.storageThresholds.medium) return 'bg-orange-500';
@@ -41,6 +45,56 @@ const RegularStorageBar: React.FC<{
 
   const marginClassName = direction === 'ltr' ? 'ml-' : 'mr-';
 
+  // Only show split bar if divideHotAndColdTier is true
+  if (
+    divideHotAndColdTier &&
+    coldTierStorage &&
+    coldTierStorage.status === 'succeeded' &&
+    typeof coldTierStorage.data === 'number'
+  ) {
+    const coldTierValue = coldTierStorage.data;
+    const hotTierStorage = Math.max(usedStorage - coldTierValue, 0);
+    const hotTierPercent = totalStorage ? (hotTierStorage / totalStorage) * 100 : 0;
+    const coldTierPercent = totalStorage ? (coldTierValue / totalStorage) * 100 : 0;
+
+    return (
+      <div>
+        <div className="flex justify-between mb-2">
+          <span className="font-medium text-gray-800">{label}</span>
+          <span className={usedStorage > totalStorage ? "text-red-500 font-medium" : "text-gray-800"}>
+            <span dir='ltr'>
+              <span className="text-pink-500">{format.numberToFixed(hotTierStorage)} GB</span>
+              <span className="mx-2 text-gray-400 font-normal">|</span>
+              <span className="text-blue-600">{format.numberToFixed(coldTierValue)} GB</span>
+              <span className="mx-2 text-gray-400 font-normal">|</span>
+              <span>{format.numberToFixed(usedStorage)} GB</span>
+              {' / '}
+              <span>{format.numberToFixed(totalStorage)} GB</span>
+              {' ('}{format.numberToFixed(storagePercentage, 1)}%{')'}
+            </span>
+            {isWarningZone(storagePercentage) && <FaExclamationTriangle className={`text-orange-500 inline ${marginClassName}1`} />}
+            {isErrorZone(storagePercentage) && <FaExclamationCircle className={`text-red-500 inline ${marginClassName}1`} />}
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-4 relative overflow-hidden flex">
+          <div
+            className="h-4 rounded-l-full bg-pink-400"
+            style={{ width: `${Math.min(hotTierPercent, 100)}%` }}
+          />
+          <div
+            className="h-4 bg-blue-600"
+            style={{
+              width: `${Math.min(coldTierPercent, 100)}%`,
+              borderTopRightRadius: coldTierPercent > 0 ? '9999px' : undefined,
+              borderBottomRightRadius: coldTierPercent > 0 ? '9999px' : undefined,
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // fallback: show regular bar
   return (
     <div>
       <div className="flex justify-between mb-2">
@@ -112,6 +166,8 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
   direction,
   thresholdMode = 'none',
   actionButtons,
+  elasticColdTierStorage,
+  divideHotAndColdTier,
 }) => {
   return (
     <div>
@@ -134,6 +190,8 @@ export const StorageUsageOverview: React.FC<StorageUsageOverviewProps> = ({
             usedStorage={usedElasticStorage}
             totalStorage={totalElasticStorage}
             storagePercentage={elasticStoragePercentage}
+            coldTierStorage={elasticColdTierStorage}
+            divideHotAndColdTier={divideHotAndColdTier}
           />
         ) : (
           <ThresholdStorageBar

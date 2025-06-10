@@ -237,6 +237,31 @@ export class AxiosElasticsearchClusterApi implements ElasticsearchClusterApi {
         }
     }
 
+    async fetchColdTierIndices(): Promise<{ name: string, storage: number }[]> {
+        try {
+            const response = await this.axiosInstance.get<IndicesResponse>('/_cat/indices/restored-*', {
+                params: {
+                    v: true,
+                    format: 'json',
+                    s: 'index',
+                    h: 'index,store.size',
+                    bytes: 'b'
+                }
+            });
+
+            return response.data.map(index => ({
+                name: index.index,
+                storage: convert.bytesToGB(Number(index['store.size']))
+            }));
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to fetch cold tier indices: ${error.message}`);
+            } else {
+                throw new Error('Failed to fetch cold tier indices: Unknown error');
+            }
+        }
+    }
+
     private parseDurationToEpochMillis(duration: string): number {
         const durationRegex = /(\d+)([mhd])/;
         const match = duration.match(durationRegex);

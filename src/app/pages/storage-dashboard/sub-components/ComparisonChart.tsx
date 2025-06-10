@@ -85,8 +85,8 @@ export const ComparisonChart = ({
             <Legend />
             {chartMode === 'storage' && <Bar dataKey="elasticStorage" stackId="a" fill="#2563eb" name={t.elasticsearchStorage} />}
             {chartMode === 'storage' && <Bar dataKey="s3Storage" stackId="a" fill="#60a5fa" name={t.s3Storage} />}
-            {chartMode === 'retention' && <Bar dataKey="hotRetentionDays" stackId="a" fill="#2563eb" name={t.hotTier} />}
-            {chartMode === 'retention' && <Bar dataKey="coldRetentionDays" stackId="a" fill="#60a5fa" name={t.coldTier} />}
+            {chartMode === 'retention' && <Bar dataKey="hotRetentionDays" stackId="a" fill="rgb(244 114 182 / var(--tw-bg-opacity, 1))" name={t.hotTier} />}
+            {chartMode === 'retention' && <Bar dataKey="coldRetentionDays" stackId="a" fill="#2563eb" name={t.coldTier} />}
           </BarChart>
         </ResponsiveContainer>
       </div>

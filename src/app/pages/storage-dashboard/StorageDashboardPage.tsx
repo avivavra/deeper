@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ClusterMetadata, SourceGroup, Audience, Direction, Translation, Source } from './models';
 import { ChangeLog, useChangeLog, StorageHeader, StorageUsageOverview, ComparisonChart, RetentionManagement, AddSourceGroupForm } from './sub-components';
 import { GenericModal } from '../../components';
-import { ClusterSummarizerFactory, SourcesTranslator } from '../../../api';
+import { ClusterSummarizerFactory, ElasticsearchClusterApiFactory, SourcesTranslator } from '../../../api';
 import { StorageDashboardLayout } from './StorageDashboardLayout';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
 import { useAudience, useSimulation, useCluster } from './hooks';
@@ -17,6 +17,7 @@ type StorageDashboardPageProps = {
   getThresholdMode: (clusterName: string) => number;
   mailAddressees: string[];
   sourcesTranslator: SourcesTranslator;
+  elasticsearchClusterApiFactory: ElasticsearchClusterApiFactory;
 };
 
 export const StorageDashboardPage = ({
@@ -26,11 +27,12 @@ export const StorageDashboardPage = ({
   getThresholdMode,
   mailAddressees,
   sourcesTranslator,
+  elasticsearchClusterApiFactory,
 }: StorageDashboardPageProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [sourcesTranslation, setSourcesTranslation] = useState<{origin: string, translated: string}[]>({});
+  const [sourcesTranslation, setSourcesTranslation] = useState<{ origin: string, translated: string }[]>([]);
 
   useEffect(() => {
     const fetchSourcesTranslation = async () => {
@@ -45,12 +47,14 @@ export const StorageDashboardPage = ({
 
   const { audience, setAudience: setAudienceState, direction, t } = useAudience(audienceParam as Audience);
   const { isInSimulation, handleSimulationToggle } = useSimulation();
-  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster: setSelectedClusterState, sourceGroups, totalElasticStorage, totalS3Storage } = useCluster(clustersSummarizerFactory, clustersMetadata, selectedClusterParam);
 
-  const setAudience = (newAudience: Audience) => {
-    setAudienceState(newAudience);
-    setSearchParams({ ...Object.fromEntries(searchParams), audience: newAudience });
-  };
+  const elasticsearchApi = useMemo(
+    () => elasticsearchClusterApiFactory.create("", selectedClusterParam),
+    [selectedClusterParam, elasticsearchClusterApiFactory]
+  );
+
+  const { selectedClusterMetadata, selectedCluster, handleSetSelectedCluster: setSelectedClusterState, sourceGroups, totalElasticStorage, totalS3Storage, elasticColdTierStorage } =
+    useCluster(clustersSummarizerFactory, clustersMetadata, elasticsearchApi, selectedClusterParam);
 
   const handleSetSelectedCluster = (clusterName: string) => {
     setSelectedClusterState(clusterName);
@@ -69,7 +73,6 @@ export const StorageDashboardPage = ({
   const [showAddSourceGroup, setShowAddSourceGroup] = useState(false);
   const [sources, setSources] = useState<Source[]>([]);
   const [showExitSimulationModal, setShowExitSimulationModal] = useState(false);
-  const [pendingSimulationToggle, setPendingSimulationToggle] = useState(false);
 
   const handleSimulationToggleWithConfirmation = () => {
     if (isInSimulation && changeLog.length > 0) {
@@ -86,7 +89,6 @@ export const StorageDashboardPage = ({
 
   const cancelExitSimulation = () => {
     setShowExitSimulationModal(false);
-    setPendingSimulationToggle(false);
   };
 
   const handleResetChanges = () => {
@@ -121,10 +123,10 @@ export const StorageDashboardPage = ({
   const s3StoragePercentage = totalS3Storage ? (usedS3Storage / totalS3Storage) * 100 : 0;
 
   const filteredSourceGroups = displaySourceGroups
-    ? displaySourceGroups.filter(sourceGroup => 
-        sourceGroupsSelection[sourceGroup.name] && 
-        (audience !== 'user' || sourceGroup.showToUsers !== false)
-      )
+    ? displaySourceGroups.filter(sourceGroup =>
+      sourceGroupsSelection[sourceGroup.name] &&
+      (audience !== 'user' || sourceGroup.showToUsers !== false)
+    )
     : [];
 
   const handleAddSourceGroup = (newSourceGroup: SourceGroup) => {
@@ -444,6 +446,8 @@ export const StorageDashboardPage = ({
               usedS3Storage={usedS3Storage}
               totalS3Storage={totalS3Storage}
               s3StoragePercentage={s3StoragePercentage}
+              elasticColdTierStorage={elasticColdTierStorage}
+              divideHotAndColdTier={!isInSimulation}
             />
           )
         }

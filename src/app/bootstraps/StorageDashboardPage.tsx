@@ -2,7 +2,7 @@
 
 import { StorageDashboardPage as StorageDashboardPageComponent } from '../pages/storage-dashboard';
 import { Audience } from '../pages/storage-dashboard/models';
-import { MockS3BucketApiFactory, ConfigElasticsearchClusterApiFactory, ConfigClusterSummarizerFactory, ExampleDataClusterSummarizerFactory, MockAuthorizationService, SourcesTranslator } from '../../api';
+import { MockS3BucketApiFactory, ConfigElasticsearchClusterApiFactory, ConfigClusterSummarizerFactory, ExampleDataClusterSummarizerFactory, MockAuthorizationService, SourcesTranslator, ElasticsearchClusterApiFactory } from '../../api';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthorizationWrapper } from '../authorization';
@@ -32,6 +32,7 @@ export const StorageDashboardPage = () => {
                 getThresholdMode={(clusterName: string) => Number(clustersConfig[clusterName]?.thresholdMode)}
                 mailAddressees={staticConfig.mailAddressees}
                 sourcesTranslator={sourcesTranslator}
+                elasticsearchClusterApiFactory={elasticsearchClusterApiFactory}
               />
             );
           }}
