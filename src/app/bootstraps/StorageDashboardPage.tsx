@@ -8,7 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthorizationWrapper } from '../authorization';
 import { config as staticConfig } from '../../config';
 import { MockConfigApi } from '../../api/config/mockConfigApi';
-import { StorageDashboardConfigGuard } from '../pages/storage-dashboard/StorageDashboardConfigGuard';
+import { ConfigGuard } from '../pages/storage-dashboard/ConfigGuard';
 
 const s3BucketApiFactory = new MockS3BucketApiFactory();
 const authorizationService = new MockAuthorizationService();
@@ -19,7 +19,7 @@ export const StorageDashboardPage = () => {
   return (
     <BrowserRouter>
       <AuthorizationWrapper authorizationService={authorizationService}>
-        <StorageDashboardConfigGuard configApi={configApi}>
+        <ConfigGuard configApi={configApi}>
           {(clustersConfig) => {
             const elasticsearchClusterApiFactory = new ConfigElasticsearchClusterApiFactory(clustersConfig);
             const clustersSummarizerFactory = new ConfigClusterSummarizerFactory(elasticsearchClusterApiFactory, s3BucketApiFactory, clustersConfig);
@@ -36,7 +36,7 @@ export const StorageDashboardPage = () => {
               />
             );
           }}
-        </StorageDashboardConfigGuard>
+        </ConfigGuard>
       </AuthorizationWrapper>
     </BrowserRouter>
   );

@@ -3,7 +3,6 @@ import { SourceGroup, Translation, StoragePerDayInputType } from '../../models';
 import { NameArea } from './NameArea';
 import { StoragePerDayArea } from './StoragePerDayArea';
 import { RetentionPeriodsArea } from './RetentionPeriodsArea';
-import { config } from '../../../../../config';
 import { SourceInAClickButton } from './SourceInAClickButton';
 
 const emptyNewSourceGroup = (): NewSourceGroup => ({

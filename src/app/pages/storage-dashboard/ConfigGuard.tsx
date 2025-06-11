@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
 import { ConfigApi, ClustersConfig } from '../../../api/config/configApi';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
-import '../../authorization/AuthorizationWrapper.css';
 
-type Props = {
+import '../../authorization/Wrapper.css';
+
+type ConfigGuardProps = {
   configApi: ConfigApi;
   children: (config: ClustersConfig) => React.ReactNode;
 };
 
-export const StorageDashboardConfigGuard: React.FC<Props> = ({ configApi, children }) => {
+export const ConfigGuard: React.FC<ConfigGuardProps> = ({ configApi, children }) => {
   const [config, setConfig] = React.useState<ClustersConfig | null>(null);
   const [error, setError] = React.useState<Error | null>(null);
 
