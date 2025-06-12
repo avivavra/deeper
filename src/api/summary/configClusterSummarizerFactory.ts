@@ -7,24 +7,24 @@ import { ClusterSummarizerFactory } from "./clusterSummarizerFactory";
 export class ConfigClusterSummarizerFactory implements ClusterSummarizerFactory {
     constructor(
         private readonly elasticsearchClusterApiFactory: ElasticsearchClusterApiFactory,
-        private readonly s3BucketApiFactory: S3BucketApiFactory
-    ) { }
-
-    createSummarizer(clusterName: string) {
-        const clusterConfig = (config.clustersConnection as {
+        private readonly s3BucketApiFactory: S3BucketApiFactory,
+        private readonly clustersConfig: {
             [clusterName: string]: {
                 name: string,
                 bucketName?: string,
                 hebrewName: string,
                 indexTemplatesConfig: IndexTemplateConfig[]
             }
-        })[clusterName];
+        }) { }
+
+    createSummarizer(clusterName: string) {
+        const clusterConfig = this.clustersConfig[clusterName];
 
         return new ClusterSummarizer(
             { name: clusterConfig.name, hebrewName: clusterConfig.hebrewName },
             clusterConfig.indexTemplatesConfig,
             this.elasticsearchClusterApiFactory.create("", clusterName), // TODO: handle two envs
-            clusterConfig.bucketName ? this.s3BucketApiFactory.create("env1", clusterConfig.bucketName): undefined
+            clusterConfig.bucketName ? this.s3BucketApiFactory.create("env1", clusterConfig.bucketName) : undefined
         );
     }
 }

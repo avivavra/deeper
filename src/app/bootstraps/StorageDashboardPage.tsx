@@ -1,35 +1,42 @@
 "use client";
 
 import { StorageDashboardPage as StorageDashboardPageComponent } from '../pages/storage-dashboard';
-import { config, clustersMetadata } from '../../config';
 import { Audience } from '../pages/storage-dashboard/models';
-import { MockS3BucketApiFactory, ConfigElasticsearchClusterApiFactory, ConfigClusterSummarizerFactory, ExampleDataClusterSummarizerFactory, MockAuthorizationService, SourcesTranslator } from '../../api';
+import { MockS3BucketApiFactory, ConfigElasticsearchClusterApiFactory, ConfigClusterSummarizerFactory, ExampleDataClusterSummarizerFactory, MockAuthorizationService, SourcesTranslator, ElasticsearchClusterApiFactory } from '../../api';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthorizationWrapper } from '../authorization';
+import { config as staticConfig } from '../../config';
+import { MockConfigApi } from '../../api/config/mockConfigApi';
+import { ConfigGuard } from '../pages/storage-dashboard/ConfigGuard';
 
-const elasticsearchClusterApiFactory = new ConfigElasticsearchClusterApiFactory();
 const s3BucketApiFactory = new MockS3BucketApiFactory();
-const clustersSummarizerFactory = new ConfigClusterSummarizerFactory(elasticsearchClusterApiFactory, s3BucketApiFactory);
 const authorizationService = new MockAuthorizationService();
-const sourcesTranslator = new SourcesTranslator(config.sourcesTranslatorUrl);
+const sourcesTranslator = new SourcesTranslator(staticConfig.sourcesTranslatorUrl);
+const configApi = new MockConfigApi();
 
 export const StorageDashboardPage = () => {
-  const { clustersConnection, defaultMode, mailAddressees } = config;
-
-  const getThresholdMode = (clusterName: string) => Number(clustersConnection[clusterName]?.thresholdMode);
-
   return (
     <BrowserRouter>
       <AuthorizationWrapper authorizationService={authorizationService}>
-        <StorageDashboardPageComponent
-          clustersSummarizerFactory={clustersSummarizerFactory}
-          clustersMetadata={clustersMetadata}
-          defaultMode={defaultMode as Audience}
-          getThresholdMode={getThresholdMode}
-          mailAddressees={mailAddressees}
-          sourcesTranslator={sourcesTranslator}
-        />
+        <ConfigGuard configApi={configApi}>
+          {(clustersConfig) => {
+            const elasticsearchClusterApiFactory = new ConfigElasticsearchClusterApiFactory(clustersConfig);
+            const clustersSummarizerFactory = new ConfigClusterSummarizerFactory(elasticsearchClusterApiFactory, s3BucketApiFactory, clustersConfig);
+
+            return (
+              <StorageDashboardPageComponent
+                clustersSummarizerFactory={clustersSummarizerFactory}
+                clustersMetadata={Object.values(clustersConfig)}
+                defaultMode={staticConfig.defaultMode as Audience}
+                getThresholdMode={(clusterName: string) => Number(clustersConfig[clusterName]?.thresholdMode)}
+                mailAddressees={staticConfig.mailAddressees}
+                sourcesTranslator={sourcesTranslator}
+                elasticsearchClusterApiFactory={elasticsearchClusterApiFactory}
+              />
+            );
+          }}
+        </ConfigGuard>
       </AuthorizationWrapper>
     </BrowserRouter>
   );

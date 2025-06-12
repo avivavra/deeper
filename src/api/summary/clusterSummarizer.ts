@@ -89,7 +89,10 @@ export class ClusterSummarizer {
 
         const indexTemplatesTasks = this.indexTemplatesConfig.map((templateConfig) => {
             const template = templates.find(template => template.name === templateConfig.name);
-            if (!template) throw new Error(`Index template ${templateConfig.name} not found`);
+            if (!template) {
+                console.warn(`Index template ${templateConfig.name} not found`);
+                return null;
+            }
 
             const matchingIlmPolicy = ilmPolicies.find(policy => policy.name === template.ilmPolicy);
 
@@ -107,7 +110,8 @@ export class ClusterSummarizer {
             return this.summarizeIndexTemplate(templateConfig, hotTierIndices, coldTierIndices, now, template.patterns, matchingIlmPolicy);
         });
 
-        return Promise.all(indexTemplatesTasks);
+        const results = await Promise.all(indexTemplatesTasks);
+        return results.filter((result): result is ProcessedIndexTemplate => result !== null);
     }
 
     async summarizeIndexTemplate(

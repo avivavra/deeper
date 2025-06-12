@@ -1,5 +1,5 @@
 export const format = {
-    numberToFixed: (num?: number, digits = 2, commas = false) => {
+    numberToFixed: (num?: number, digits = 2, commas = true) => {
         if (num === undefined) return num;
         if (!commas) return num.toFixed(digits);
 

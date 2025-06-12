@@ -3,6 +3,7 @@ import { SourceGroup, Translation, StoragePerDayInputType } from '../../models';
 import { NameArea } from './NameArea';
 import { StoragePerDayArea } from './StoragePerDayArea';
 import { RetentionPeriodsArea } from './RetentionPeriodsArea';
+import { SourceInAClickButton } from './SourceInAClickButton';
 
 const emptyNewSourceGroup = (): NewSourceGroup => ({
     name: '',
@@ -32,9 +33,10 @@ interface AddSourceGroupForm {
     handleAddSourceGroup: (newSourceGroupData: SourceGroup) => void;
     sourceGroups: SourceGroup[];
     translateNames: boolean;
+    displayTechData: boolean;
 }
 
-export const AddSourceGroupForm: React.FC<AddSourceGroupForm> = ({ t, setShowAddSourceGroup, handleAddSourceGroup, sourceGroups, translateNames }) => {
+export const AddSourceGroupForm: React.FC<AddSourceGroupForm> = ({ t, setShowAddSourceGroup, handleAddSourceGroup, sourceGroups, translateNames, displayTechData }) => {
     const [newSourceGroup, setNewSourceGroup] = useState<NewSourceGroup>(emptyNewSourceGroup());
     const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
     const [storageRates, setStorageRates] = useState({
@@ -99,7 +101,10 @@ export const AddSourceGroupForm: React.FC<AddSourceGroupForm> = ({ t, setShowAdd
 
     return (
         <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.addSourceGroup}</h2>
+            <div className="flex items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">{t.addSourceGroup}</h2>
+                {displayTechData && <SourceInAClickButton />}
+            </div>
             <div className="space-y-4">
                 <NameArea
                     label={t.sourceGroupName}

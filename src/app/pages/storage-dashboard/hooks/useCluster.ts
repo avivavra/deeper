@@ -2,8 +2,14 @@ import { ClusterSummarizerFactory } from "../../../../api";
 import { useCallback, useEffect, useState } from "react";
 import { ClusterData, ClusterMetadata, SourceGroup } from "../models";
 import { useAsyncState } from "../../../utils";
+import type { ElasticsearchClusterApi } from "../../../../api/elasticsearch/elasticsearchClusterApi";
 
-export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, clustersMetadata: ClusterMetadata[], defaultClusterName?: string) => {
+export const useCluster = (
+  clustersSummarizerFactory: ClusterSummarizerFactory,
+  clustersMetadata: ClusterMetadata[],
+  elasticsearchApi: ElasticsearchClusterApi,
+  defaultClusterName?: string,
+) => {
   const defaultCluster = clustersMetadata.find(cluster => cluster.name === defaultClusterName) || clustersMetadata[0];
   const [selectedClusterMetadata, setSelectedClusterMetadata] = useState<ClusterMetadata>(defaultCluster);
 
@@ -37,6 +43,13 @@ export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, 
 
   const { state: sourceGroups, fetchData: setSourceGroups } = useAsyncState<SourceGroup[]>([]);
 
+  const fetchInitialElasticColdTierStorage = useCallback(async () => {
+    const indices = await elasticsearchApi.fetchColdTierIndices();
+    return indices.reduce((sum, idx) => sum + idx.storage, 0);
+  }, [elasticsearchApi]);
+
+  const { state: elasticColdTierStorage, fetchData: fetchElasticColdTierStorage } = useAsyncState<number>(fetchInitialElasticColdTierStorage);
+
   useEffect(() => {
     setSourceGroups(async () => {
       const summarizer = clustersSummarizerFactory.createSummarizer(selectedClusterMetadata.name);
@@ -44,7 +57,7 @@ export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, 
 
       return fetchedSourceGroups.sort((a, b) => b.elasticStorage - a.elasticStorage);
     });
-  }, [setSourceGroups, clustersSummarizerFactory, selectedClusterMetadata.name]);
+  }, [setSourceGroups, clustersSummarizerFactory, selectedClusterMetadata.name, elasticsearchApi, fetchElasticColdTierStorage]);
 
   const totalElasticStorage = selectedCluster.data?.totalElasticStorage || 0;
   const totalS3Storage = selectedCluster.data?.totalS3Storage || 0;
@@ -56,5 +69,6 @@ export const useCluster = (clustersSummarizerFactory: ClusterSummarizerFactory, 
     sourceGroups,
     totalElasticStorage,
     totalS3Storage,
+    elasticColdTierStorage,
   };
 };

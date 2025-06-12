@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthorizationService } from '../../api/authorization';
 import { FaCircleNotch, FaTimesCircle } from 'react-icons/fa';
-import './AuthorizationWrapper.css';
+import './Wrapper.css';
 
 type AuthorizationWrapperProps = {
   children: React.ReactNode;
