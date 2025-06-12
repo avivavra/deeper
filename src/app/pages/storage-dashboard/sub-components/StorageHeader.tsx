@@ -39,11 +39,11 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
         <div className="relative title-dropdown flex items-center">
           <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
           <button
-            className="ml-2 mr-2 text-gray-500 hover:text-gray-700"
+            className="ml-2 mr-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             onClick={() => setShowInfoModal(true)}
             title={t.infoIconTooltip}
           >
-            <FaInfoCircle className="text-xl" />
+            <FaInfoCircle className="text-3xl" />
           </button>
         </div>
         <div className="flex gap-4">
@@ -84,7 +84,15 @@ export const StorageHeader: React.FC<StorageHeaderProps> = ({
         <GenericModal showModal={showInfoModal} setShowModal={setShowInfoModal}>
           <div className="p-8 max-w-3xl">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">{t.explanationTitle}</h2>
-            <p className="text-lg text-gray-800" style={{ whiteSpace: 'pre-line' }}>{t.explanationContent}</p>
+            <p className="text-lg text-gray-800" style={{ whiteSpace: 'pre-line' }}>
+              {t.explanationContent.split(/(\*[^*]+\*)/g).map((part, idx) =>
+              part.startsWith('*') && part.endsWith('*') ? (
+                <strong key={idx}>{part.slice(1, -1)}</strong>
+              ) : (
+                part
+              )
+              )}
+            </p>
             <button
               className="mt-6 px-6 py-3 bg-blue-500 text-white rounded text-lg"
               onClick={() => setShowInfoModal(false)}
